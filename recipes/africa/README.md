@@ -104,6 +104,8 @@ python mobile/make_bundle.py --onnx-dir onnx/africa-tts --g2p-dir g2p --voices-d
 python recipes/africa/release/synth_udhr.py ...   # UDHR texts per language (Space)
 python recipes/africa/release/synth_samples.py ... # Space audio, made with the africa_tts package
 python recipes/africa/release/make_space.py ... ; python recipes/africa/release/make_card.py ...
+python recipes/africa/release/make_video.py space_samples out.mp4 --label turbo [--langs twi,ewe,...]  # slideshow
+python recipes/africa/release/experimental_languages.py ipa/train_all.jsonl africa_tts/languages_experimental.json --md table.md
 ```
 
 `synth_demo.py` / `synth_ood.py` are the listening tests used to pick the checkpoint (held-out
