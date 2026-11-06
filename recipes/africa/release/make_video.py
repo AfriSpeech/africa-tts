@@ -198,6 +198,8 @@ def main() -> None:
     ap.add_argument("--n-trained", type=int, default=92)
     ap.add_argument("--n-experimental", type=int, default=657)
     ap.add_argument("--langs", help="comma-separated codes, in this order (default: all)")
+    ap.add_argument("--intro-sec", type=float, default=1.5, help="intro slide length (0 = none)")
+    ap.add_argument("--outro-sec", type=float, default=1.5, help="outro slide length (0 = none)")
     a = ap.parse_args()
     meta = json.loads((a.samples / "meta.json").read_text())
     countries = json.loads(a.countries.read_text()) if a.countries else {}
@@ -215,8 +217,9 @@ def main() -> None:
         (f"Listen to {len(items)} of them{'' if not a.langs else ' (more on the samples page)'} read the same line from the Universal Declaration of "
          "Human Rights:", "sans", 34, MUTED),
         (f"“{ART_EN[a.article]}”", "italic", 34, ACCENT)])
-    segs.append(tmp / "000_intro.mp4")
-    segment(intro, None, 5.0, segs[-1])
+    if a.intro_sec > 0:
+        segs.append(tmp / "000_intro.mp4")
+        segment(intro, None, a.intro_sec, segs[-1])
 
     for i, it in enumerate(items, 1):
         g = it["g2p"]
@@ -238,8 +241,9 @@ def main() -> None:
         ("Open source · free to use for non-commercial work · contributions welcome", "sans", 30, MUTED),
         ("github.com/AfriSpeech/africa-tts", "sans-bold", 40, ACCENT),
         ("huggingface.co/AfriSpeech/africa-tts", "sans-bold", 34, ACCENT)])
-    segs.append(tmp / "999_outro.mp4")
-    segment(outro, None, 7.0, segs[-1])
+    if a.outro_sec > 0:
+        segs.append(tmp / "999_outro.mp4")
+        segment(outro, None, a.outro_sec, segs[-1])
 
     lst = tmp / "list.txt"
     lst.write_text("".join(f"file '{s}'\n" for s in segs))
