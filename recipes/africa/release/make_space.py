@@ -120,7 +120,8 @@ def main() -> None:
     demo, space = Path(sys.argv[1]), Path(sys.argv[2])
     (space / "audio").mkdir(parents=True, exist_ok=True)
     meta = json.loads((demo / "meta.json").read_text())
-    hours = {}
+    pkg = Path(__file__).resolve().parents[3] / "africa_tts"
+    hours = {g: v["hours"] for g, v in json.loads((pkg / "languages.json").read_text()).items()}
     hp = demo / "lang_hours.json"
     if hp.exists():
         hours = {g: h for g, _, h, _ in json.loads(hp.read_text())["langs"]}
