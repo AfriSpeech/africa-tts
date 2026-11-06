@@ -1,0 +1,40 @@
+{
+ "cpu": "unknown",
+ "threads": 4,
+ "sentences": 8,
+ "runs": {
+  "turbo_sherpa_int8": {
+   "audio_s": 45.12,
+   "compute_s": 17.87,
+   "rtf": 0.396,
+   "x_realtime": 2.52
+  },
+  "turbo_python": {
+   "audio_s": 45.44,
+   "compute_s": 19.09,
+   "rtf": 0.42,
+   "x_realtime": 2.38,
+   "first_audio_s": 0.17
+  },
+  "24l_unguided_sherpa_int8": {
+   "audio_s": 51.6,
+   "compute_s": 63.0,
+   "rtf": 1.221,
+   "x_realtime": 0.82
+  },
+  "24l_unguided_python": {
+   "audio_s": 51.84,
+   "compute_s": 57.69,
+   "rtf": 1.113,
+   "x_realtime": 0.9,
+   "first_audio_s": 0.52
+  },
+  "24l_guided_python": {
+   "audio_s": 42.24,
+   "compute_s": 88.96,
+   "rtf": 2.106,
+   "x_realtime": 0.47,
+   "first_audio_s": 0.72
+  }
+ }
+}

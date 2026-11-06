@@ -12,6 +12,23 @@ voice, so all you need is text and a language code.
 > An ongoing project: native-speaker feedback is what improves it most. See
 > [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## ⚡ Runs on a CPU, no GPU needed
+
+**Africa TTS Turbo speaks 2.4× faster than real time on 4 CPU cores, and starts streaming
+audio 0.17 s after it gets the text.** A 10-second sentence takes about 4 seconds to generate,
+and playback can start almost at once.
+
+| On a 4-core CPU | Africa TTS Turbo | Africa TTS (24 layers) |
+|---|---|---|
+| Speed | **2.4-2.5× real time** | 0.8-0.9× unguided, 0.5× guided |
+| Time to first audio | **0.17 s** | 0.5-0.7 s |
+| Size | 6 layers; 209 MB on-device bundle (int8) | 24 layers; 437 MB bundle |
+| Use it for | laptops, servers, phones, real-time apps | offline work, or a GPU |
+
+Measured on a dedicated 4-vCPU cloud machine (Modal), PyTorch on one thread, sherpa-onnx int8 on
+four; your laptop may be faster. Measure your own machine with
+[`benchmarks/speed.py`](benchmarks/speed.py); details in [docs/BENCHMARKS.md](docs/BENCHMARKS.md#speed).
+
 ## Install
 
 ```bash
