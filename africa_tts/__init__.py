@@ -3,4 +3,4 @@
 from africa_tts.frontend import to_ipa
 from africa_tts.tts import MODELS, AfricaTTS, experimental_languages, languages
 
-__all__ = ["MODELS", "AfricaTTS", "languages", "to_ipa"]
+__all__ = ["MODELS", "AfricaTTS", "experimental_languages", "languages", "to_ipa"]
