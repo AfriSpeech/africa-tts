@@ -377,6 +377,13 @@ void att_destroy(att_frontend *f) {
   free(f);
 }
 
+/* Greek/Cyrillic lookalikes of African Latin letters (Twi "ԑ", Ewe "ͻ", ...): the G2P tables only
+ * know the Latin letters. Kept in sync with LOOKALIKES in africa_tts/frontend.py. */
+static const char *const LOOKALIKES[][2] = {
+    {"ͻ", "ɔ"}, {"Ͻ", "Ɔ"}, {"ԑ", "ɛ"}, {"Ԑ", "Ɛ"}, {"ε", "ɛ"},
+    {"Ε", "Ɛ"}, {"Γ", "Ɣ"}, {"γ", "ɣ"}, {"ῖ", "ĩ"},
+};
+
 char *att_to_ipa(att_frontend *f, const char *lang, const char *text) {
   f->error[0] = 0;
   if (!lang || !text) {
@@ -391,7 +398,18 @@ char *att_to_ipa(att_frontend *f, const char *lang, const char *text) {
     return english_to_ipa(f, text);
 #endif
   }
-  return african_to_ipa(f, lang, text);
+  size_t n = strlen(text);
+  char *clean = malloc(n + 1);
+  if (!clean) {
+    set_error(f, "out of memory");
+    return NULL;
+  }
+  memcpy(clean, text, n + 1);
+  for (size_t i = 0; i < sizeof LOOKALIKES / sizeof LOOKALIKES[0]; i++)
+    clean = replace_all(clean, LOOKALIKES[i][0], LOOKALIKES[i][1]);
+  char *ipa = african_to_ipa(f, lang, clean);
+  free(clean);
+  return ipa;
 }
 
 const char *att_last_error(const att_frontend *f) { return f->error; }

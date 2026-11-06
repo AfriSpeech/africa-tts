@@ -46,10 +46,10 @@ def main() -> None:
             continue
         items = []
         for r in rows:
-            p = (a.bench / r["real"]) if system == "real" else (
-                a.bench / "synth" / system / r["lang"] / f"{r['id']}.wav")
             if system == "real" and not r["real"]:
                 continue
+            p = (a.bench / r["real"]) if system == "real" else (
+                a.bench / "synth" / system / r["lang"] / f"{r['id']}.wav")
             if not p.exists():
                 continue
             wav, sr = sf.read(p, dtype="float32", always_2d=True)

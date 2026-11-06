@@ -14,11 +14,18 @@ from africa_g2p import g2p
 
 _PUNCT = re.compile(r"^(\W*)(.*?)(\W*)$", re.DOTALL)
 
+# Greek/Cyrillic lookalikes that keyboards and websites (and FLORES) use for African Latin
+# letters, e.g. Twi "ԑ" (Cyrillic) or Ewe "ͻ" (Greek) for ɛ and ɔ. The G2P tables only know the
+# Latin letters. Kept in sync with LOOKALIKES in mobile/frontend/africa_tts_frontend.c.
+LOOKALIKES = {"ͻ": "ɔ", "Ͻ": "Ɔ", "ԑ": "ɛ", "Ԑ": "Ɛ", "ε": "ɛ", "Ε": "Ɛ", "Γ": "Ɣ", "γ": "ɣ",
+              "ῖ": "ĩ"}
+_LOOKALIKES = str.maketrans(LOOKALIKES)
+
 
 def to_ipa(text: str, lang: str) -> str:
     """Convert `text` in language `lang` (ISO 639-3 code, e.g. "twi", "eng") to model IPA."""
     if lang != "eng":
-        return g2p(text, lang, output="ipa")
+        return g2p(text.translate(_LOOKALIKES), lang, output="ipa")
     words = []
     for w in text.split():
         lead, core, trail = _PUNCT.match(w).groups()
