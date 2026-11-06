@@ -15,8 +15,8 @@ import java.io.File
  * [modelDir] is an unpacked model bundle on the file system (see mobile/README.md):
  *   lm_main.int8.onnx lm_flow.int8.onnx encoder.onnx decoder.int8.onnx text_conditioner.onnx
  *   vocab.json token_scores.json  g2p/<lang>.afg2p  voices/<lang>.wav  [espeak-ng-data/]
- * The same code runs Africa TTS (24 layers) and Africa TTS Turbo (6 layers): only the bundle
- * differs.
+ * Use the Africa TTS Turbo bundle: it has classifier-free guidance distilled in, which
+ * sherpa-onnx cannot run at inference.
  */
 class AfricaTts(private val modelDir: String, numThreads: Int = 2) : AutoCloseable {
     private val frontend = AfricaTtsFrontend(

@@ -1,7 +1,8 @@
 """africa-tts command line.
 
   africa-tts "Akwaaba! Yɛfrɛ me Kofi." --lang twi -o out.wav
-  africa-tts "Hello Ghana" --lang eng --model africa-tts --voice me.wav -o hello.wav
+  africa-tts "Hello Ghana" --lang eng --model africa-tts --voice me.wav -o hello.wav   # best quality
+  africa-tts "Hello Ghana" --lang eng --model africa-tts --cfg 1 -o fast.wav           # teacher, no guidance
   africa-tts --ipa-only "Akwaaba!" --lang twi        # print the IPA the model would read
   africa-tts --list-languages
 """
@@ -17,6 +18,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--lang", "-l", help="ISO 639-3 code, e.g. twi, ewe, hau, yor, zul, eng")
     ap.add_argument("--model", "-m", default="africa-tts-turbo",
                     help="africa-tts | africa-tts-turbo (default) | HF repo | local folder")
+    ap.add_argument("--cfg", type=float, default=None,
+                    help="classifier-free guidance (default: 2.0 for africa-tts, 1.0 for Turbo); "
+                         "1.0 = off, faster")
     ap.add_argument("--voice", "-v", help="WAV to clone (default: the language's bundled voice)")
     ap.add_argument("--out", "-o", default="out.wav")
     ap.add_argument("--ipa", action="store_true", help="TEXT is already IPA")
@@ -42,7 +46,7 @@ def main(argv: list[str] | None = None) -> int:
     if a.ipa_only:
         print(to_ipa(a.text, a.lang))
         return 0
-    tts = AfricaTTS.load(a.model)
+    tts = AfricaTTS.load(a.model, cfg=a.cfg)
     audio = tts.generate(a.text, a.lang, voice=a.voice, ipa=a.ipa)
     tts.save(audio, a.out)
     print(f"wrote {a.out} ({len(audio) / tts.sample_rate:.1f} s)", file=sys.stderr)

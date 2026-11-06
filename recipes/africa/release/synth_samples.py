@@ -1,6 +1,6 @@
 """Samples for the Space, made exactly the way users run the models: the africa_tts package
-(plain pocket-tts inference, no classifier-free guidance, temperature 0.3) with each language's
-bundled default voice.
+(pocket-tts inference; guidance 2.0 for africa-tts via africa_tts.guidance, none for Turbo;
+temperature 0.3) with each language's bundled default voice.
 
 Texts come from a meta.json written by synth_udhr.py (UDHR Articles 1, 3, 5 per language). Each
 call adds one model's audio under LABEL; run once per model.
@@ -27,6 +27,8 @@ def main() -> None:
     ap.add_argument("--label", required=True)
     ap.add_argument("--model", required=True, help="africa-tts | africa-tts-turbo | local folder")
     ap.add_argument("--device", default="cpu")
+    ap.add_argument("--cfg", type=float, default=None,
+                    help="classifier-free guidance (default: the model's, 2.0 for africa-tts)")
     a = ap.parse_args()
     (a.out / "audio").mkdir(parents=True, exist_ok=True)
     meta_out = a.out / "meta.json"
@@ -38,7 +40,8 @@ def main() -> None:
                  for it in src["items"]]
         meta = {"labels": [], "items": items}
 
-    tts = AfricaTTS.load(a.model)
+    tts = AfricaTTS.load(a.model, cfg=a.cfg)
+    print(f"model {a.model}: cfg {tts.cfg}", flush=True)
     tts.model.to(a.device)
     for i, it in enumerate(meta["items"]):
         g = it["g2p"]

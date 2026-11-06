@@ -1,7 +1,7 @@
 # Africa TTS on device (sherpa-onnx)
 
-Both models run on phones and desktops through [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx)'s
-Pocket TTS backend. Africa TTS reads **IPA**, so text goes through a small C front end first:
+**Africa TTS Turbo** runs on phones and desktops through [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx)'s
+Pocket TTS backend. It reads **IPA**, so text goes through a small C front end first:
 
 ```
 text ──► africa_tts_frontend ──► IPA ──► sherpa-onnx Pocket TTS ──► 24 kHz audio
@@ -9,19 +9,22 @@ text ──► africa_tts_frontend ──► IPA ──► sherpa-onnx Pocket TT
           espeak-ng 1.51 (English)                        └── voice prompt: voices/<lang>.wav (default) or your own
 ```
 
-## Bundles
+## Bundle
 
-Each model repo has a ready bundle in `sherpa-onnx/`:
-
-| Model | Layers | Bundle | Download |
-|---|---|---|---|
-| [Africa TTS](https://huggingface.co/AfriSpeech/africa-tts) | 24 | ~416 MB | `huggingface-cli download AfriSpeech/africa-tts --include "sherpa-onnx/*" --local-dir .` |
-| [Africa TTS Turbo](https://huggingface.co/AfriSpeech/africa-tts-turbo) | 6 | smaller, ~4x less compute | `huggingface-cli download AfriSpeech/africa-tts-turbo --include "sherpa-onnx/*" --local-dir .` |
+```bash
+huggingface-cli download AfriSpeech/africa-tts-turbo --include "sherpa-onnx/*" --local-dir .
+```
 
 Contents: `lm_main.int8.onnx lm_flow.int8.onnx decoder.int8.onnx encoder.onnx text_conditioner.onnx
 vocab.json token_scores.json g2p/ voices/ espeak-ng-data/`. int8 where it is safe; the encoder
-stays fp32 because int8 distorts the voice conditioning. The same app code runs either model:
-only the bundle differs.
+stays fp32 because int8 distorts the voice conditioning.
+
+**Why Turbo only:** the 24-layer Africa TTS sounds its best with classifier-free guidance, which
+sherpa-onnx does not run (it needs a second backbone pass per frame). Turbo was distilled from
+the guided teacher, so it gets that quality in one pass, and it is about 4x lighter: the right
+model for devices. For the best quality on a server or desktop GPU, use the teacher through the
+Python package (`AfricaTTS.load("africa-tts")`, guidance 2.0). The exporter itself works for any
+layer count.
 
 ## Generation settings (match pocket-tts)
 
@@ -66,7 +69,7 @@ languages are unaffected.
 - `AfricaTts.kt`: front end + sherpa-onnx `OfflineTts` with the settings above, default voices.
 
 ```kotlin
-val tts = AfricaTts(modelDir = "${filesDir}/africa-tts-turbo")   // unpacked bundle
+val tts = AfricaTts(modelDir = "${filesDir}/africa-tts-turbo")   // unpacked Turbo bundle
 val audio = tts.speak("Akwaaba! Yɛfrɛ me Kofi.", lang = "twi")    // default Twi voice
 audio.save("${cacheDir}/out.wav")
 ```
@@ -83,8 +86,8 @@ cmake --build build/android-arm64 -j
 ```
 
 What has been tested: the front end and its parity on Linux x86-64, the JNI library from a JVM
-(same class and method names as the Kotlin wrapper), and the bundles end to end in sherpa-onnx
-2.0.1 (Python). The Android NDK build and the Kotlin classes have not been run on a device yet.
+(same class and method names as the Kotlin wrapper), and the exported models end to end in
+sherpa-onnx 2.0.1 (Python). The Android NDK build and the Kotlin classes have not been run on a device yet.
 
 ## Desktop / Python
 

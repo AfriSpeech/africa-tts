@@ -82,10 +82,22 @@ def main() -> None:
                 "chosen by listening.")
 
     short = "africa-tts-turbo" if turbo else "africa-tts"
-    guidance_note = ("" if turbo else
-        "- **Guidance:** pocket-tts and sherpa-onnx do not apply classifier-free guidance, so this model "
-        "runs unguided; [Africa TTS Turbo](https://huggingface.co/AfriSpeech/africa-tts-turbo) has "
-        "guidance 2.0 distilled into it.\n")
+    guidance_note = (
+        "- **Guidance:** classifier-free guidance 2.0 was distilled into Turbo, so it runs in a "
+        "single pass with no guidance setting.\n" if turbo else
+        "- **Guidance:** this model sounds best with classifier-free guidance 2.0, which the "
+        "`africa-tts` package applies by default (two backbone passes per frame, so about 2x "
+        "slower; `cfg=1.0` turns it off). Plain pocket-tts has no guidance. For speed, use "
+        "[Africa TTS Turbo](https://huggingface.co/AfriSpeech/africa-tts-turbo), which has it "
+        "distilled in.\n")
+    plain_note = "" if turbo else ", but without guidance (lower quality than the package's default)"
+    device_note = (
+        "- **On device:** a ready [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) bundle is in "
+        f"[sherpa-onnx/](https://huggingface.co/{repo}/tree/main/sherpa-onnx) (ONNX models, G2P "
+        "tables, default voices, English espeak-ng data); see the "
+        "[mobile guide](https://github.com/AfriSpeech/africa-tts/tree/main/mobile)." if turbo else
+        "- **On device:** use [Africa TTS Turbo](https://huggingface.co/AfriSpeech/africa-tts-turbo), "
+        "which ships a sherpa-onnx bundle; this 24-layer model is for the Python package.")
     card = f"""---
 license: cc-by-nc-4.0
 language:
@@ -131,14 +143,12 @@ tts.save(audio, "out.wav")
   (English: Ghanaian English; Tigrinya: africa-female-speech-v2), in
   [voices/](https://huggingface.co/AfriSpeech/africa-tts/tree/main/voices).
 - **Numbers:** spell them out. Every training clip with a numeral was removed.
-- **On device:** a ready [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) bundle is in
-  [sherpa-onnx/](https://huggingface.co/{repo}/tree/main/sherpa-onnx) (ONNX models, G2P
-  tables, default voices, English espeak-ng data); see the repo's
-  [mobile guide](https://github.com/AfriSpeech/africa-tts/tree/main/mobile).
+{device_note}
 {guidance_note}
 ### Without the package
 
-The model reads **IPA**, not spelling, so text must be converted exactly as in training. Use
+Plain pocket-tts works too{plain_note}. The model reads **IPA**, not spelling, so text must be
+converted exactly as in training. Use
 africa-g2p at commit `76b53a8`: the 0.3.2 release on PyPI predates fixes to the Ghanaian tables
 and gives different IPA for Twi, Fante, Ewe, Igbo and Rundi.
 

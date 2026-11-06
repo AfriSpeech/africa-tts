@@ -9,11 +9,15 @@ import numpy as np
 from pocket_tts import TTSModel
 
 from africa_tts.frontend import to_ipa
+from africa_tts.guidance import GuidedTTSModel
 
 MODELS = {
-    "africa-tts": "AfriSpeech/africa-tts",  # 24 layers, best quality
+    "africa-tts": "AfriSpeech/africa-tts",  # 24 layers, best quality (with guidance)
     "africa-tts-turbo": "AfriSpeech/africa-tts-turbo",  # 6 layers, distilled, fast on CPU
 }
+# Classifier-free guidance per model: the teacher sounds best with 2.0 (about 2x slower);
+# Turbo was distilled from the teacher's cfg-2.0 output, so it already has it built in.
+DEFAULT_CFG = {"AfriSpeech/africa-tts": 2.0, "AfriSpeech/africa-tts-turbo": 1.0}
 _HERE = Path(__file__).parent
 _LANGS = json.loads((_HERE / "languages.json").read_text(encoding="utf-8"))
 _EXPERIMENTAL = json.loads((_HERE / "languages_experimental.json").read_text(encoding="utf-8"))
@@ -35,24 +39,38 @@ def experimental_languages() -> dict[str, dict]:
 class AfricaTTS:
     """Africa TTS with the africa-g2p front end and a default voice per language.
 
-        tts = AfricaTTS.load("africa-tts-turbo")
+        tts = AfricaTTS.load("africa-tts-turbo")          # fast
+        tts = AfricaTTS.load("africa-tts")                # best quality: guidance 2.0, ~2x slower
+        tts = AfricaTTS.load("africa-tts", cfg=1.0)       # teacher without guidance
         audio = tts.generate("Akwaaba! Yɛfrɛ me Kofi.", lang="twi")   # float32, 24 kHz
         tts.save(audio, "out.wav")
     """
 
-    def __init__(self, model: TTSModel, repo: str) -> None:
+    def __init__(self, model: TTSModel, repo: str, cfg: float = 1.0) -> None:
         self.model = model
         self.repo = repo
+        self.cfg = cfg
         self.sample_rate = model.sample_rate
 
     @classmethod
-    def load(cls, name: str = "africa-tts-turbo", **kwargs) -> "AfricaTTS":
+    def load(cls, name: str = "africa-tts-turbo", cfg: float | None = None,
+             **kwargs) -> "AfricaTTS":
         """`name`: "africa-tts", "africa-tts-turbo", a Hugging Face repo id, or a local folder
-        with config.yaml. Extra keyword arguments go to pocket_tts.TTSModel.load_model."""
+        with config.yaml. `cfg`: classifier-free guidance (default 2.0 for africa-tts, 1.0 =
+        none for Turbo and anything else). Extra keyword arguments go to
+        pocket_tts.TTSModel.load_model."""
         repo = MODELS.get(name, name)
         local = Path(repo)
         config = str(local / "config.yaml") if local.is_dir() else f"hf://{repo}/config.yaml"
-        return cls(TTSModel.load_model(config=config, **kwargs), repo)
+        if cfg is None:
+            cfg = DEFAULT_CFG.get(repo, 1.0)
+        if repo == MODELS["africa-tts-turbo"] and cfg != 1.0:
+            warnings.warn("Turbo already has guidance 2.0 built in; extra guidance over-sharpens it",
+                          stacklevel=2)
+        model = TTSModel.load_model(config=config, **kwargs)
+        if cfg != 1.0:
+            model = GuidedTTSModel.wrap(model, cfg)
+        return cls(model, repo, cfg)
 
     def default_voice(self, lang: str) -> str:
         """The bundled voice prompt for `lang`: a few seconds of a JW recording in that
