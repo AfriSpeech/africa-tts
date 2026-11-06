@@ -146,7 +146,9 @@ def main() -> None:
         name = "Africa TTS Turbo" if k == "turbo" else "Africa TTS"
         if (name, LABELS[k][1]) not in repos:
             repos.append((name, LABELS[k][1]))
-    model_links = "".join(f"<a href='https://huggingface.co/{r}'>{html.escape(n)} →</a>" for n, r in repos)
+    model_links = ("<a href='https://huggingface.co/spaces/AfriSpeech/africa-tts-demo' "
+                   "style='background:var(--accent);color:var(--bg)'>🎙️ Try it live: type your own text →</a>"
+                   + "".join(f"<a href='https://huggingface.co/{r}'>{html.escape(n)} →</a>" for n, r in repos))
     modes = "".join(f"<li><b>{html.escape(LABELS[k][0])}</b>: {html.escape(MODES[k])}</li>"
                     for k in meta["labels"] if k in MODES)
     modes_html = (f"<ul class='modes'>{modes}</ul><p class='note'>Different trade-offs, not a "
