@@ -122,6 +122,8 @@ tags:
 
 {what}
 
+🎙️ **Try it live:** [type text, hear it spoken](https://huggingface.co/spaces/AfriSpeech/africa-tts-demo) (Turbo, 93 trained + 657 experimental languages, own-voice cloning).
+
 🔊 **Listen:** [samples in every language]({SPACE}) — Articles 1, 3 and 5 of the Universal
 Declaration of Human Rights, read in {len(udhr)} languages.
 
