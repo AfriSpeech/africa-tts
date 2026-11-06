@@ -13,15 +13,15 @@ from pathlib import Path
 import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import yaml  # noqa: E402
-from pocket_tts import TTSModel  # noqa: E402
-from pocket_tts.data.audio import audio_read  # noqa: E402
-from pocket_tts.data.audio_utils import convert_audio  # noqa: E402
-from pocket_tts.models import tts_model as tm  # noqa: E402
+import yaml
+from pocket_tts import TTSModel
+from pocket_tts.data.audio import audio_read
+from pocket_tts.data.audio_utils import convert_audio
+from pocket_tts.models import tts_model as tm
 
-from africa_tts.guidance import GuidedTTSModel  # noqa: E402
-from training.args import load_args  # noqa: E402
-from training.modules.builders import build_models  # noqa: E402
+from africa_tts.guidance import GuidedTTSModel
+from training.args import load_args
+from training.modules.builders import build_models
 
 
 def main() -> None:
