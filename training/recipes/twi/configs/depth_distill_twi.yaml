@@ -1,0 +1,63 @@
+# Depth distillation for Twi: the 24-layer Twi teacher (runs/twi_500h, from
+# finetune_twi.yaml) -> a 6-layer student, the fast CPU-sized Pocket TTS.
+#
+# Student and teacher are built from the same config as the teacher fine-tune
+# (english_2026-04_24l + data/tok/en_twi_4000.json, n_bins 5921); only num_layers
+# differs. The student's text table, flow head, EOS head and latent stats are copied from
+# the teacher, and its 6 backbone layers are seeded from the teacher's
+# bottom+top layers, so start_from_pretrained stays false.
+#
+# distill_cfg_coef 2.0 bakes CFG in: sample the result with cfg 1.
+model_config: pocket_tts/config/english_2026-04_24l.yaml
+model_overrides:
+  flow_lm.transformer.num_layers: 6
+  flow_lm.lookup_table.tokenizer_path: data/tok/en_twi_4000.json
+  flow_lm.lookup_table.n_bins: 5921
+start_from_pretrained: false
+
+distill_cfg_coef: 2.0
+distill_teacher_config: pocket_tts/config/english_2026-04_24l.yaml
+distill_teacher_overrides:
+  flow_lm.lookup_table.tokenizer_path: data/tok/en_twi_4000.json
+  flow_lm.lookup_table.n_bins: 5921
+# Final checkpoint of finetune_twi.yaml (max_steps 200000). EMA weights are used.
+distill_teacher_weights: runs/twi_500h/checkpoint_00200000.pt
+
+data:
+  train_jsonl: data/train_aligned.jsonl
+  valid_jsonl: data/valid_aligned.jsonl
+  max_duration_sec: 30.0
+  max_voice_prompt_sec: 5.0
+  precompute: true   # reuses the teacher run's latents (same Mimi weights)
+  loader_procs: 6
+
+flow:
+  type: lsd
+  kwargs: {}
+
+# The teacher's targets are always fully conditioned; no CFG dropout here.
+text_dropout: 0.0
+voice_dropout: 0.0
+
+optim:
+  lr: 4e-4
+  schedule: cosine
+  warmup_steps: 1000
+
+run_dir: runs/twi_500h_distill_6l
+batch_size: 64
+grad_accum_steps: 1
+# Upstream: WER at parity by ~50k, similarity/UTMOS climb until ~150k.
+# ~10 steps/s on one H100-class GPU -> ~5.5 h for 200k.
+max_steps: 200000
+ema_decay: 0.9999
+log_freq: 50
+valid_freq: 2500
+ckpt_freq: 5000
+num_ckpt_keep: 8
+sample_cfg_coef: 1.0   # guidance is baked in
+sample_freq: 10000
+sample_sentences:
+  - "ɛna watu ansa frɛ ɔmo a ɔmo ba honhom mu ɔmo ba ɛbɛgye wɔn so edidi ɛnom ma"
+  - "da a yɛde gya no kwan firi asaase so koraa ɛna me mateɛ enti nnɛ efie ne prɛko ama o"
+  - "mesrɛ wo sɛ loose kakra monyɛ loose monyɛ loose ɔno nso tum trigger"

@@ -1,0 +1,58 @@
+[project]
+name = "africa-tts"
+version = "0.1.0"
+description = "Pocket TTS for 92 African languages and English: inference, training recipe, mobile export"
+readme = "README.md"
+requires-python = ">=3.10,<3.15"
+license = { text = "MIT (code); models CC-BY-NC-4.0" }
+authors = [{ name = "AfriSpeech / Ghana NLP" }]
+dependencies = [
+    # The exact pocket-tts and africa-g2p revisions the models were trained and tested with.
+    "pocket-tts @ git+https://github.com/kyutai-labs/pocket-tts@91a9e96433bfe23375eea719b03f0081466f8e20",
+    "africa-g2p[english] @ git+https://github.com/AfriSpeech/africa-g2p@76b53a8fa2a688812e369837d179d4710c111a7a",
+    "numpy>=1.24",
+    "scipy>=1.5",
+]
+
+[project.optional-dependencies]
+# Training (training/) and the African data recipe (recipes/africa/).
+train = [
+    "pyyaml>=6.0",
+    "soundfile>=0.12",
+    "sphn>=0.1.4",
+    "torchaudio",
+    "tqdm>=4.60",
+    "sentencepiece>=0.2.1",
+    "pyarrow>=14",
+    "jiwer>=3.0",
+    "transformers>=4.40",
+    "ctc-forced-aligner @ git+https://github.com/MahmoudAshraf97/ctc-forced-aligner",
+    "uroman",
+    "huggingface_hub>=0.30",
+]
+# ONNX export for sherpa-onnx (export/).
+export = ["onnx>=1.17", "onnxruntime>=1.17", "sherpa-onnx>=1.12"]
+
+[project.scripts]
+africa-tts = "africa_tts.cli:main"
+
+[project.urls]
+Models = "https://huggingface.co/AfriSpeech/africa-tts"
+Samples = "https://huggingface.co/spaces/AfriSpeech/africa-tts-samples"
+Source = "https://github.com/AfriSpeech/africa-tts"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["africa_tts"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint.per-file-ignores]
+"recipes/**" = ["E402"]

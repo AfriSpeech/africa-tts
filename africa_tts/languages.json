@@ -1,0 +1,374 @@
+{
+ "ada": {
+  "name": "Dangme",
+  "hours": 0.54
+ },
+ "aha": {
+  "name": "Ahanta",
+  "hours": 3.97
+ },
+ "ajg": {
+  "name": "Aja",
+  "hours": 1.18
+ },
+ "amh": {
+  "name": "Amharic",
+  "hours": 18.77
+ },
+ "bas": {
+  "name": "Bassa (Cameroon)",
+  "hours": 9.48
+ },
+ "bci": {
+  "name": "Baoule",
+  "hours": 2.23
+ },
+ "bem": {
+  "name": "Cibemba",
+  "hours": 2.06
+ },
+ "bin": {
+  "name": "Edo",
+  "hours": 5.13
+ },
+ "bsq": {
+  "name": "Bassa (Liberia)",
+  "hours": 1.33
+ },
+ "bum": {
+  "name": "Boulou",
+  "hours": 3.0
+ },
+ "cce": {
+  "name": "Chopi",
+  "hours": 1.82
+ },
+ "cjk": {
+  "name": "Chokwe",
+  "hours": 0.34
+ },
+ "daf": {
+  "name": "Yacouba",
+  "hours": 0.33
+ },
+ "dga": {
+  "name": "Dagaare",
+  "hours": 4.84
+ },
+ "din": {
+  "name": "Dinka",
+  "hours": 1.34
+ },
+ "dua": {
+  "name": "Douala",
+  "hours": 3.23
+ },
+ "dyu": {
+  "name": "Jula",
+  "hours": 3.31
+ },
+ "eng": {
+  "name": "English",
+  "hours": 322.6
+ },
+ "ewe": {
+  "name": "Ewe",
+  "hours": 6.69
+ },
+ "ewo": {
+  "name": "Ewondo",
+  "hours": 0.9
+ },
+ "fat": {
+  "name": "Fante",
+  "hours": 4.78
+ },
+ "fon": {
+  "name": "Fon",
+  "hours": 7.0
+ },
+ "gaa": {
+  "name": "Ga",
+  "hours": 7.35
+ },
+ "gur": {
+  "name": "Frafra",
+  "hours": 4.99
+ },
+ "guw": {
+  "name": "Gun",
+  "hours": 9.1
+ },
+ "gxx": {
+  "name": "Guéré",
+  "hours": 0.49
+ },
+ "hau": {
+  "name": "Hausa",
+  "hours": 20.28
+ },
+ "her": {
+  "name": "Herero",
+  "hours": 0.34
+ },
+ "ibo": {
+  "name": "Igbo",
+  "hours": 19.83
+ },
+ "iso": {
+  "name": "Isoko",
+  "hours": 5.74
+ },
+ "kab": {
+  "name": "Kabyle",
+  "hours": 0.87
+ },
+ "kam": {
+  "name": "Kamba",
+  "hours": 6.02
+ },
+ "kbp": {
+  "name": "Kabiye",
+  "hours": 12.63
+ },
+ "kea": {
+  "name": "Kabuverdianu",
+  "hours": 14.18
+ },
+ "kik": {
+  "name": "Kikuyu",
+  "hours": 5.75
+ },
+ "kin": {
+  "name": "Kinyarwanda",
+  "hours": 20.09
+ },
+ "kmb": {
+  "name": "Kimbundu",
+  "hours": 1.34
+ },
+ "kri": {
+  "name": "Krio",
+  "hours": 4.79
+ },
+ "kss": {
+  "name": "Kisi",
+  "hours": 4.17
+ },
+ "leh": {
+  "name": "Lenje",
+  "hours": 4.84
+ },
+ "lin": {
+  "name": "Lingala",
+  "hours": 7.68
+ },
+ "lom": {
+  "name": "Loma",
+  "hours": 1.04
+ },
+ "lub": {
+  "name": "Kiluba",
+  "hours": 8.78
+ },
+ "lue": {
+  "name": "Luvale",
+  "hours": 0.04
+ },
+ "lug": {
+  "name": "Luganda",
+  "hours": 2.33
+ },
+ "lun": {
+  "name": "Lunda",
+  "hours": 0.15
+ },
+ "mer": {
+  "name": "Meru",
+  "hours": 0.66
+ },
+ "mfe": {
+  "name": "Mauritian Creole",
+  "hours": 8.86
+ },
+ "mgh": {
+  "name": "Makhuwa-Meetto",
+  "hours": 0.33
+ },
+ "mlg": {
+  "name": "Malagasy",
+  "hours": 12.23
+ },
+ "mos": {
+  "name": "Mooré",
+  "hours": 4.95
+ },
+ "naq": {
+  "name": "Damara",
+  "hours": 0.41
+ },
+ "nba": {
+  "name": "Ngangela",
+  "hours": 2.05
+ },
+ "ndo": {
+  "name": "Ndonga",
+  "hours": 1.1
+ },
+ "ngb": {
+  "name": "Ngbandi (Northern)",
+  "hours": 0.18
+ },
+ "ngl": {
+  "name": "Lomwe",
+  "hours": 0.35
+ },
+ "nnb": {
+  "name": "Kinande",
+  "hours": 1.95
+ },
+ "nse": {
+  "name": "Nsenga (Mozambique)",
+  "hours": 1.61
+ },
+ "nso": {
+  "name": "Sepedi",
+  "hours": 13.24
+ },
+ "nya": {
+  "name": "Cinyanja",
+  "hours": 16.12
+ },
+ "nzi": {
+  "name": "Nzema",
+  "hours": 4.36
+ },
+ "pov": {
+  "name": "Bissau Guinean Creole",
+  "hours": 4.08
+ },
+ "rng": {
+  "name": "Ronga",
+  "hours": 5.16
+ },
+ "run": {
+  "name": "Kirundi",
+  "hours": 16.14
+ },
+ "sag": {
+  "name": "Sango",
+  "hours": 3.36
+ },
+ "seh": {
+  "name": "Sena",
+  "hours": 5.09
+ },
+ "sfw": {
+  "name": "Sehwi",
+  "hours": 3.47
+ },
+ "shr": {
+  "name": "Mashi",
+  "hours": 2.49
+ },
+ "sna": {
+  "name": "Shona",
+  "hours": 26.3
+ },
+ "sop": {
+  "name": "Kisonge",
+  "hours": 0.09
+ },
+ "ssw": {
+  "name": "Swati",
+  "hours": 12.08
+ },
+ "swh": {
+  "name": "Swahili",
+  "hours": 27.04
+ },
+ "tir": {
+  "name": "Tigrinya",
+  "hours": 5.66
+ },
+ "tiv": {
+  "name": "Tiv",
+  "hours": 0.85
+ },
+ "tll": {
+  "name": "Otetela",
+  "hours": 7.01
+ },
+ "tog": {
+  "name": "Chitonga (Malawi)",
+  "hours": 0.76
+ },
+ "toh": {
+  "name": "Gitonga",
+  "hours": 0.68
+ },
+ "toi": {
+  "name": "Chitonga",
+  "hours": 1.7
+ },
+ "tsc": {
+  "name": "Tshwa",
+  "hours": 2.83
+ },
+ "tso": {
+  "name": "Changana (Mozambique)",
+  "hours": 23.56
+ },
+ "tui": {
+  "name": "Toupouri",
+  "hours": 1.58
+ },
+ "tum": {
+  "name": "Chitumbuka",
+  "hours": 6.05
+ },
+ "twi": {
+  "name": "Twi",
+  "hours": 24.01
+ },
+ "umb": {
+  "name": "Umbundu",
+  "hours": 0.95
+ },
+ "urh": {
+  "name": "Urhobo",
+  "hours": 5.12
+ },
+ "ven": {
+  "name": "Venda",
+  "hours": 10.62
+ },
+ "vmw": {
+  "name": "Macua",
+  "hours": 5.71
+ },
+ "wol": {
+  "name": "Wolof",
+  "hours": 0.56
+ },
+ "xho": {
+  "name": "Xhosa",
+  "hours": 19.49
+ },
+ "xpe": {
+  "name": "Kpelle",
+  "hours": 1.18
+ },
+ "yao": {
+  "name": "Chiyao",
+  "hours": 1.0
+ },
+ "yor": {
+  "name": "Yoruba",
+  "hours": 15.34
+ },
+ "zul": {
+  "name": "Zulu",
+  "hours": 21.14
+ }
+}

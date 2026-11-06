@@ -1,0 +1,53 @@
+# Fine-tune the English 24-layer teacher on ~350h pure Twi (single VC voice, clear-high-slow).
+# Tokenizer = the released English one + 1,921 Twi pieces learned from pristine-twi
+# (data/tok/en_twi_4000.json, training/scripts/merge_tokenizers.py, English-protected:
+# English text tokenizes exactly as before). The English text embedding is kept; each new
+# row starts as the mean of the English rows it replaces (text_embedding_init_file).
+# lr stays at the new-language rate (2e-4): the subwords must learn Twi sounds.
+model_config: pocket_tts/config/english_2026-04_24l.yaml
+model_overrides:
+  flow_lm.lookup_table.tokenizer_path: data/tok/en_twi_4000.json
+  flow_lm.lookup_table.n_bins: 5921
+start_from_pretrained: true
+reset_text_embedding: false
+text_embedding_init_file: data/tok/en_twi_4000.json.init.json
+
+data:
+  train_jsonl: data/train_aligned.jsonl
+  valid_jsonl: data/valid_aligned.jsonl
+  max_duration_sec: 30.0
+  max_voice_prompt_sec: 5.0
+  precompute: true
+  loader_procs: 6
+
+flow:
+  type: lsd
+  kwargs: {}
+
+flow_batch_multiplier: 4
+eos_loss_weight: 0.1
+text_dropout: 0.2
+voice_dropout: 0.2
+
+optim:
+  lr: 2e-4
+  schedule: constant
+  warmup_steps: 1000
+
+run_dir: runs/twi_500h
+batch_size: 64
+grad_accum_steps: 1
+max_steps: 200000  # upstream language recipe: WER plateaus ~15k, quality keeps improving
+stats_ema_steps: 1000
+ema_decay: 0.999
+log_freq: 50
+valid_freq: 2500
+ckpt_freq: 5000
+num_ckpt_keep: 20  # last 20 (~100k steps), plus the best below
+keep_best_metric: loss  # -> best_checkpoint.pt / best_model.safetensors
+sample_cfg_coef: 2.0
+sample_freq: 5000
+sample_sentences:
+  - "ɛna watu ansa frɛ ɔmo a ɔmo ba honhom mu ɔmo ba ɛbɛgye wɔn so edidi ɛnom ma"
+  - "da a yɛde gya no kwan firi asaase so koraa ɛna me mateɛ enti nnɛ efie ne prɛko ama o"
+  - "mesrɛ wo sɛ loose kakra monyɛ loose monyɛ loose ɔno nso tum trigger"

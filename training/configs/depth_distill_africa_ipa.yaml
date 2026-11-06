@@ -1,0 +1,61 @@
+# Depth distillation of the African IPA teacher (finetune_africa_ipa.yaml) -> 6-layer student,
+# the fast CPU-sized Pocket TTS. Student = teacher config with num_layers 6; its text table,
+# flow head, EOS head and latent stats are copied from the teacher and its 6 backbone layers
+# seeded from the teacher bottom+top layers (start_from_pretrained stays false).
+# Teacher: step 100k (EMA), chosen by ear over the best-valid-loss 93k.
+# distill_cfg_coef 2.0 bakes CFG in: sample the result with cfg 1.
+model_config: pocket_tts/config/english_2026-04_24l.yaml
+model_overrides:
+  flow_lm.transformer.num_layers: 6
+  flow_lm.lookup_table.tokenizer: tokenizers
+  flow_lm.lookup_table.tokenizer_path: recipes/africa/tokenizer/ipa_sp4000.json
+  flow_lm.lookup_table.n_bins: 4000
+start_from_pretrained: false
+
+distill_cfg_coef: 2.0
+distill_teacher_config: pocket_tts/config/english_2026-04_24l.yaml
+distill_teacher_overrides:
+  flow_lm.lookup_table.tokenizer: tokenizers
+  flow_lm.lookup_table.tokenizer_path: recipes/africa/tokenizer/ipa_sp4000.json
+  flow_lm.lookup_table.n_bins: 4000
+distill_teacher_weights: runs/africa_ipa_teacher/checkpoint_00100000.pt
+
+data:
+  train_jsonl: data/africa-tts/train_final.jsonl
+  valid_jsonl: data/africa-tts/valid_final.jsonl
+  max_duration_sec: 30.0
+  max_voice_prompt_sec: 5.0
+  precompute: true   # reuses the teacher run latents (same Mimi weights)
+  loader_procs: 6
+
+flow:
+  type: lsd
+  kwargs: {}
+
+# Teacher targets are always fully conditioned; no CFG dropout.
+text_dropout: 0.0
+voice_dropout: 0.0
+
+optim:
+  lr: 4e-4
+  schedule: cosine
+  warmup_steps: 1000
+
+run_dir: runs/africa_ipa_distill_6l
+batch_size: 64
+grad_accum_steps: 1
+max_steps: 60000           # cosine ceiling; early stopping can end it sooner
+ema_decay: 0.9999
+log_freq: 50
+valid_freq: 2500
+num_valid_batches: 50
+keep_best_metric: loss
+early_stop_patience: 8     # 20k steps without improvement
+ckpt_freq: 5000
+num_ckpt_keep: 20
+sample_cfg_coef: 1.0       # guidance is baked in
+sample_freq: 10000
+sample_sentences:          # IPA: Twi, Zulu, English
+  - "mesɾɛ wo sɛ, ɛnnɛ jɛbɛkɔ fie no akjiɾi."
+  - "sawubona, uɲd͡ʒani namɬaɲd͡ʒe?"
+  - "həloʊ ɡɑːnə, haʊ ɑːɹ juː tədeɪ?"
