@@ -85,8 +85,8 @@ def main() -> None:
     guidance_note = (
         "- **Guidance:** classifier-free guidance 2.0 was distilled into Turbo, so it runs in a "
         "single pass with no guidance setting.\n" if turbo else
-        "- **Two modes:** *guided* (classifier-free guidance 2.0, the `africa-tts` package's "
-        "default: two backbone passes per frame, Python only) and *unguided* (`cfg=1.0`: one pass "
+        "- **Two modes:** *guided* (classifier-free guidance 2.0, used when you load this model "
+        "with the `africa-tts` package: two backbone passes per frame, Python only) and *unguided* (`cfg=1.0`: one pass "
         "per frame, also on device via sherpa-onnx). A third option is "
         "[Africa TTS Turbo](https://huggingface.co/AfriSpeech/africa-tts-turbo): 6 layers with "
         "guidance distilled in. Which suits you best can depend on the language: listen to the "

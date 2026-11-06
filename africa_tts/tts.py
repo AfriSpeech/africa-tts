@@ -40,7 +40,7 @@ def experimental_languages() -> dict[str, dict]:
 class AfricaTTS:
     """Africa TTS with the africa-g2p front end and a default voice per language.
 
-        tts = AfricaTTS.load("africa-tts-turbo")          # 6 layers, guidance distilled in
+        tts = AfricaTTS.load()                            # Turbo (default): 6 layers, guidance distilled in
         tts = AfricaTTS.load("africa-tts")                # 24 layers, guidance 2.0 (2 passes/frame)
         tts = AfricaTTS.load("africa-tts", cfg=1.0)       # 24 layers, unguided (1 pass/frame)
         audio = tts.generate("Akwaaba! Yɛfrɛ me Kofi.", lang="twi")   # float32, 24 kHz

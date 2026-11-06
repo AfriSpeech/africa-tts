@@ -69,9 +69,12 @@ The list, tiers and how they were chosen: [docs/EXPERIMENTAL_LANGUAGES.md](docs/
 
 | Mode | How it works | Compute per audio frame | Runs in |
 |---|---|---|---|
-| **Africa TTS, guided** | 24-layer model with classifier-free guidance 2.0: every frame runs the backbone twice (with and without the text and voice) and pushes the output towards the conditioned one | 2 × 24 layers | Python (`AfricaTTS.load("africa-tts")`, the default) |
+| **Africa TTS, guided** | 24-layer model with classifier-free guidance 2.0: every frame runs the backbone twice (with and without the text and voice) and pushes the output towards the conditioned one | 2 × 24 layers | Python (`AfricaTTS.load("africa-tts")`) |
 | **Africa TTS, unguided** | the same 24-layer model, one pass per frame | 24 layers | Python (`AfricaTTS.load("africa-tts", cfg=1.0)`), sherpa-onnx (on device) |
-| **Africa TTS Turbo** | 6-layer model distilled from the guided 24-layer model, so guidance is built into its weights; one pass per frame | 6 layers | Python (`AfricaTTS.load("africa-tts-turbo")`), sherpa-onnx (on device) |
+| **Africa TTS Turbo** | 6-layer model distilled from the guided 24-layer model, so guidance is built into its weights; one pass per frame | 6 layers | Python (`AfricaTTS.load()`, **the package default**), sherpa-onnx (on device) |
+
+The package loads **Turbo** unless you name a model (`AfricaTTS.load()`, or `africa-tts` without
+`--model`); loading `africa-tts` uses guidance 2.0 unless you pass `cfg=1.0`.
 
 The modes trade compute for different things, not along one quality scale: which sounds best
 can differ by language and listener, and per-language evaluations are on the
