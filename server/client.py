@@ -11,6 +11,7 @@ import json
 import statistics
 import time
 import wave
+from pathlib import Path
 
 import httpx
 import websockets
@@ -29,7 +30,7 @@ async def tts(url: str, text: str, lang: str, out: str) -> None:
         t0 = time.monotonic()
         r = await c.post(f"{url}/v1/tts", json={"text": text, "lang": lang})
         r.raise_for_status()
-        open(out, "wb").write(r.content)
+        Path(out).write_bytes(r.content)
         print(f"{out}: {r.headers.get('x-audio-seconds')} s audio, "
               f"{time.monotonic() - t0:.2f} s round trip, {r.headers.get('x-compute-seconds')} s compute")
 

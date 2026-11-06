@@ -22,6 +22,7 @@ Configuration (environment)
 """
 
 import base64
+import contextlib
 import json
 import os
 import threading
@@ -185,11 +186,9 @@ async def tts_stream(ws: WebSocket):
         cancelled.set()  # stop generating for a client that left
     except Exception as e:  # noqa: BLE001 - report and close
         cancelled.set()
-        try:
+        with contextlib.suppress(Exception):  # the client may already be gone
             await ws.send_json({"event": "error", "message": str(e)})
             await ws.close()
-        except Exception:  # noqa: BLE001
-            pass
     finally:
         STATE["inflight"] -= 1
 
