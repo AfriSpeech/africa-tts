@@ -26,6 +26,18 @@ AFRICA_TTS_MODEL=AfriSpeech/africa-tts-turbo uvicorn server.app:app --host 0.0.0
 The bundle (`sherpa-onnx/` of the model repo) is downloaded on first start; set
 `AFRICA_TTS_BUNDLE=/path/to/bundle` to use a local copy.
 
+### On Modal (serverless, scales to zero)
+
+```bash
+modal secret create africa-tts-api-key AFRICA_TTS_API_KEY=$(openssl rand -hex 24)
+modal deploy server/modal_app.py
+```
+
+[`modal_app.py`](modal_app.py) builds the same image (bundle baked in, so a cold start takes
+~12 s), runs 2 workers x 2 threads per container, scales to zero 5 minutes after the last request
+and to at most 2 containers under load. It deploys in **public mode** (below), which is what powers
+the [live demo Space](https://huggingface.co/spaces/AfriSpeech/africa-tts-demo).
+
 ## API
 
 | Endpoint | Request | Response |
@@ -58,6 +70,29 @@ numbers.
 | `AFRICA_TTS_MAX_QUEUE` | 32 | requests allowed to wait for a free worker before `503` |
 | `AFRICA_TTS_MAX_CHARS` | 2000 | maximum text length |
 | `AFRICA_TTS_API_KEY` | | if set, required as `Authorization: Bearer <key>` (HTTP and WebSocket) |
+| `AFRICA_TTS_PUBLIC` | | `1`: anonymous callers allowed under the limits below; key holders unlimited |
+| `AFRICA_TTS_RATE_PER_MIN` | 6 | public mode: requests per minute per client IP |
+| `AFRICA_TTS_CHARS_PER_HOUR` | 3000 | public mode: characters per hour per client IP |
+| `AFRICA_TTS_CHARS_PER_DAY` | 200000 | public mode: characters per day, all anonymous callers together |
+| `AFRICA_TTS_PROXY_HOPS` | 0 | trusted proxies in front (client IP from `X-Forwarded-For`); 0 on Modal, which passes the real IP |
+| `AFRICA_TTS_CORS_ORIGINS` | | browser origins allowed to call the API (comma-separated, `*` for any) |
+
+## Public mode and abuse protection
+
+A web page cannot keep a secret: any key it sends is visible in the browser. So a page such as the
+demo Space calls the API **without a key**, and the server protects itself instead:
+
+- **Per client IP:** a few requests per minute and a character budget per hour (HTTP 429 with
+  `Retry-After` when exceeded; WebSocket closes with an error event).
+- **Daily budget:** total characters per day for all anonymous callers.
+- **Request size:** `AFRICA_TTS_MAX_CHARS` (500 on Modal).
+- **Hard cost cap:** the container limit (`max_containers`) bounds the worst case, whatever
+  happens. The counters live in each container, so the effective limits scale with it.
+- **CORS:** only the listed origins can call from a browser. This stops other sites embedding
+  the API, but not scripts, which the limits above cover.
+
+Your own apps use the **API key** (`Authorization: Bearer <key>`), which skips the limits; keep it
+server-side.
 
 ## Scaling
 
@@ -74,9 +109,10 @@ other jobs), 4 workers x 2 threads:
 | 1 | 0.59 | 8.8 s |
 | 4 | 1.73 | 9.1 s |
 
-Parallel workers scale (sherpa-onnx releases the Python GIL). Turbo does about 4x less compute
-per frame, so expect roughly 4x these numbers on the same machine; a dedicated CPU will do
-better than this shared one. Measure on your hardware with `client.py bench`.
+Parallel workers scale (sherpa-onnx releases the Python GIL). **Turbo** on Modal (2 threads per
+worker): about 1.7-1.9 seconds of audio per second of compute per worker (e.g. 3.7 s of Twi in
+2.0 s, 11.4 s of Yoruba in 6.6 s), so a 2-worker container serves ~3.5 s of audio per second.
+Measure on your hardware with `client.py bench`.
 
 ## Notes
 

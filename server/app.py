@@ -19,6 +19,9 @@ Configuration (environment)
     AFRICA_TTS_MAX_CHARS max text length, default 2000
     AFRICA_TTS_MAX_QUEUE requests allowed to wait for a worker before 503, default 32
     AFRICA_TTS_API_KEY   if set, required as "Authorization: Bearer <key>"
+    AFRICA_TTS_CORS_ORIGINS  comma-separated origins allowed to call from a browser ("*" for any)
+    AFRICA_TTS_PUBLIC    1 = anonymous clients allowed under rate limits (server/limits.py);
+                         requests with the API key are not limited
 """
 
 import base64
@@ -30,11 +33,13 @@ import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, Header, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Header, HTTPException, Request, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, Field
 
 from server.engine import Engine, EngineConfig, RequestError, to_pcm16, to_wav
+from server.limits import LimitExceeded, Limiter, client_ip
 
 STATE: dict = {}
 
@@ -57,16 +62,36 @@ async def lifespan(app: FastAPI):
     STATE["model"] = os.environ.get("AFRICA_TTS_MODEL", str(cfg.bundle))
     STATE["max_queue"] = int(os.environ.get("AFRICA_TTS_MAX_QUEUE", "32"))
     STATE["inflight"] = 0
+    STATE["limiter"] = Limiter()
     yield
 
 
 app = FastAPI(title="Africa TTS", version="0.1.0", lifespan=lifespan)
+if os.environ.get("AFRICA_TTS_CORS_ORIGINS"):  # browser pages on other origins (e.g. a demo Space)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[o.strip() for o in os.environ["AFRICA_TTS_CORS_ORIGINS"].split(",")],
+        allow_methods=["GET", "POST"],
+        allow_headers=["Authorization", "Content-Type"],
+        expose_headers=["X-Audio-Seconds", "X-Compute-Seconds", "Retry-After"],
+    )
 
 
-def _auth(authorization: str | None) -> None:
+def _auth(authorization: str | None) -> bool:
+    """Check access; True if the caller is anonymous and must be rate limited."""
     key = os.environ.get("AFRICA_TTS_API_KEY")
-    if key and authorization != f"Bearer {key}":
+    if key and authorization == f"Bearer {key}":
+        return False
+    if os.environ.get("AFRICA_TTS_PUBLIC") == "1":
+        return True
+    if key:
         raise HTTPException(401, "invalid or missing API key")
+    return False
+
+
+def _limit(limited: bool, headers, peer: str | None, text: str) -> None:
+    if limited:
+        STATE["limiter"].check(client_ip(headers, peer), len(" ".join(text.split())))
 
 
 class _Slot:
@@ -106,7 +131,8 @@ def _voice(eng: Engine, lang: str, b64: str | None):
         raise RequestError(f"voice_wav_base64: {e}") from e
 
 
-async def _synthesize(text: str, lang: str, voice_b64: str | None, fmt: str) -> Response:
+async def _synthesize(text: str, lang: str, voice_b64: str | None, fmt: str,
+                      limited: bool, request: Request) -> Response:
     eng: Engine = STATE["engine"]
     with _Slot():
         try:
@@ -114,6 +140,7 @@ async def _synthesize(text: str, lang: str, voice_b64: str | None, fmt: str) -> 
             voice = _voice(eng, lang, voice_b64)
         except RequestError as e:
             raise HTTPException(400, str(e)) from e
+        _limit(limited, request.headers, request.client.host if request.client else None, text)
         t0 = time.monotonic()
         audio = await eng.synthesize(ipa, voice)
     secs = len(audio) / eng.sample_rate
@@ -137,21 +164,23 @@ async def list_languages():
 
 
 @app.post("/v1/tts")
-async def tts(req: TTSRequest, authorization: str | None = Header(None)):
-    _auth(authorization)
-    return await _synthesize(req.text, req.lang, req.voice_wav_base64, req.format)
+async def tts(req: TTSRequest, request: Request, authorization: str | None = Header(None)):
+    limited = _auth(authorization)
+    return await _synthesize(req.text, req.lang, req.voice_wav_base64, req.format, limited, request)
 
 
 @app.post("/v1/audio/speech")
-async def openai_speech(req: SpeechRequest, authorization: str | None = Header(None)):
-    _auth(authorization)
-    return await _synthesize(req.input, req.voice, None, req.response_format)
+async def openai_speech(req: SpeechRequest, request: Request,
+                        authorization: str | None = Header(None)):
+    limited = _auth(authorization)
+    return await _synthesize(req.input, req.voice, None, req.response_format, limited, request)
 
 
 @app.websocket("/v1/tts/stream")
 async def tts_stream(ws: WebSocket):
-    key = os.environ.get("AFRICA_TTS_API_KEY")
-    if key and ws.headers.get("authorization") != f"Bearer {key}":
+    try:
+        limited = _auth(ws.headers.get("authorization"))
+    except HTTPException:
         await ws.close(code=4401)
         return
     await ws.accept()
@@ -161,6 +190,11 @@ async def tts_stream(ws: WebSocket):
         req = TTSRequest(**msg)
         ipa = eng.prepare(req.text, req.lang)
         voice = _voice(eng, req.lang, req.voice_wav_base64)
+        _limit(limited, ws.headers, ws.client.host if ws.client else None, req.text)
+    except LimitExceeded as e:
+        await ws.send_json({"event": "error", "message": str(e), "retry_after": e.retry_after})
+        await ws.close(code=1008)
+        return
     except (RequestError, ValueError, TypeError) as e:
         await ws.send_json({"event": "error", "message": str(e)})
         await ws.close()
@@ -191,6 +225,12 @@ async def tts_stream(ws: WebSocket):
             await ws.close()
     finally:
         STATE["inflight"] -= 1
+
+
+@app.exception_handler(LimitExceeded)
+async def _limit_exceeded(_, exc: LimitExceeded):
+    return JSONResponse({"detail": str(exc)}, status_code=429,
+                        headers={"Retry-After": str(exc.retry_after)})
 
 
 @app.exception_handler(RequestError)

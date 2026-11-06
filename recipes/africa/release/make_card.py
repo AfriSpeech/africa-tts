@@ -64,7 +64,9 @@ def main() -> None:
         arch = ("6-layer FlowLM (d_model 1024), distilled from the 24-layer teacher (`checkpoint 100k`). "
                 "Text table, flow head, EOS head and latent statistics copied from the teacher; the 6 layers "
                 "were seeded from teacher layers 0, 1, 2, 21, 22, 23 and trained to match the teacher's "
-                "guided (cfg 2.0) outputs (Kyutai's `depth_distill` recipe, lr 4e-4 cosine, batch 64). "
+                "guided (cfg 2.0) outputs (Kyutai's `depth_distill` recipe, lr 4e-4 cosine, batch 64, 200k steps; "
+                "held-out distillation MSE 0.0110; the released weights are the step-200k "
+                "checkpoint, chosen by listening against 150k and 175k). "
                 "Guidance is baked in: generate with cfg 1 (the default).")
     else:
         what = (f"**Africa TTS** is a [Pocket TTS](https://github.com/kyutai-labs/pocket-tts) text-to-speech "

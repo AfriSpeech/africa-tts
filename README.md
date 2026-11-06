@@ -5,6 +5,7 @@ Text-to-speech for **92 African languages and English**, with voice cloning, bui
 as IPA produced by [africa-g2p](https://github.com/AfriSpeech/africa-g2p), and every language
 ships with a default voice, so you only need text and a language code.
 
+🎙️ [**Try it live**](https://huggingface.co/spaces/AfriSpeech/africa-tts-demo) ·
 🔊 [Samples in 53 languages](https://huggingface.co/spaces/AfriSpeech/africa-tts-samples) ·
 🤗 [Africa TTS](https://huggingface.co/AfriSpeech/africa-tts) (24 layers) ·
 🤗 [Africa TTS Turbo](https://huggingface.co/AfriSpeech/africa-tts-turbo) (6 layers, distilled, fast on CPU)
@@ -130,11 +131,11 @@ were removed; word timings come from ctc-forced-aligner for every language. Deta
 | Component | State |
 |---|---|
 | Africa TTS (24 layers) | released, v0.1 (step 100k) |
-| Africa TTS Turbo (6 layers) | distillation in progress (run to convergence, early stopping) |
+| Africa TTS Turbo (6 layers) | released, v0.1 (200k distillation steps, chosen by listening against 150k and 175k) |
 | Python package and CLI | released |
 | Guided inference for the teacher (`africa_tts`, cfg 2.0) | released, parity-tested against the training sampler |
-| sherpa-onnx export and bundles | released, tested end to end in sherpa-onnx 2.0.1 (Africa TTS unguided; Turbo when released) |
-| API server (`server/`, Docker) | released: HTTP, WebSocket, OpenAI-compatible; tested with the 24-layer bundle |
+| sherpa-onnx export and bundles | released, tested end to end in sherpa-onnx 2.0.1 (Africa TTS unguided and Turbo) |
+| API server (`server/`, Docker, Modal) | released: HTTP, WebSocket, OpenAI-compatible; public mode with rate limits; live on Modal behind the [demo Space](https://huggingface.co/spaces/AfriSpeech/africa-tts-demo) |
 | C front end (africa-g2p + espeak-ng) | released, parity-tested on Linux, JNI tested on a desktop JVM |
 | Android | Kotlin wrapper written; NDK build and on-device test still to do |
 | iOS | not started |
