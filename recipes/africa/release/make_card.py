@@ -150,6 +150,8 @@ tts.save(audio, "out.wav")
   [voices/](https://huggingface.co/AfriSpeech/africa-tts/tree/main/voices).
 - **Numbers:** spell them out. Every training clip with a numeral was removed.
 {device_note}
+- **API server:** a Docker HTTP/WebSocket server (OpenAI-compatible endpoint included) on
+  sherpa-onnx, CPU only: see [server/](https://github.com/AfriSpeech/africa-tts/tree/main/server).
 {guidance_note}
 ### Without the package
 
