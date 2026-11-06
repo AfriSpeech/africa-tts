@@ -1,0 +1,25 @@
+name: New language or more data
+description: Propose a language, or speech data to add or grow one
+labels: [new-language]
+body:
+  - type: input
+    id: lang
+    attributes: {label: Language and ISO 639-3 code}
+    validations: {required: true}
+  - type: dropdown
+    id: g2p
+    attributes:
+      label: Does africa-g2p have an IPA table for it?
+      options: ["yes", "no", "yes, but it needs fixes", not sure]
+  - type: textarea
+    id: data
+    attributes:
+      label: Speech data
+      description: Source, hours, number of speakers, recording quality, transcript orthography.
+    validations: {required: true}
+  - type: textarea
+    id: license
+    attributes:
+      label: License / terms of use
+      description: Must allow training and releasing a model.
+    validations: {required: true}

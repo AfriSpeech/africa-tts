@@ -1,0 +1,26 @@
+name: Pronunciation problem
+description: A word or sentence sounds wrong in some language
+labels: [pronunciation]
+body:
+  - type: input
+    id: lang
+    attributes: {label: Language code (ISO 639-3), placeholder: "twi"}
+    validations: {required: true}
+  - type: dropdown
+    id: model
+    attributes:
+      label: Model
+      options: [Africa TTS Turbo, Africa TTS, both, not sure]
+  - type: textarea
+    id: text
+    attributes: {label: Text you synthesised}
+    validations: {required: true}
+  - type: textarea
+    id: ipa
+    attributes:
+      label: IPA the model read
+      description: Output of `africa-tts --ipa-only "<text>" --lang <code>`. If this is already wrong, the fix belongs in africa-g2p.
+  - type: textarea
+    id: heard
+    attributes: {label: What you heard, and what it should sound like}
+    validations: {required: true}

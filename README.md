@@ -13,6 +13,11 @@ This repository has everything: the inference package, the full training recipe 
 alignment, IPA, tokenizer, teacher, distillation, release), ONNX export, and on-device
 deployment with sherpa-onnx.
 
+> **An ongoing project.** This is the first release, not a finished product: many languages
+> are thin, some are missing, and native-speaker feedback is what improves them most. See the
+> [roadmap](#roadmap) and [CONTRIBUTING.md](CONTRIBUTING.md): listening reports, G2P fixes,
+> data, evaluation and mobile work are all welcome.
+
 ## Quick start
 
 ```bash
@@ -86,6 +91,32 @@ were removed; word timings come from ctc-forced-aligner for every language. Deta
   syllables (e.g. ኳ) are missing from the Amharic table.
 - Loanwords follow the host language's spelling rules.
 - Voice cloning can imitate real people: do not use it to impersonate anyone or without consent.
+
+## Status
+
+| Component | State |
+|---|---|
+| Africa TTS (24 layers) | released, v0.1 (step 100k) |
+| Africa TTS Turbo (6 layers) | distillation in progress (run to convergence, early stopping) |
+| Python package and CLI | released |
+| sherpa-onnx export and bundles | released, tested end to end in sherpa-onnx 2.0.1 |
+| C front end (africa-g2p + espeak-ng) | released, parity-tested on Linux, JNI tested on a desktop JVM |
+| Android | Kotlin wrapper written; NDK build and on-device test still to do |
+| iOS | not started |
+
+## Roadmap
+
+Help is welcome on any of these; see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+- **Evaluation:** per-language intelligibility (ASR CER), speaker similarity and native-speaker
+  listening tests, published per language so weak languages are visible.
+- **Numbers:** spell out numerals per language before G2P (the models never saw digits).
+- **Tone:** tone-marked G2P tables where they are missing (Fon, Ewe, Igbo, Ga, ...), then retrain.
+- **More data, more languages:** grow the languages under 2 hours, add missing ones (e.g.
+  Dagbani validation data), and add non-religious and conversational speech.
+- **Mobile:** an Android example app and NDK build of the front end with espeak-ng 1.51; iOS.
+- **Packaging:** africa-g2p and africa-tts releases on PyPI, so no git pins are needed.
+- **Next training run:** fold in G2P fixes, new data and evaluation results, then distill again.
 
 ## License
 

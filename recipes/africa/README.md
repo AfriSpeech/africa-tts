@@ -80,7 +80,17 @@ python -m training.train training/configs/depth_distill_africa_ipa.yaml
 
 Kyutai's `depth_distill`: student layers seeded from teacher layers 0, 1, 2, 21, 22, 23; text
 table, flow head and EOS head copied; trained to match the teacher's guided (cfg 2.0) output, so
-guidance is baked in. lr 4e-4 cosine, 60k steps max, keep-best + early stopping.
+guidance is baked in. lr 4e-4 cosine over a 200k-step ceiling (Kyutai's setting: intelligibility
+reaches the teacher's by ~50k steps, speaker similarity and naturalness keep improving to
+~150k), validation every 2.5k steps, keep-best, and early stopping after 8 validations (20k steps)
+without improvement, so the run ends at convergence rather than at a fixed step.
+
+The released run started with a 60k ceiling and was extended to 200k at step 30k, while
+validation loss was still falling (0.0265 at 2.5k, 0.0157 at 20k, 0.0147 at 27.5k). Extending is
+lossless: the learning rate is a function of the step and `max_steps`
+(`training/train_utils.py:lr_at`), and checkpoints carry the optimizer state, so raising
+`max_steps` and relaunching resumes from the latest checkpoint (the learning rate moves up to the
+new schedule's value, 2.0e-4 -> 3.8e-4, below the 4e-4 peak).
 
 ## 6. Release
 

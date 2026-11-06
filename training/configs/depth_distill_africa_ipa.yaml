@@ -44,7 +44,7 @@ optim:
 run_dir: runs/africa_ipa_distill_6l
 batch_size: 64
 grad_accum_steps: 1
-max_steps: 60000           # cosine ceiling; early stopping can end it sooner
+max_steps: 200000         # Kyutai depth_distill ceiling; early stopping (patience 8 x 2.5k) ends it at convergence
 ema_decay: 0.9999
 log_freq: 50
 valid_freq: 2500

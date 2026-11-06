@@ -81,6 +81,11 @@ def main() -> None:
                 "(best validation loss at 93k). The released weights are the **100k** checkpoint (EMA), "
                 "chosen by listening.")
 
+    short = "africa-tts-turbo" if turbo else "africa-tts"
+    guidance_note = ("" if turbo else
+        "- **Guidance:** pocket-tts and sherpa-onnx do not apply classifier-free guidance, so this model "
+        "runs unguided; [Africa TTS Turbo](https://huggingface.co/AfriSpeech/africa-tts-turbo) has "
+        "guidance 2.0 distilled into it.\n")
     card = f"""---
 license: cc-by-nc-4.0
 language:
@@ -105,18 +110,40 @@ Declaration of Human Rights, read in {len(udhr)} languages.
 
 ## Quick start
 
+Code, training recipe and mobile deployment: **[github.com/AfriSpeech/africa-tts](https://github.com/AfriSpeech/africa-tts)**.
+
 ```bash
-pip install "pocket-tts>=4.0.1" \\
-  "africa-g2p[english] @ git+https://github.com/AfriSpeech/africa-g2p@76b53a8"
+pip install "africa-tts @ git+https://github.com/AfriSpeech/africa-tts"
+# English also needs espeak-ng: apt install espeak-ng / brew install espeak-ng
+africa-tts "Akwaaba! Yɛfrɛ me Kofi." --lang twi --model {short} -o out.wav
 ```
 
-The model reads **IPA**, not spelling. Convert text with africa-g2p exactly as in training.
-Use the pinned africa-g2p commit above: the 0.3.2 release on PyPI predates fixes to the Ghanaian
-tables and gives different IPA for Twi, Fante, Ewe, Igbo and Rundi. English needs
-[espeak-ng](https://github.com/espeak-ng/espeak-ng) installed (`apt install espeak-ng`,
-`brew install espeak-ng`).
+```python
+from africa_tts import AfricaTTS
+
+tts = AfricaTTS.load("{short}")
+audio = tts.generate("Akwaaba! Yɛfrɛ me Kofi.", lang="twi")              # default Twi voice
+audio = tts.generate("Hello Ghana!", lang="eng", voice="my_voice.wav")  # clone any 3-10 s clip
+tts.save(audio, "out.wav")
+```
+
+- **Default voices:** every language has one, a few seconds of a JW recording in that language
+  (English: Ghanaian English; Tigrinya: africa-female-speech-v2), in
+  [voices/](https://huggingface.co/AfriSpeech/africa-tts/tree/main/voices).
+- **Numbers:** spell them out. Every training clip with a numeral was removed.
+- **On device:** a ready [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) bundle is in
+  [sherpa-onnx/](https://huggingface.co/{repo}/tree/main/sherpa-onnx) (ONNX models, G2P
+  tables, default voices, English espeak-ng data); see the repo's
+  [mobile guide](https://github.com/AfriSpeech/africa-tts/tree/main/mobile).
+{guidance_note}
+### Without the package
+
+The model reads **IPA**, not spelling, so text must be converted exactly as in training. Use
+africa-g2p at commit `76b53a8`: the 0.3.2 release on PyPI predates fixes to the Ghanaian tables
+and gives different IPA for Twi, Fante, Ewe, Igbo and Rundi.
 
 ```python
+# pip install "pocket-tts>=4.0.1" "africa-g2p[english] @ git+https://github.com/AfriSpeech/africa-g2p@76b53a8"
 import re
 import scipy.io.wavfile
 from africa_g2p import g2p
@@ -135,25 +162,13 @@ def to_ipa(text: str, lang: str) -> str:
     return " ".join(words)
 
 model = TTSModel.load_model(config="hf://{repo}/config.yaml")
-voice = model.get_state_for_audio_prompt("speaker.wav")  # 3-10 s of the voice to clone
+voice = model.get_state_for_audio_prompt("hf://AfriSpeech/africa-tts/voices/twi.wav")
 audio = model.generate_audio(voice, to_ipa("Akwaaba! Yɛfrɛ me Kofi.", "twi"))
 scipy.io.wavfile.write("out.wav", model.sample_rate, audio.numpy())
 ```
 
-CLI (`--text` must already be IPA):
-
-```bash
-pocket-tts generate --config hf://{repo}/config.yaml --voice speaker.wav \\
-  --text "$(python -c 'from africa_g2p import g2p; print(g2p("Akwaaba! Yɛfrɛ me Kofi.", "twi", output="ipa"))')"
-```
-
-Tips:
-- **Spell out numbers.** Every training clip with a digit in its transcript was removed, so the
-  model has never read numerals.
-- The voice prompt sets voice, accent and recording conditions; a clean prompt in the target
-  language works best.
-- The config turns off Pocket TTS's first-letter capitalisation and character replacement, since
-  the input is IPA.
+The config turns off Pocket TTS's first-letter capitalisation and character replacement, since
+the input is IPA.
 
 ## Model
 
