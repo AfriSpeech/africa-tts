@@ -40,8 +40,11 @@ tts.save(audio, "out.wav")
 - **Languages:** ISO 639-3 codes, e.g. `twi fat gaa ewe hau yor ibo swh zul xho amh kin sna lin
   fon eng`; the full list with training hours is in
   [africa_tts/languages.json](africa_tts/languages.json).
-- **Default voices:** one per language, a few seconds of a JW recording in that language
-  (English: Ghanaian English; Tigrinya: africa-female-speech-v2), at
+- **Default voices:** one per language, 3.5-6 s of real speech in that language: a female
+  voice from [africa-female-speech-v2-best60](https://huggingface.co/datasets/AfriSpeech/africa-female-speech-v2-best60)
+  (highest-rated clip) for the 17 languages it covers (Amharic, Chichewa, Hausa, Igbo,
+  Kinyarwanda, Rundi, Sepedi, Shona, Swahili, Swati, Tigrinya, Tsonga, Twi, Venda, Xhosa, Yoruba,
+  Zulu), a JW recording for the others (English: Ghanaian English), at
   [AfriSpeech/africa-tts/voices](https://huggingface.co/AfriSpeech/africa-tts/tree/main/voices).
   Pass `voice=` to clone any 3-10 s clip instead.
 - **Numbers:** spell them out. Training dropped every clip with a numeral, so the model has

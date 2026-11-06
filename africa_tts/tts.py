@@ -73,9 +73,10 @@ class AfricaTTS:
         return cls(model, repo, cfg)
 
     def default_voice(self, lang: str) -> str:
-        """The bundled voice prompt for `lang`: a few seconds of a JW recording in that
-        language (English: Ghanaian English; Tigrinya: africa-female-speech-v2). For an
-        experimental language, the voice of its closest trained language."""
+        """The bundled voice prompt for `lang`: 3.5-6 s of speech in that language (a female voice
+        from africa-female-speech-v2-best60 for the 17 languages it covers, a JW recording for the
+        others, Ghanaian English for English). For an experimental language, the voice of its
+        closest trained language. Alternatives: hf://AfriSpeech/africa-tts/voices/jw/<lang>.wav."""
         if lang in _EXPERIMENTAL:
             lang = _EXPERIMENTAL[lang]["nearest"]
         if lang not in _LANGS:

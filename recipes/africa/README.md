@@ -97,7 +97,8 @@ new schedule's value, 2.0e-4 -> 3.8e-4, below the 4e-4 peak).
 ```bash
 python recipes/africa/release/export_release.py training/configs/finetune_africa_ipa.yaml \
     runs/africa_ipa_teacher/checkpoint_00100000.pt release/africa-tts AfriSpeech/africa-tts
-python recipes/africa/release/select_voices.py train_final.jsonl release/voices     # default voices
+python recipes/africa/release/select_voices.py train_final.jsonl release/voices     # default voices (JW)
+python recipes/africa/release/select_female_voices.py release/voices                # female voices, 17 languages
 python export/onnx/export_onnx.py --model-dir release/africa-tts --out-dir onnx/africa-tts --quantize
 python mobile/make_bundle.py --onnx-dir onnx/africa-tts --g2p-dir g2p --voices-dir release/voices \
     --espeak-dir espeak-en --out bundle/africa-tts

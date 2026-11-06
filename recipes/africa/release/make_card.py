@@ -139,8 +139,11 @@ audio = tts.generate("Hello Ghana!", lang="eng", voice="my_voice.wav")  # clone 
 tts.save(audio, "out.wav")
 ```
 
-- **Default voices:** every language has one, a few seconds of a JW recording in that language
-  (English: Ghanaian English; Tigrinya: africa-female-speech-v2), in
+- **Default voices:** every language has one:, 3.5-6 s of real speech in that language: a female
+  voice from [africa-female-speech-v2-best60](https://huggingface.co/datasets/AfriSpeech/africa-female-speech-v2-best60)
+  (highest-rated clip) for the 17 languages it covers (Amharic, Chichewa, Hausa, Igbo,
+  Kinyarwanda, Rundi, Sepedi, Shona, Swahili, Swati, Tigrinya, Tsonga, Twi, Venda, Xhosa, Yoruba,
+  Zulu), a JW recording for the others (English: Ghanaian English), in
   [voices/](https://huggingface.co/AfriSpeech/africa-tts/tree/main/voices).
 - **Numbers:** spell them out. Every training clip with a numeral was removed.
 {device_note}

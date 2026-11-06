@@ -43,7 +43,7 @@ class AfricaTts(private val modelDir: String, numThreads: Int = 2) : AutoCloseab
 
     val sampleRate: Int get() = tts.sampleRate()
 
-    /** The bundled default voice for [lang] (a few seconds of a JW recording in that language). */
+    /** The bundled default voice for [lang] (3.5-6 s of speech in that language). */
     fun defaultVoice(lang: String): Pair<FloatArray, Int> = voices.getOrPut(lang) {
         val wave = WaveReader.readWave(filename = "$modelDir/voices/$lang.wav")
         wave.samples to wave.sampleRate
