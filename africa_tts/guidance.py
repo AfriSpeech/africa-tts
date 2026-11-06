@@ -1,8 +1,8 @@
 """Classifier-free guidance (CFG) for pocket-tts inference.
 
-pocket-tts generates without guidance. The Africa TTS teacher sounds best with it (cfg 2.0, the
-setting the release was listened to with, and the one Turbo was distilled from), so this adds it
-to pocket-tts's own generation pipeline, exactly as the training code samples:
+pocket-tts generates without guidance. The 24-layer Africa TTS release was listened to with
+cfg 2.0 (also the output Turbo was distilled from), so this adds guidance to pocket-tts's own
+generation pipeline, exactly as the training code samples:
 
     conditioned branch   [BOS-before-voice, voice, text, audio...]   (the usual voice state)
     null branch          [BOS-before-voice,               audio...]   (no voice, no text)

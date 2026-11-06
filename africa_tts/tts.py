@@ -12,11 +12,12 @@ from africa_tts.frontend import to_ipa
 from africa_tts.guidance import GuidedTTSModel
 
 MODELS = {
-    "africa-tts": "AfriSpeech/africa-tts",  # 24 layers, best quality (with guidance)
-    "africa-tts-turbo": "AfriSpeech/africa-tts-turbo",  # 6 layers, distilled, fast on CPU
+    "africa-tts": "AfriSpeech/africa-tts",  # 24 layers; guided (default) or unguided (cfg=1.0)
+    "africa-tts-turbo": "AfriSpeech/africa-tts-turbo",  # 6 layers, guidance distilled in
 }
-# Classifier-free guidance per model: the teacher sounds best with 2.0 (about 2x slower);
-# Turbo was distilled from the teacher's cfg-2.0 output, so it already has it built in.
+# Classifier-free guidance per model: 2.0 for the 24-layer model (two passes per frame, the
+# setting its release was listened to with); Turbo was distilled from that guided output, so it
+# runs with none.
 DEFAULT_CFG = {"AfriSpeech/africa-tts": 2.0, "AfriSpeech/africa-tts-turbo": 1.0}
 _HERE = Path(__file__).parent
 _LANGS = json.loads((_HERE / "languages.json").read_text(encoding="utf-8"))
@@ -39,9 +40,9 @@ def experimental_languages() -> dict[str, dict]:
 class AfricaTTS:
     """Africa TTS with the africa-g2p front end and a default voice per language.
 
-        tts = AfricaTTS.load("africa-tts-turbo")          # fast
-        tts = AfricaTTS.load("africa-tts")                # best quality: guidance 2.0, ~2x slower
-        tts = AfricaTTS.load("africa-tts", cfg=1.0)       # teacher without guidance
+        tts = AfricaTTS.load("africa-tts-turbo")          # 6 layers, guidance distilled in
+        tts = AfricaTTS.load("africa-tts")                # 24 layers, guidance 2.0 (2 passes/frame)
+        tts = AfricaTTS.load("africa-tts", cfg=1.0)       # 24 layers, unguided (1 pass/frame)
         audio = tts.generate("Akwaaba! Yɛfrɛ me Kofi.", lang="twi")   # float32, 24 kHz
         tts.save(audio, "out.wav")
     """

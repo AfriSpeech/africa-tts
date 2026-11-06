@@ -85,19 +85,22 @@ def main() -> None:
     guidance_note = (
         "- **Guidance:** classifier-free guidance 2.0 was distilled into Turbo, so it runs in a "
         "single pass with no guidance setting.\n" if turbo else
-        "- **Guidance:** this model sounds best with classifier-free guidance 2.0, which the "
-        "`africa-tts` package applies by default (two backbone passes per frame, so about 2x "
-        "slower; `cfg=1.0` turns it off). Plain pocket-tts has no guidance. For speed, use "
-        "[Africa TTS Turbo](https://huggingface.co/AfriSpeech/africa-tts-turbo), which has it "
-        "distilled in.\n")
-    plain_note = "" if turbo else ", but without guidance (lower quality than the package's default)"
+        "- **Two modes:** *guided* (classifier-free guidance 2.0, the `africa-tts` package's "
+        "default: two backbone passes per frame, Python only) and *unguided* (`cfg=1.0`: one pass "
+        "per frame, also on device via sherpa-onnx). A third option is "
+        "[Africa TTS Turbo](https://huggingface.co/AfriSpeech/africa-tts-turbo): 6 layers with "
+        "guidance distilled in. Which suits you best can depend on the language: listen to the "
+        "samples and try them.\n")
+    plain_note = "" if turbo else " and runs the model unguided (pocket-tts has no guidance)"
     device_note = (
         "- **On device:** a ready [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) bundle is in "
         f"[sherpa-onnx/](https://huggingface.co/{repo}/tree/main/sherpa-onnx) (ONNX models, G2P "
         "tables, default voices, English espeak-ng data); see the "
         "[mobile guide](https://github.com/AfriSpeech/africa-tts/tree/main/mobile)." if turbo else
-        "- **On device:** use [Africa TTS Turbo](https://huggingface.co/AfriSpeech/africa-tts-turbo), "
-        "which ships a sherpa-onnx bundle; this 24-layer model is for the Python package.")
+        "- **On device:** a [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) bundle of this model "
+        f"(unguided) is in [sherpa-onnx/](https://huggingface.co/{repo}/tree/main/sherpa-onnx) (ONNX "
+        "models, G2P tables, default voices, English espeak-ng data); see the "
+        "[mobile guide](https://github.com/AfriSpeech/africa-tts/tree/main/mobile).")
     card = f"""---
 license: cc-by-nc-4.0
 language:

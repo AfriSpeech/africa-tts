@@ -10,8 +10,16 @@ import subprocess
 import sys
 from pathlib import Path
 
-LABELS = {"teacher": ("Africa TTS", "AfriSpeech/africa-tts"),
-          "turbo": ("Africa TTS Turbo", "AfriSpeech/africa-tts-turbo")}
+LABELS = {"guided": ("Africa TTS · guided", "AfriSpeech/africa-tts"),
+          "unguided": ("Africa TTS · unguided", "AfriSpeech/africa-tts"),
+          "turbo": ("Africa TTS Turbo", "AfriSpeech/africa-tts-turbo"),
+          "teacher": ("Africa TTS", "AfriSpeech/africa-tts")}
+MODES = {
+    "guided": "24 layers with classifier-free guidance 2.0: two backbone passes per frame. Python.",
+    "unguided": "the same 24-layer model, one pass per frame. Python and on device (sherpa-onnx).",
+    "turbo": "6 layers distilled from the guided model, guidance built in, one pass per frame. "
+             "Python and on device.",
+}
 NICE = {"english_eng": "English", "swahili_swa": "Swahili", "twi_twi": "Twi", "yoruba_yor": "Yoruba",
         "xhosa_xho": "Xhosa"}
 ART_EN = {"1": "All human beings are born free and equal in dignity and rights. They are endowed "
@@ -31,6 +39,9 @@ header h1{font:600 34px/1.15 Georgia,"Times New Roman",serif;margin:0 0 10px;let
 header p{color:var(--muted);max-width:720px;margin:0 0 6px}
 header a{color:var(--accent)}
 .models{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 0}
+.modes{margin:14px 0 4px;padding-left:18px;color:var(--muted);max-width:760px;font-size:14px}
+.modes b{color:var(--fg)}
+header .note{font-size:13px;color:var(--muted);margin:0}
 .models a{font-size:13px;padding:5px 12px;border-radius:999px;background:var(--chip);color:var(--accent);text-decoration:none}
 .layout{display:grid;grid-template-columns:240px 1fr;gap:28px;margin-top:32px}
 aside{position:sticky;top:16px;align-self:start;max-height:calc(100vh - 32px);display:flex;flex-direction:column}
@@ -129,8 +140,16 @@ def main() -> None:
     trained = json.loads((Path(__file__).resolve().parents[3] / "africa_tts" / "languages.json")
                          .read_text(encoding="utf-8"))
     n_african = sum(1 for g in trained if g != "eng")
-    model_links = "".join(f"<a href='https://huggingface.co/{LABELS[k][1]}'>{html.escape(LABELS[k][0])} →</a>"
-                          for k in meta["labels"])
+    repos = []
+    for k in meta["labels"]:
+        name = "Africa TTS Turbo" if k == "turbo" else "Africa TTS"
+        if (name, LABELS[k][1]) not in repos:
+            repos.append((name, LABELS[k][1]))
+    model_links = "".join(f"<a href='https://huggingface.co/{r}'>{html.escape(n)} →</a>" for n, r in repos)
+    modes = "".join(f"<li><b>{html.escape(LABELS[k][0])}</b>: {html.escape(MODES[k])}</li>"
+                    for k in meta["labels"] if k in MODES)
+    modes_html = (f"<ul class='modes'>{modes}</ul><p class='note'>Different trade-offs, not a "
+                  "quality ranking: compare them on your language.</p>") if modes else ""
     data_json = json.dumps(data, ensure_ascii=False).replace("</", "<" + chr(92) + "/")
     page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -142,12 +161,12 @@ def main() -> None:
 Pocket TTS models in every training language with a complete UDHR translation. None of this text was in
 the training data. Each language is read in a voice cloned from a short clip of that language;
 the model reads IPA produced by <a href="https://github.com/AfriSpeech/africa-g2p">africa-g2p</a>.</p>
-<div class="models">{model_links}</div></header>
+{modes_html}<div class="models">{model_links}</div></header>
 <div class="layout"><aside><input id="q" type="search" placeholder="Search {len(langs)} languages" aria-label="Search languages">
 <ul id="list"></ul></aside><main id="main"></main></div>
 <footer>UDHR texts: <a href="https://github.com/eric-muller/udhr">Unicode UDHR collection</a>. Models: CC-BY-NC-4.0,
 built on <a href="https://github.com/kyutai-labs/pocket-tts">Kyutai Pocket TTS</a>. Generation: temperature 0.3,
-1 flow step; Africa TTS with guidance 2.0, Turbo with guidance baked in.</footer></div>
+1 flow step; made with the africa-tts package and each language's default voice.</footer></div>
 <script type="application/json" id="data">{data_json}</script>
 <script>{JS}</script></body></html>"""
     (space / "index.html").write_text(page, encoding="utf-8")

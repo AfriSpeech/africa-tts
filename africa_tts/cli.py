@@ -1,8 +1,8 @@
 """africa-tts command line.
 
   africa-tts "Akwaaba! Yɛfrɛ me Kofi." --lang twi -o out.wav
-  africa-tts "Hello Ghana" --lang eng --model africa-tts --voice me.wav -o hello.wav   # best quality
-  africa-tts "Hello Ghana" --lang eng --model africa-tts --cfg 1 -o fast.wav           # teacher, no guidance
+  africa-tts "Hello Ghana" --lang eng --model africa-tts --voice me.wav -o hello.wav   # 24 layers, guided
+  africa-tts "Hello Ghana" --lang eng --model africa-tts --cfg 1 -o unguided.wav       # 24 layers, unguided
   africa-tts --ipa-only "Akwaaba!" --lang twi        # print the IPA the model would read
   africa-tts --list-languages
 """

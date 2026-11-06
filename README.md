@@ -31,7 +31,7 @@ africa-tts --list-languages
 ```python
 from africa_tts import AfricaTTS
 
-tts = AfricaTTS.load("africa-tts-turbo")        # fast; or "africa-tts" for best quality
+tts = AfricaTTS.load("africa-tts-turbo")        # or "africa-tts" (see "Three ways to run it")
 audio = tts.generate("Akwaaba! Yɛfrɛ me Kofi.", lang="twi")              # default Twi voice
 audio = tts.generate("Hello Ghana!", lang="eng", voice="my_voice.wav")  # clone a voice
 tts.save(audio, "out.wav")
@@ -65,20 +65,24 @@ Native speakers: tell us how it sounds with an
 [experimental-language report](https://github.com/AfriSpeech/africa-tts/issues/new?template=experimental-language.yml).
 The list, tiers and how they were chosen: [docs/EXPERIMENTAL_LANGUAGES.md](docs/EXPERIMENTAL_LANGUAGES.md).
 
-## Which model?
+## Three ways to run it
 
-| | Africa TTS | Africa TTS Turbo |
-|---|---|---|
-| FlowLM layers | 24 (316M parameters) | 6 |
-| Quality | best: classifier-free guidance 2.0 (default in `africa_tts`) | guidance 2.0 distilled in |
-| Speed | slowest: two backbone passes per frame; GPU or a strong CPU | about 8x less compute than the guided teacher |
-| Runs in | Python (`africa_tts`) | Python, and on device with sherpa-onnx (Android, iOS, desktop) |
+| Mode | How it works | Compute per audio frame | Runs in |
+|---|---|---|---|
+| **Africa TTS, guided** | 24-layer model with classifier-free guidance 2.0: every frame runs the backbone twice (with and without the text and voice) and pushes the output towards the conditioned one | 2 × 24 layers | Python (`AfricaTTS.load("africa-tts")`, the default) |
+| **Africa TTS, unguided** | the same 24-layer model, one pass per frame | 24 layers | Python (`AfricaTTS.load("africa-tts", cfg=1.0)`), sherpa-onnx (on device) |
+| **Africa TTS Turbo** | 6-layer model distilled from the guided 24-layer model, so guidance is built into its weights; one pass per frame | 6 layers | Python (`AfricaTTS.load("africa-tts-turbo")`), sherpa-onnx (on device) |
 
-Pick Turbo for apps, phones and real-time use; pick Africa TTS when quality matters more than
-speed. `AfricaTTS.load("africa-tts", cfg=1.0)` runs the teacher without guidance (faster, a
-little less clear). Guidance is implemented in [africa_tts/guidance.py](africa_tts/guidance.py)
-on top of pocket-tts's own generation, and matches the training code's guided sampler to float
-precision ([tests/test_guidance_parity.py](tests/test_guidance_parity.py)).
+The modes trade compute for different things, not along one quality scale: which sounds best
+can differ by language and listener, and per-language evaluations are on the
+[roadmap](#roadmap). Listen on the [samples page](https://huggingface.co/spaces/AfriSpeech/africa-tts-samples)
+and try them on your own text.
+
+Guidance is implemented in [africa_tts/guidance.py](africa_tts/guidance.py) on top of
+pocket-tts's own generation, and matches the training code's guided sampler to float precision
+([tests/test_guidance_parity.py](tests/test_guidance_parity.py)). sherpa-onnx cannot run
+guidance (it needs the second pass), so on device the choice is the unguided 24-layer model or
+Turbo.
 
 ## Repository layout
 
@@ -88,7 +92,7 @@ precision ([tests/test_guidance_parity.py](tests/test_guidance_parity.py)).
 | [recipes/africa/](recipes/africa/) | how the models were made: data, alignment, IPA, tokenizer, release |
 | [training/](training/) | Pocket TTS training code (Kyutai's, with keep-best checkpoints, early stopping, `--romanize` alignment, tokenizer growth) and the Africa configs |
 | [export/onnx/](export/onnx/) | ONNX export for sherpa-onnx, with parity tests |
-| [mobile/](mobile/) | on-device deployment of Turbo: front end in C (africa-g2p + espeak-ng), Android/Kotlin wrapper, sherpa-onnx bundle |
+| [mobile/](mobile/) | on-device deployment (unguided Africa TTS and Turbo): front end in C (africa-g2p + espeak-ng), Android/Kotlin wrapper, sherpa-onnx bundles |
 
 ## How the text front end stays consistent
 
@@ -125,7 +129,7 @@ were removed; word timings come from ctc-forced-aligner for every language. Deta
 | Africa TTS Turbo (6 layers) | distillation in progress (run to convergence, early stopping) |
 | Python package and CLI | released |
 | Guided inference for the teacher (`africa_tts`, cfg 2.0) | released, parity-tested against the training sampler |
-| sherpa-onnx export | released, tested end to end in sherpa-onnx 2.0.1; the bundle ships with Turbo |
+| sherpa-onnx export and bundles | released, tested end to end in sherpa-onnx 2.0.1 (Africa TTS unguided; Turbo when released) |
 | C front end (africa-g2p + espeak-ng) | released, parity-tested on Linux, JNI tested on a desktop JVM |
 | Android | Kotlin wrapper written; NDK build and on-device test still to do |
 | iOS | not started |
