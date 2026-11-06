@@ -125,7 +125,10 @@ def main() -> None:
                                         for k, f in it["synth"].items()}})
     labels = [(k, LABELS[k][0]) for k in meta["labels"]]
     data = {"labels": labels, "en": ART_EN, "langs": list(langs.values())}
-    n_african = sum(1 for g in langs if g != "eng")
+    # The title counts every language the model supports, not just those with samples here.
+    trained = json.loads((Path(__file__).resolve().parents[3] / "africa_tts" / "languages.json")
+                         .read_text(encoding="utf-8"))
+    n_african = sum(1 for g in trained if g != "eng")
     model_links = "".join(f"<a href='https://huggingface.co/{LABELS[k][1]}'>{html.escape(LABELS[k][0])} →</a>"
                           for k in meta["labels"])
     data_json = json.dumps(data, ensure_ascii=False).replace("</", "<" + chr(92) + "/")
@@ -133,6 +136,8 @@ def main() -> None:
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Africa TTS samples</title><style>{CSS}</style></head><body><div class="wrap">
 <header><h1>Africa TTS: one model, {n_african} African languages</h1>
+<p><strong>{n_african} African languages and English</strong> in one model. Below: samples in the
+{len(langs)} of them that have a Universal Declaration of Human Rights translation.</p>
 <p>Articles 1, 3 and 5 of the Universal Declaration of Human Rights, synthesised by AfriSpeech's
 Pocket TTS models in every training language with a complete UDHR translation. None of this text was in
 the training data. Each language is read in a voice cloned from a short clip of that language;
