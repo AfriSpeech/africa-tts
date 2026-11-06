@@ -10,8 +10,8 @@ ships with a default voice, so you only need text and a language code.
 🤗 [Africa TTS Turbo](https://huggingface.co/AfriSpeech/africa-tts-turbo) (6 layers, distilled, fast on CPU)
 
 This repository has everything: the inference package, the full training recipe (data,
-alignment, IPA, tokenizer, teacher, distillation, release), ONNX export, and on-device
-deployment with sherpa-onnx.
+alignment, IPA, tokenizer, teacher, distillation, release), ONNX export, a production API server,
+and on-device deployment with sherpa-onnx.
 
 > **An ongoing project.** This is the first release, not a finished product: many languages
 > are thin, some are missing, and native-speaker feedback is what improves them most. See the
@@ -95,6 +95,7 @@ Turbo.
 | [recipes/africa/](recipes/africa/) | how the models were made: data, alignment, IPA, tokenizer, release |
 | [training/](training/) | Pocket TTS training code (Kyutai's, with keep-best checkpoints, early stopping, `--romanize` alignment, tokenizer growth) and the Africa configs |
 | [export/onnx/](export/onnx/) | ONNX export for sherpa-onnx, with parity tests |
+| [server/](server/) | production API: HTTP, WebSocket streaming and OpenAI-compatible endpoints on sherpa-onnx (CPU, Docker) |
 | [mobile/](mobile/) | on-device deployment (unguided Africa TTS and Turbo): front end in C (africa-g2p + espeak-ng), Android/Kotlin wrapper, sherpa-onnx bundles |
 
 ## How the text front end stays consistent
@@ -133,6 +134,7 @@ were removed; word timings come from ctc-forced-aligner for every language. Deta
 | Python package and CLI | released |
 | Guided inference for the teacher (`africa_tts`, cfg 2.0) | released, parity-tested against the training sampler |
 | sherpa-onnx export and bundles | released, tested end to end in sherpa-onnx 2.0.1 (Africa TTS unguided; Turbo when released) |
+| API server (`server/`, Docker) | released: HTTP, WebSocket, OpenAI-compatible; tested with the 24-layer bundle |
 | C front end (africa-g2p + espeak-ng) | released, parity-tested on Linux, JNI tested on a desktop JVM |
 | Android | Kotlin wrapper written; NDK build and on-device test still to do |
 | iOS | not started |

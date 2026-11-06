@@ -1,6 +1,5 @@
 """AfricaTTS: load a model, convert text to IPA, synthesise with a default or custom voice."""
 
-import json
 import warnings
 from functools import lru_cache
 from pathlib import Path
@@ -19,22 +18,9 @@ MODELS = {
 # setting its release was listened to with); Turbo was distilled from that guided output, so it
 # runs with none.
 DEFAULT_CFG = {"AfriSpeech/africa-tts": 2.0, "AfriSpeech/africa-tts-turbo": 1.0}
-_HERE = Path(__file__).parent
-_LANGS = json.loads((_HERE / "languages.json").read_text(encoding="utf-8"))
-_EXPERIMENTAL = json.loads((_HERE / "languages_experimental.json").read_text(encoding="utf-8"))
-
-
-def languages() -> dict[str, dict]:
-    """{code: {"name", "hours"}} for every language the models were trained on."""
-    return dict(_LANGS)
-
-
-def experimental_languages() -> dict[str, dict]:
-    """Languages the models were NOT trained on but that africa-g2p has an IPA table for:
-    {code: {"name", "country", "nearest" (closest trained language, whose voice is used by
-    default), "coverage" (share of its phonemes seen in training), "tier" (A/B/C), ...}}.
-    Quality is unknown: please report how they sound (see docs/EXPERIMENTAL_LANGUAGES.md)."""
-    return dict(_EXPERIMENTAL)
+from africa_tts.languages import EXPERIMENTAL as _EXPERIMENTAL
+from africa_tts.languages import LANGS as _LANGS
+from africa_tts.languages import experimental_languages, languages  # noqa: F401 (re-export)
 
 
 class AfricaTTS:
