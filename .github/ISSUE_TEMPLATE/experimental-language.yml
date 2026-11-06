@@ -1,0 +1,41 @@
+name: Experimental language report
+description: How does Africa TTS sound on a language it was not trained on?
+labels: [experimental-language]
+body:
+  - type: input
+    id: lang
+    attributes: {label: Language and code, placeholder: "Bambara (bam)"}
+    validations: {required: true}
+  - type: dropdown
+    id: speaker
+    attributes:
+      label: Are you a native or fluent speaker?
+      options: [native speaker, fluent, learner]
+    validations: {required: true}
+  - type: dropdown
+    id: model
+    attributes:
+      label: Model
+      options: [Africa TTS Turbo, Africa TTS, both]
+  - type: dropdown
+    id: voice
+    attributes:
+      label: Voice
+      options: [default (closest trained language), my own recording in the language]
+  - type: dropdown
+    id: rating
+    attributes:
+      label: Overall, is it understandable?
+      options: ["5 - natural, clearly this language", "4 - easy to understand, small errors", "3 - understandable with effort", "2 - some words only", "1 - not understandable"]
+    validations: {required: true}
+  - type: textarea
+    id: sentences
+    attributes:
+      label: Sentences you tried, and what was wrong
+      description: Wrong sounds, tones, words read like a neighbouring language, IPA errors (africa-tts --ipa-only).
+    validations: {required: true}
+  - type: textarea
+    id: data
+    attributes:
+      label: Do you know of recordings with transcripts for this language?
+      description: Source and license, if any. This helps us add it to the next training run.

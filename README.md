@@ -47,6 +47,21 @@ tts.save(audio, "out.wav")
 - **Numbers:** spell them out. Training dropped every clip with a numeral, so the model has
   never read digits.
 
+## 🧪 Experimental: 657 more languages, help us test
+
+The model reads IPA, so it can be tried on **any language africa-g2p has an IPA table for**:
+657 African languages it was never trained on, each paired with its closest trained language
+(Bambara with Jula, Dagbani with Dagaare, Tafi with Ewe, ...), whose voice it borrows.
+
+```bash
+africa-tts --list-experimental
+africa-tts "Your sentence." --lang bam -o test.wav
+```
+
+Native speakers: tell us how it sounds with an
+[experimental-language report](https://github.com/AfriSpeech/africa-tts/issues/new?template=experimental-language.yml).
+The list, tiers and how they were chosen: [docs/EXPERIMENTAL_LANGUAGES.md](docs/EXPERIMENTAL_LANGUAGES.md).
+
 ## Which model?
 
 | | Africa TTS | Africa TTS Turbo |
@@ -108,6 +123,8 @@ were removed; word timings come from ctc-forced-aligner for every language. Deta
 
 Help is welcome on any of these; see [CONTRIBUTING.md](CONTRIBUTING.md).
 
+- **Experimental languages:** collect native-speaker reports on the 657 untrained languages;
+  promote the ones that work, and prioritise data for the ones that nearly do.
 - **Evaluation:** per-language intelligibility (ASR CER), speaker similarity and native-speaker
   listening tests, published per language so weak languages are visible.
 - **Numbers:** spell out numerals per language before G2P (the models never saw digits).

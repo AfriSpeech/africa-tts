@@ -10,6 +10,7 @@ us a word sounds wrong to a new language with its own recordings.
 
 | You have... | Help with | Where |
 |---|---|---|
+| A language the model was not trained on | Try it (657 languages have an IPA table) and report how it sounds | [docs/EXPERIMENTAL_LANGUAGES.md](docs/EXPERIMENTAL_LANGUAGES.md) |
 | A good ear for a language | Listen to the [samples](https://huggingface.co/spaces/AfriSpeech/africa-tts-samples) and report what is wrong: tone, vowels, stress, rhythm, words read like another language | [issue: pronunciation](../../issues/new?template=pronunciation.yml) |
 | Knowledge of a writing system | Fix or extend the language's africa-g2p table (tone marks, missing letters, digraphs) | [AfriSpeech/africa-g2p](https://github.com/AfriSpeech/africa-g2p) |
 | Speech recordings with transcripts | Add or grow a language (see "Adding a language" below) | [issue: new language / data](../../issues/new?template=new-language.yml) |

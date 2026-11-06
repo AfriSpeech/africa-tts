@@ -22,10 +22,17 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--ipa", action="store_true", help="TEXT is already IPA")
     ap.add_argument("--ipa-only", action="store_true", help="print the IPA and exit")
     ap.add_argument("--list-languages", action="store_true")
+    ap.add_argument("--list-experimental", action="store_true",
+                    help="untrained languages with an africa-g2p IPA table (try them and report!)")
     a = ap.parse_args(argv)
 
-    from africa_tts import AfricaTTS, languages, to_ipa
+    from africa_tts import AfricaTTS, experimental_languages, languages, to_ipa
 
+    if a.list_experimental:
+        print("tier\tcode\tname\tclosest trained language\tIPA coverage")
+        for code, e in experimental_languages().items():
+            print(f"{e['tier']}\t{code}\t{e['name']}\t{e['nearest_name']} ({e['nearest']})\t{e['coverage']:.0%}")
+        return 0
     if a.list_languages:
         for code, info in sorted(languages().items(), key=lambda kv: kv[1]["name"]):
             print(f"{code}\t{info['name']}\t{info['hours']:.1f} h")
