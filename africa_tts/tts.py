@@ -237,8 +237,8 @@ class AfricaTTS:
 
     def default_voice(self, lang: str) -> Path:
         """The bundled voice prompt for `lang`: 3.5-6 s of speech in that language (a female voice
-        from africa-female-speech-v2-best60 for the 17 languages it covers, a JW recording for the
-        others, Ghanaian English for English). For an experimental language, the voice of its
+        from africa-female-speech-v2-best60 for the 17 languages it covers, an AfriSpeech Selector
+        recording for the others, Ghanaian English for English). For an experimental language, the voice of its
         closest trained language."""
         try:
             return self.folder / "voices" / f"{voice_language(lang)}.wav"

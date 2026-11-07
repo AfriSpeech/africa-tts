@@ -170,7 +170,7 @@ def main() -> None:
             "Best with classifier-free guidance 2.0 (two passes per frame); an unguided "
             f"[sherpa-onnx bundle](https://huggingface.co/{repo}/tree/main/sherpa-onnx) is included.",
         ]
-    model.append(f"Trained on {hours['total']:.0f} h of real speech: JW recordings, "
+    model.append(f"Trained on {hours['total']:.0f} h of real speech: AfriSpeech Selector recordings, "
                  "[africa-female-speech-v2](https://huggingface.co/datasets/AfriSpeech/africa-female-speech-v2), "
                  "Ghanaian English and HiFiTTS-2. "
                  f"[Data and recipe]({GH}/blob/main/docs/MODEL.md).")
@@ -220,7 +220,7 @@ data are weak; some G2P tables do not mark tone. Do not use voice cloning to imp
 
 ## License
 
-CC-BY-NC-4.0 (non-commercial), following the JW recordings in the training data. Built on
+CC-BY-NC-4.0 (non-commercial), following the licences of the training recordings. Built on
 [Kyutai's Pocket TTS](https://huggingface.co/kyutai/pocket-tts). By [AfriSpeech](https://huggingface.co/AfriSpeech) / Ghana NLP.
 """
     open(a.out, "w", encoding="utf-8").write(card)

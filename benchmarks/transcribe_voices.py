@@ -1,5 +1,5 @@
 """Transcribe the default voice clips with Omnilingual ASR, for baselines that need the prompt's
-transcript (OmniVoice). The JW-recording voices store only a fragment of their transcript (the
+transcript (OmniVoice). The AfriSpeech Selector voices store only a fragment of their transcript (the
 clip was cut at word boundaries for Africa TTS, which clones from audio alone), so a cloning model
 given that text is mis-prompted. Female-speech voices keep their human transcripts.
 

@@ -1,6 +1,6 @@
 """Pick one default voice prompt per training language from the aligned training data.
 
-Prefers JW recordings (source "afrispeech"); languages without JW audio fall back to the other
+Prefers AfriSpeech Selector recordings (source "afrispeech"); languages without them fall back to the other
 sources (Tigrinya: africa-female-speech-v2; English: Ghanaian English). For each language, the
 candidates are clips with confident alignment (mean word score) from which a 3.5-6 s prompt
 can be cut: leading silence trimmed to 0.15 s, ending on a word boundary (+ 0.15 s tail).

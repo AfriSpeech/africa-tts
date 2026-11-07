@@ -68,12 +68,12 @@ One per language, 3.5-6 s of real speech in that language: a female voice from
 [africa-female-speech-v2-best60](https://huggingface.co/datasets/AfriSpeech/africa-female-speech-v2-best60)
 (highest-rated clip) for the 17 languages it covers (Amharic, Chichewa, Hausa, Igbo,
 Kinyarwanda, Rundi, Sepedi, Shona, Swahili, Swati, Tigrinya, Tsonga, Twi, Venda, Xhosa, Yoruba,
-Zulu), a JW recording for the others (English: Ghanaian English), at
+Zulu), an AfriSpeech Selector recording for the others (English: Ghanaian English), at
 [AfriSpeech/africa-tts/voices](https://huggingface.co/AfriSpeech/africa-tts/tree/main/voices).
 
 ## Training data
 
-897 hours of real speech: JW recordings (AfriSpeech Selector, 383 h), africa-female-speech-v2
+897 hours of real speech: read-speech recordings from AfriSpeech Selector (383 h), africa-female-speech-v2
 (192 h), Ghanaian English (156 h) and HiFiTTS-2 (166 h). Clips with numbers in the transcript
 were removed; word timings come from ctc-forced-aligner for every language. Languages and hours:
 [africa_tts/languages.json](../africa_tts/languages.json). The full recipe:

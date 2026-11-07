@@ -1,5 +1,5 @@
-"""Out-of-domain synthesis demo: FLORES+ devtest sentences (news/wiki, not JW) for every
-training language FLORES+ covers; JW validation sentences for the rest of LANGS_JW.
+"""Out-of-domain synthesis demo: FLORES+ devtest sentences (news/wiki, outside the training
+domain) for every training language FLORES+ covers; held-out validation sentences for the rest.
 
 The same FLORES sentence ids are used in every language (parallel, with the English as a
 gloss), chosen digit-free in all languages and of moderate length. Each language is read in
@@ -85,7 +85,7 @@ def main() -> None:
         sf.write(a.out / "audio" / vname, window(voice, 5.0), 24000)
         if g in flores:
             sents = [(flores[g][i], None, flores["eng"][i]) for i in ids]
-        else:  # JW validation sentences, with the real recording
+        else:  # held-out validation sentences, with the real recording
             rows = rng.sample([r for r in valid[g] if r is not voice], a.n)
             sents = [(r["transcript_orig"], r, None) for r in rows]
         table = None if g == "eng" else Afrig2p(TABLES / f"{g}.afg2p")
@@ -97,7 +97,7 @@ def main() -> None:
                 real = f"{g}_{k}_real.wav"
                 sf.write(a.out / "audio" / real, window(row), 24000)
             items.append({"g2p": g, "language": names[g], "k": k, "text": text, "ipa": ipa,
-                          "gloss": gloss, "source": "FLORES+" if row is None else "JW (held out)",
+                          "gloss": gloss, "source": "FLORES+" if row is None else "held out",
                           "real": real, "voice": vname, "voice_row": voice, "synth": {}})
 
     args = load_args(a.config)

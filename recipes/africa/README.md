@@ -23,7 +23,7 @@ pip install -e . -r recipes/africa/requirements.txt   # + espeak-ng 1.51 (apt in
 
 | Source | Script | Hours used |
 |---|---|---:|
-| JW recordings from [AfriSpeech Selector](https://github.com/AfriSpeech/afrispeech-selector), `afrispeech` source only, train + validation splits | `data/pull_afrispeech.py` | 383 |
+| Read-speech recordings from [AfriSpeech Selector](https://github.com/AfriSpeech/afrispeech-selector), `afrispeech` source only, train + validation splits | `data/pull_afrispeech.py` | 383 |
 | [AfriSpeech/africa-female-speech-v2](https://huggingface.co/datasets/AfriSpeech/africa-female-speech-v2) | `data/prepare_speech_parquet.py` | 192 |
 | Ghanaian English (ghana-english-tts-clean2) | `data/prepare_speech_parquet.py` | 156 |
 | [HiFiTTS-2](https://huggingface.co/datasets/nvidia/hifitts-2), 200 h slice | `training/scripts/prepare_data.py --hours 200` | 166 |
@@ -98,7 +98,7 @@ new schedule's value, 2.0e-4 -> 3.8e-4, below the 4e-4 peak).
 ```bash
 python recipes/africa/release/export_release.py training/configs/finetune_africa_ipa.yaml \
     runs/africa_ipa_teacher/checkpoint_00100000.pt release/africa-tts-base AfriSpeech/africa-tts-base
-python recipes/africa/release/select_voices.py train_final.jsonl release/voices     # default voices (JW)
+python recipes/africa/release/select_voices.py train_final.jsonl release/voices     # default voices (AfriSpeech Selector)
 python recipes/africa/release/select_female_voices.py release/voices                # female voices, 17 languages
 python export/onnx/export_onnx.py --model-dir release/africa-tts --out-dir onnx/africa-tts --quantize
 # audio.cpp GGUF (the package's default engine): model.safetensors + config.yaml + the SentencePiece
@@ -115,4 +115,4 @@ python recipes/africa/release/experimental_languages.py ipa/train_all.jsonl afri
 ```
 
 `synth_demo.py` / `synth_ood.py` are the listening tests used to pick the checkpoint (held-out
-JW sentences, FLORES+ devtest sentences).
+AfriSpeech Selector sentences, FLORES+ devtest sentences).

@@ -74,7 +74,7 @@ def run_omnivoice(by_lang, out_root: Path, voices: Path, device: str,
     from omnivoice import OmniVoice
 
     meta = json.loads((voices / "voices.json").read_text())
-    if voice_texts:  # prompt transcripts from transcribe_voices.py (JW clips' stored text is partial)
+    if voice_texts:  # prompt transcripts from transcribe_voices.py (those clips' stored text is partial)
         for v, t in json.loads(voice_texts.read_text()).items():
             meta[v]["text"] = t["text"]
     exp = json.loads((Path(__file__).resolve().parents[1] / "africa_tts" /
