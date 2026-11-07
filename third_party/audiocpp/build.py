@@ -53,6 +53,8 @@ def main() -> None:
            f"-DENGINE_ENABLE_CPU_ALL_VARIANTS={'ON' if portable else 'OFF'}"]
     if sys.platform == "darwin":
         cfg.append("-DENGINE_ENABLE_OPENMP=OFF")  # Apple clang ships no OpenMP runtime
+    if sys.platform == "win32":  # MSVC (run from a developer prompt); no vcomp140 dependency
+        cfg += ["-DCMAKE_C_COMPILER=cl", "-DCMAKE_CXX_COMPILER=cl", "-DENGINE_ENABLE_OPENMP=OFF"]
     if shutil.which("ninja"):
         cfg += ["-G", "Ninja"]
     run(cfg)
