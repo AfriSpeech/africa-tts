@@ -54,7 +54,9 @@ def main() -> None:
     if sys.platform == "darwin":
         cfg.append("-DENGINE_ENABLE_OPENMP=OFF")  # Apple clang ships no OpenMP runtime
     if sys.platform == "win32":  # MSVC (run from a developer prompt); no vcomp140 dependency
-        cfg += ["-DCMAKE_C_COMPILER=cl", "-DCMAKE_CXX_COMPILER=cl", "-DENGINE_ENABLE_OPENMP=OFF"]
+        cfg += ["-DCMAKE_C_COMPILER=cl", "-DCMAKE_CXX_COMPILER=cl", "-DENGINE_ENABLE_OPENMP=OFF",
+                # static C++ runtime: no dependency on the (possibly older) vcruntime Python loads
+                "-DCMAKE_POLICY_DEFAULT_CMP0091=NEW", "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded"]
     if shutil.which("ninja"):
         cfg += ["-G", "Ninja"]
     run(cfg)

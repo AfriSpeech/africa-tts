@@ -96,6 +96,8 @@ jobs:
       # model: the library and its CPU kernels must be in the wheel.
       - name: Smoke-test the installed wheel
         shell: bash
+        env:
+          PYTHONIOENCODING: utf-8
         run: |
           python -m pip install dist/*.whl
           cd "$RUNNER_TEMP"
