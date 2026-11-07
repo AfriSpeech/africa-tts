@@ -5,13 +5,17 @@
 Measured with [`benchmarks/speed.py`](../benchmarks/speed.py) on a dedicated 4-vCPU Modal CPU
 container ([`benchmarks/speed_modal.py`](../benchmarks/speed_modal.py)): 8 sentences in Twi, Hausa,
 Yoruba, Swahili, Zulu, Amharic, Ewe and English, each language's default voice, after a warm-up
-(voice prompts encoded once and cached). The Python package runs PyTorch on one thread
-(pocket-tts's default); sherpa-onnx uses int8 models on four threads.
+(voice prompts encoded once and cached). PyTorch runs on one thread (pocket-tts's default);
+sherpa-onnx uses int8 models on four threads.
 
 | Runtime | × real time | Real-time factor | Time to first audio (streaming, median) |
 |---|---:|---:|---:|
-| sherpa-onnx int8 | **2.52** | 0.40 | — |
-| Python package | **2.38** | 0.42 | **0.17 s** |
+| sherpa-onnx int8 (mobile) | **2.52** | 0.40 | — |
+| PyTorch (`africa-tts[torch]`) | **2.38** | 0.42 | **0.17 s** |
+
+**audio.cpp** (q8_0 GGUF, the package's default engine) was measured on a 2020 laptop CPU (AMD
+Ryzen 5 4500U, 4 threads), not on the machine above: 2.3-2.8× real time warm, first streamed
+audio after 0.10 s. On the same laptop PyTorch ran at about 2× and sherpa-onnx at about 1.3×.
 
 For comparison, the 24-layer base model Africa TTS was distilled from runs at 0.47× real time
 guided (0.72 s to first audio) and 0.82-0.90× unguided.

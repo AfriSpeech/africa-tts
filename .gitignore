@@ -11,3 +11,7 @@ dist/
 *.wav
 !mobile/**/*.wav
 .DS_Store
+
+# audio.cpp build output (built into the platform wheels by CI)
+africa_tts/lib/
+build/

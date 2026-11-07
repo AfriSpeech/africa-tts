@@ -1,6 +1,8 @@
-"""Africa TTS API server (sherpa-onnx, CPU).
+"""Africa TTS API server: audio.cpp on CPU by default, or PyTorch (CPU/GPU) with the torch extra.
 
-    AFRICA_TTS_MODEL=AfriSpeech/africa-tts uvicorn server.app:app --host 0.0.0.0 --port 8000
+    africa-tts serve                                   # audio.cpp, port 8000
+    africa-tts serve --backend torch [--device cuda]   # pip install "africa-tts[torch]"
+    uvicorn africa_tts.server.app:app --host 0.0.0.0 --port 8000   # configured by the environment
 
 Endpoints
     GET  /health                    liveness + model info
@@ -12,15 +14,16 @@ Endpoints
                                     {"event": "done"} (or {"event": "error"})
 
 Configuration (environment)
-    AFRICA_TTS_MODEL     HF repo whose sherpa-onnx/ bundle to serve (default AfriSpeech/africa-tts)
-    AFRICA_TTS_BUNDLE    local bundle folder (skips the download)
+    AFRICA_TTS_MODEL     model name, HF repo or local folder (default africa-tts); downloaded on start
+    AFRICA_TTS_BACKEND   audiocpp (default, CPU) or torch (needs the torch extra)
+    AFRICA_TTS_DEVICE    cpu (default) or cuda (implies torch)
     AFRICA_TTS_WORKERS   parallel requests (model instances), default 2
-    AFRICA_TTS_THREADS   ONNX Runtime threads per instance, default 2
+    AFRICA_TTS_THREADS   CPU threads per instance (audio.cpp), default 2
     AFRICA_TTS_MAX_CHARS max text length, default 2000
     AFRICA_TTS_MAX_QUEUE requests allowed to wait for a worker before 503, default 32
     AFRICA_TTS_API_KEY   if set, required as "Authorization: Bearer <key>"
     AFRICA_TTS_CORS_ORIGINS  comma-separated origins allowed to call from a browser ("*" for any)
-    AFRICA_TTS_PUBLIC    1 = anonymous clients allowed under rate limits (server/limits.py);
+    AFRICA_TTS_PUBLIC    1 = anonymous clients allowed under rate limits (limits.py);
                          requests with the API key are not limited
 """
 
@@ -31,42 +34,30 @@ import os
 import threading
 import time
 from contextlib import asynccontextmanager
-from pathlib import Path
 
 from fastapi import FastAPI, Header, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, Field
 
-from server.engine import Engine, EngineConfig, RequestError, to_pcm16, to_wav
-from server.limits import LimitExceeded, Limiter, client_ip
+from africa_tts.server.engine import Engine, EngineConfig, RequestError, to_pcm16, to_wav
+from africa_tts.server.limits import LimitExceeded, Limiter, client_ip
 
 STATE: dict = {}
-
-
-def _bundle_dir() -> Path:
-    if os.environ.get("AFRICA_TTS_BUNDLE"):
-        return Path(os.environ["AFRICA_TTS_BUNDLE"])
-    from huggingface_hub import snapshot_download
-
-    repo = os.environ.get("AFRICA_TTS_MODEL", "AfriSpeech/africa-tts")
-    root = snapshot_download(repo, allow_patterns=["sherpa-onnx/*"])
-    return Path(root) / "sherpa-onnx"
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     cfg = EngineConfig.from_env()
-    cfg.bundle = _bundle_dir()
     STATE["engine"] = Engine(cfg)
-    STATE["model"] = os.environ.get("AFRICA_TTS_MODEL", str(cfg.bundle))
+    STATE["model"] = cfg.model
     STATE["max_queue"] = int(os.environ.get("AFRICA_TTS_MAX_QUEUE", "32"))
     STATE["inflight"] = 0
     STATE["limiter"] = Limiter()
     yield
 
 
-app = FastAPI(title="Africa TTS", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="Africa TTS", version="0.4.0", lifespan=lifespan)
 if os.environ.get("AFRICA_TTS_CORS_ORIGINS"):  # browser pages on other origins (e.g. a demo Space)
     app.add_middleware(
         CORSMiddleware,
@@ -153,7 +144,8 @@ async def _synthesize(text: str, lang: str, voice_b64: str | None, fmt: str,
 @app.get("/health")
 async def health():
     eng: Engine = STATE["engine"]
-    return {"status": "ok", "model": STATE["model"], "workers": eng.cfg.workers,
+    return {"status": "ok", "model": STATE["model"], "backend": eng.cfg.backend,
+            "device": eng.cfg.device, "workers": eng.cfg.workers,
             "threads_per_worker": eng.cfg.threads, "inflight": STATE["inflight"],
             "sample_rate": eng.sample_rate}
 

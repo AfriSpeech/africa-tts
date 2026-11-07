@@ -1,8 +1,0 @@
-# API server: sherpa-onnx inference + the IPA front end. No PyTorch.
-fastapi>=0.110
-uvicorn[standard]>=0.29
-sherpa-onnx>=1.12
-soundfile>=0.12
-numpy>=1.24
-huggingface_hub>=0.30
-africa-g2p[english]>=0.3.4,<0.4

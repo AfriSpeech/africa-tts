@@ -1,29 +1,30 @@
 # Africa TTS API server
 
-A production HTTP + WebSocket API for Africa TTS on CPU, built on
-[sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) (ONNX Runtime) with the africa-g2p front
-end. No PyTorch, no GPU. Serves Africa TTS's sherpa-onnx bundle.
+A production HTTP + WebSocket API for Africa TTS, part of the `africa-tts` package
+([africa_tts/server](../africa_tts/server)), with the IPA front end and default voices built in.
+It runs on the package's engines:
 
-sherpa-onnx itself ships WebSocket/HTTP servers only for speech *recognition*; this server
-fills the gap for Pocket TTS models, with the IPA front end and default voices built in.
+| Install | Engine | Run |
+|---|---|---|
+| `pip install africa-tts` | **audio.cpp**, q8_0, CPU, no PyTorch (default) | `africa-tts serve` |
+| `pip install "africa-tts[torch]"` | PyTorch, unquantised, CPU or GPU | `africa-tts serve --backend torch [--device cuda]` |
 
 ## Run
 
 ```bash
-docker build -f server/Dockerfile -t africa-tts-server .
-docker run -p 8000:8000 -e AFRICA_TTS_WORKERS=4 -e AFRICA_TTS_THREADS=2 \
-    -v hf-cache:/root/.cache/huggingface africa-tts-server
+pip install africa-tts            # + apt install espeak-ng (1.51) for English
+africa-tts serve --port 8000      # downloads the model (about 150 MB) on first start
 ```
 
-Without Docker:
+With Docker:
 
 ```bash
-pip install -r server/requirements.txt      # + apt install espeak-ng (1.51) for English
-AFRICA_TTS_MODEL=AfriSpeech/africa-tts uvicorn server.app:app --host 0.0.0.0 --port 8000
-```
+docker build -f server/Dockerfile -t africa-tts-server .           # audio.cpp, built from this repo
+docker run -p 8000:8000 -e AFRICA_TTS_WORKERS=4 -e AFRICA_TTS_THREADS=2 \
+    -v hf-cache:/root/.cache/huggingface africa-tts-server
 
-The bundle (`sherpa-onnx/` of the model repo) is downloaded on first start; set
-`AFRICA_TTS_BUNDLE=/path/to/bundle` to use a local copy.
+docker build -f server/Dockerfile.torch -t africa-tts-server-torch .  # PyTorch, CPU (GPU: see file)
+```
 
 ### On Modal (serverless, scales to zero)
 
@@ -32,8 +33,7 @@ modal secret create africa-tts-api-key AFRICA_TTS_API_KEY=$(openssl rand -hex 24
 modal deploy server/modal_app.py
 ```
 
-[`modal_app.py`](modal_app.py) builds the same image (bundle baked in, so a cold start takes
-~12 s), runs 2 workers x 2 threads per container, scales to zero 5 minutes after the last request
+[`modal_app.py`](modal_app.py) builds the same image (model baked in), runs 2 workers x 2 threads per container, scales to zero 5 minutes after the last request
 and to at most 2 containers under load. It deploys in **public mode** (below), which is what powers
 the [live demo Space](https://huggingface.co/spaces/AfriSpeech/africa-tts-demo).
 
@@ -41,7 +41,7 @@ the [live demo Space](https://huggingface.co/spaces/AfriSpeech/africa-tts-demo).
 
 | Endpoint | Request | Response |
 |---|---|---|
-| `GET /health` | | model, workers, requests in flight |
+| `GET /health` | | model, backend, device, workers, requests in flight |
 | `GET /v1/languages` | | 93 trained + 657 experimental languages (`status`, `voice_from`) |
 | `POST /v1/tts` | `{"text", "lang", "voice_wav_base64"?, "format": "wav"\|"pcm"}` | audio (WAV, or raw PCM s16le 24 kHz mono); headers `X-Audio-Seconds`, `X-Compute-Seconds` |
 | `POST /v1/audio/speech` | OpenAI shape: `{"input", "voice": "<language code>", "response_format"}` | audio |
@@ -50,8 +50,8 @@ the [live demo Space](https://huggingface.co/spaces/AfriSpeech/africa-tts-demo).
 ```bash
 curl -X POST localhost:8000/v1/tts -H "Content-Type: application/json" \
      -d '{"text": "Akwaaba! Yɛfrɛ me Kofi.", "lang": "twi"}' -o twi.wav
-python server/client.py http://localhost:8000 stream "Sannu da zuwa." --lang hau -o hausa.wav
-python server/client.py http://localhost:8000 bench --concurrency 4 --requests 16
+python -m africa_tts.server.client http://localhost:8000 stream "Sannu da zuwa." --lang hau -o hausa.wav
+python -m africa_tts.server.client http://localhost:8000 bench --concurrency 4 --requests 16
 ```
 
 `lang` is an ISO 639-3 code; each language's default voice is used unless `voice_wav_base64`
@@ -62,10 +62,11 @@ numbers.
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `AFRICA_TTS_MODEL` | `AfriSpeech/africa-tts` | HF repo whose `sherpa-onnx/` bundle to serve |
-| `AFRICA_TTS_BUNDLE` | | local bundle folder (skips the download) |
+| `AFRICA_TTS_MODEL` | `africa-tts` | model name, HF repo or local folder (downloaded on start) |
+| `AFRICA_TTS_BACKEND` | `audiocpp` | `audiocpp` (CPU) or `torch` (needs the torch extra) |
+| `AFRICA_TTS_DEVICE` | `cpu` | `cuda` for a GPU (implies `torch`) |
 | `AFRICA_TTS_WORKERS` | 2 | model instances = requests synthesised in parallel |
-| `AFRICA_TTS_THREADS` | 2 | ONNX Runtime threads per instance |
+| `AFRICA_TTS_THREADS` | 2 | CPU threads per instance (audio.cpp) |
 | `AFRICA_TTS_MAX_QUEUE` | 32 | requests allowed to wait for a free worker before `503` |
 | `AFRICA_TTS_MAX_CHARS` | 2000 | maximum text length |
 | `AFRICA_TTS_API_KEY` | | if set, required as `Authorization: Bearer <key>` (HTTP and WebSocket) |
@@ -95,21 +96,18 @@ server-side.
 
 ## Scaling
 
-sherpa-onnx's Pocket TTS backend synthesises one request at a time per instance (there is no
-dynamic batching for it), so throughput comes from parallel instances: size
-`WORKERS x THREADS` to the CPU cores, and scale out with more containers behind a load balancer
-(the server is stateless). Each instance holds its own copy of the model in memory.
-
-Parallel workers scale (sherpa-onnx releases the Python GIL). On Modal (2 threads per
-worker): about 1.7-1.9 seconds of audio per second of compute per worker (e.g. 3.7 s of Twi in
-2.0 s, 11.4 s of Yoruba in 6.6 s), so a 2-worker container serves ~3.5 s of audio per second.
-Measure on your hardware with `client.py bench`.
+Each model instance synthesises one request at a time, so throughput comes from parallel
+instances: size `WORKERS x THREADS` to the CPU cores, and scale out with more containers behind a
+load balancer (the server is stateless). Each instance holds its own copy of the model in memory
+(about 150 MB with audio.cpp). Every instance is warmed at startup, so the first requests do not
+pay for graph allocation. Measure on your hardware with `python -m africa_tts.server.client bench`.
 
 ## Notes
 
-- **Streaming granularity:** sherpa-onnx emits audio per sentence (it splits on punctuation and
-  merges very short sentences), so the first audio arrives once the first sentence is done.
-  Shorter first sentences give earlier audio.
+- **Streaming:** audio.cpp and PyTorch both stream frame by frame (80 ms chunks); with audio.cpp
+  the first chunk arrives about 0.1 s after the request on a laptop CPU.
+- **On device:** phones and embedded targets use the sherpa-onnx bundle instead
+  ([mobile/](../mobile/)).
 - **English** uses espeak-ng 1.51 (Debian bookworm in the image); the image's front end was
   checked against the training IPA on the 5,442-row parity set (all identical). espeak-ng is
   GPL-3.0-or-later.

@@ -1,27 +1,59 @@
-# Publish africa-tts to PyPI when a version tag (v*) is pushed.
+# Build platform wheels (audio.cpp compiled in) and publish to PyPI on a version tag (v*).
 #
-# Uses PyPI Trusted Publishing (OIDC): no API token in this repository. PyPI must have a publisher
-# for project africa-tts with owner AfriSpeech, repository africa-tts, workflow release.yml and
-# environment pypi (for the first release, a "pending publisher" under the PyPI account's
-# Publishing settings). The tag must equal the version in pyproject.toml.
+# Each wheel bundles audio.cpp's C API library (third_party/audiocpp/build.py: pinned commit +
+# patches, Pocket TTS only, CPU; on x86 every ISA variant, picked at run time). The Python code
+# loads it with ctypes, so one wheel per platform serves every Python version (py3-none-<plat>).
+#
+# PyPI Trusted Publishing (OIDC): no API token in this repository. PyPI has a publisher for
+# project africa-tts with owner AfriSpeech, repository africa-tts, workflow release.yml,
+# environment pypi. The tag must equal the version in pyproject.toml.
 name: release
 
 on:
   push:
     tags: ["v*"]
-  workflow_dispatch:          # dry-run the build without tagging
+  workflow_dispatch:          # build and test the wheels without publishing
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  wheels:
+    name: wheel ${{ matrix.plat }}
+    runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            container: quay.io/pypa/manylinux_2_28_x86_64
+            plat: manylinux_2_28_x86_64
+          - os: ubuntu-24.04-arm
+            container: quay.io/pypa/manylinux_2_28_aarch64
+            plat: manylinux_2_28_aarch64
+          - os: macos-14
+            plat: macosx_11_0_arm64
+            target: "11.0"
+          - os: macos-13
+            plat: macosx_10_15_x86_64
+            target: "10.15"
+          - os: windows-latest
+            plat: win_amd64
+    env:
+      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.target }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+
+      - name: Python (manylinux image)
+        if: matrix.container
+        run: echo "/opt/python/cp311-cp311/bin" >> "$GITHUB_PATH"
+      - name: Python
+        if: ${{ !matrix.container }}
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Tag matches pyproject version
         if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
         run: |
           tag="${GITHUB_REF_NAME#v}"
           ver=$(python -c "import tomllib,pathlib; \
@@ -29,26 +61,65 @@ jobs:
           echo "tag=$tag pyproject=$ver"
           [ "$tag" = "$ver" ] || { echo "::error::tag $tag != version $ver"; exit 1; }
 
-      - run: pip install build twine
-      - run: python -m build
-      - run: twine check dist/*
+      - name: Build tools
+        run: python -m pip install build wheel cmake ninja
 
-      # Install the built wheel (CPU torch) and run the front end and CLI without downloading
-      # the model, from outside the source tree.
-      - name: Smoke-test the installed wheel
+      - name: Build audio.cpp (C API, Pocket TTS, CPU)
+        run: python third_party/audiocpp/build.py --jobs 4
+
+      - name: Build the wheel and tag it for this platform
+        shell: bash
         run: |
-          pip install --extra-index-url https://download.pytorch.org/whl/cpu dist/*.whl
-          cd /tmp
-          python -c "import africa_tts; print(africa_tts.to_ipa('Akwaaba! Yɛfrɛ me Kofi.', 'twi'))"
+          python -m build --wheel
+          python -m wheel tags --remove --python-tag py3 --abi-tag none --platform-tag ${{ matrix.plat }} dist/*.whl
+          ls -la dist
+
+      - name: Vendor runtime libraries (Linux)
+        if: matrix.container
+        run: |
+          python -m pip install auditwheel
+          auditwheel repair --plat ${{ matrix.plat }} -w wheelhouse dist/*.whl
+          rm dist/*.whl && mv wheelhouse/*.whl dist/
+      - name: Vendor runtime libraries (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          python -m pip install delvewheel
+          delvewheel repair --add-path africa_tts/lib -w wheelhouse dist/*.whl
+          rm dist/*.whl && mv wheelhouse/*.whl dist/
+
+      # Install the wheel outside the source tree and load the engine without downloading the
+      # model: the library and its CPU kernels must be in the wheel.
+      - name: Smoke-test the installed wheel
+        shell: bash
+        run: |
+          python -m pip install dist/*.whl
+          cd "$RUNNER_TEMP"
+          python -c "from africa_tts import _audiocpp; _audiocpp.lib(); print('audio.cpp loaded')"
+          python -c "import sys, africa_tts.tts; assert 'torch' not in sys.modules; print('no torch')"
+          python -c "from africa_tts import to_ipa; print(to_ipa('Akwaaba! Yɛfrɛ me Kofi.', 'twi'))"
           africa-tts --list-languages | head -3
 
       - uses: actions/upload-artifact@v4
         with:
-          name: dist
-          path: dist/
+          name: wheel-${{ matrix.plat }}
+          path: dist/*.whl
+
+  sdist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install build twine && python -m build --sdist && twine check dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: dist/*.tar.gz
 
   publish:
-    needs: build
+    needs: [wheels, sdist]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     environment: pypi
@@ -57,6 +128,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: dist
-          path: dist/
+          path: dist
+          merge-multiple: true
+      - run: ls -la dist
       - uses: pypa/gh-action-pypi-publish@release/v1

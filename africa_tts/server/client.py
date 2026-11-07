@@ -1,8 +1,9 @@
 """Test and load-test client for the Africa TTS API server.
 
-    python server/client.py http://localhost:8000 tts "Akwaaba! Yɛfrɛ me Kofi." --lang twi -o out.wav
-    python server/client.py http://localhost:8000 stream "Akwaaba! Yɛfrɛ me Kofi." --lang twi -o out.wav
-    python server/client.py http://localhost:8000 bench --concurrency 4 --requests 16
+    python -m africa_tts.server.client http://localhost:8000 tts "Akwaaba! Yɛfrɛ me Kofi." --lang twi -o out.wav
+    python -m africa_tts.server.client http://localhost:8000 stream "Akwaaba! Yɛfrɛ me Kofi." --lang twi -o out.wav
+    python -m africa_tts.server.client http://localhost:8000 bench --concurrency 4 --requests 16
+(needs httpx: pip install httpx)
 """
 
 import argparse

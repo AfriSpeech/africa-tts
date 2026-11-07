@@ -1,0 +1,24 @@
+# Africa TTS API server, PyTorch engine (unquantised): CPU by default, or an NVIDIA GPU.
+# Build from the repository root:
+#   docker build -f server/Dockerfile.torch -t africa-tts-server-torch .                    # CPU
+#   docker build -f server/Dockerfile.torch --build-arg TORCH_INDEX=https://download.pytorch.org/whl/cu128 \
+#       -t africa-tts-server-gpu .                                                           # GPU
+#   docker run -p 8000:8000 africa-tts-server-torch
+#   docker run --gpus all -p 8000:8000 -e AFRICA_TTS_DEVICE=cuda africa-tts-server-gpu
+# The model (about 440 MB) is downloaded from Hugging Face on first start.
+FROM python:3.11-slim-bookworm
+ARG TORCH_INDEX=https://download.pytorch.org/whl/cpu
+RUN apt-get update && apt-get install -y --no-install-recommends espeak-ng \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /src
+COPY . .
+RUN pip install --no-cache-dir --extra-index-url "$TORCH_INDEX" ".[torch]" && rm -rf /src
+
+ENV AFRICA_TTS_BACKEND=torch \
+    AFRICA_TTS_DEVICE=cpu \
+    AFRICA_TTS_WORKERS=1 \
+    PYTHONUNBUFFERED=1
+EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=180s CMD python -c \
+    "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=4)"
+CMD ["uvicorn", "africa_tts.server.app:app", "--host", "0.0.0.0", "--port", "8000"]
