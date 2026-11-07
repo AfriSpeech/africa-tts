@@ -96,14 +96,48 @@ def _resolve_hf(path: str | Path) -> str:
     return str(path)
 
 
+def trim_silence(audio: np.ndarray, sr: int, pad_sec: float = 0.18, fade_ms: float = 15.0,
+                 min_sec: float = 1.2) -> np.ndarray:
+    """Trim leading and trailing dead silence while preserving natural voice decays,
+    breaths and sentence endings with `pad_sec` cushion and gentle edge fades."""
+    frame = int(0.02 * sr)
+    n = len(audio) // frame
+    if n == 0:
+        return audio
+    rms = np.sqrt((audio[: n * frame].reshape(n, frame) ** 2).mean(1))
+    threshold = max(rms.max() * 0.02, 0.002)
+    voiced = np.where(rms > threshold)[0]
+    if len(voiced) == 0:
+        return audio
+    pad_frames = int(pad_sec * sr)
+    s = max(0, voiced[0] * frame - pad_frames)
+    e = min(len(audio), (voiced[-1] + 1) * frame + pad_frames)
+    min_frames = int(min_sec * sr)
+    if (e - s) < min_frames:
+        needed = min_frames - (e - s)
+        e = min(len(audio), e + needed)
+        if (e - s) < min_frames:
+            s = max(0, e - min_frames)
+    trimmed = audio[s:e].copy()
+    fade_len = int((fade_ms / 1000.0) * sr)
+    if len(trimmed) > 2 * fade_len:
+        fade_curve = np.linspace(0.0, 1.0, fade_len, dtype=np.float32)
+        if s > 0:
+            trimmed[:fade_len] *= fade_curve
+        if e < len(audio):
+            trimmed[-fade_len:] *= fade_curve[::-1]
+    return trimmed
+
+
 def _read_voice(path: str) -> tuple[np.ndarray, int]:
     import soundfile as sf
 
     audio, sr = sf.read(_resolve_hf(path), dtype="float32", always_2d=True)
     audio = audio.mean(1)
+    audio = trim_silence(audio, sr)
     if len(audio) < sr:
         raise ValueError("voice audio must be at least 1 s (3-10 s of clean speech recommended)")
-    return audio, sr
+    return audio[: sr * 10], sr
 
 
 def _real_gguf(path: Path) -> Path:

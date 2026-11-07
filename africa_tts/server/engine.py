@@ -21,7 +21,7 @@ import soundfile as sf
 
 from africa_tts.frontend import to_ipa
 from africa_tts.languages import EXPERIMENTAL, LANGS
-from africa_tts.tts import AfricaTTS
+from africa_tts.tts import AfricaTTS, trim_silence
 
 
 @dataclass
@@ -92,6 +92,7 @@ class Engine:
             except Exception as e:
                 raise RequestError(f"cannot read voice audio: {e}") from e
             a = a.mean(1)
+            a = trim_silence(a, sr)
             if len(a) < sr * 1.0:
                 raise RequestError("voice audio must be at least 1 s (3-10 s recommended)")
             sf.write(str(path), a[: sr * 10], sr)  # the model uses at most 10 s
