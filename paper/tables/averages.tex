@@ -1,26 +1,24 @@
 \begin{table*}[t]
 \centering
 \small
-\begin{tabular}{lrrrrrrr}
+\begin{tabular}{lrrrrr}
 \toprule
- &  & \multicolumn{3}{c}{\textbf{Africa TTS} (ours)} &  &  &  \\
-\cmidrule(lr){3-5}
- & \textbf{Real} & \textbf{Turbo} & \textbf{Guided} & \textbf{Unguided} & \textbf{MMS-TTS} & \textbf{OmniVoice} & \textbf{Orpheus} \\
- & \textit{speech} & \textit{110M} & \textit{336M} & \textit{336M} & \textit{36M/lang.} & \textit{813M} & \textit{3.3B} \\
+ & \textbf{Real} & \textbf{Africa TTS} (ours) & \textbf{MMS-TTS} & \textbf{OmniVoice} & \textbf{Orpheus} \\
+ & \textit{speech} & \textit{110M} & \textit{36M/lang.} & \textit{813M} & \textit{3.3B} \\
 \midrule
-\multicolumn{8}{l}{\textit{CER (\%)}} \\
-Languages MMS-TTS supports (27) &  & 9.0 & \textbf{8.7} & 10.6 & 10.3 &  &  \\
-Languages OmniVoice supports (29) &  & 8.8 & 8.8 & 10.4 &  & \textbf{8.4} &  \\
-Languages Sunbird Orpheus supports (11) &  & 5.9 & \textbf{5.6} & 7.3 &  &  & 10.3 \\
-All systems (6) &  & 6.0 & 5.7 & 7.2 & 7.8 & \textbf{4.3} & 9.8 \\
-Languages with real recordings (24) & 7.5 & \textbf{7.7} & \textbf{7.7} & 8.9 &  &  &  \\
+\multicolumn{6}{l}{\textit{CER (\%)}} \\
+Languages MMS-TTS supports (27) &  & \textbf{9.0} & 10.3 &  &  \\
+Languages OmniVoice supports (29) &  & 8.8 &  & \textbf{8.4} &  \\
+Languages Sunbird Orpheus supports (11) &  & \textbf{5.9} &  &  & 10.3 \\
+All systems (6) &  & 6.0 & 7.8 & \textbf{4.3} & 9.8 \\
+Languages with real recordings (24) & 7.5 & 7.7 &  &  &  \\
 \midrule
-\multicolumn{8}{l}{\textit{CER without diacritics (\%)}} \\
-Languages MMS-TTS supports (27) &  & 7.6 & \textbf{7.3} & 9.2 & 9.4 &  &  \\
-Languages OmniVoice supports (29) &  & 7.5 & 7.5 & 9.1 &  & \textbf{7.0} &  \\
-Languages Sunbird Orpheus supports (11) &  & 4.6 & \textbf{4.4} & 6.1 &  &  & 8.8 \\
-All systems (6) &  & 4.4 & 4.1 & 5.7 & 6.5 & \textbf{3.0} & 7.7 \\
-Languages with real recordings (24) & 6.6 & 6.5 & \textbf{6.3} & 7.6 &  &  &  \\
+\multicolumn{6}{l}{\textit{CER without diacritics (\%)}} \\
+Languages MMS-TTS supports (27) &  & \textbf{7.6} & 9.4 &  &  \\
+Languages OmniVoice supports (29) &  & 7.5 &  & \textbf{7.0} &  \\
+Languages Sunbird Orpheus supports (11) &  & \textbf{4.6} &  &  & 8.8 \\
+All systems (6) &  & 4.4 & 6.5 & \textbf{3.0} & 7.7 \\
+Languages with real recordings (24) & 6.6 & 6.5 &  &  &  \\
 \bottomrule
 \end{tabular}
 \caption{Intelligibility on languages Africa TTS was trained on: mean per-language character error rate of Omnilingual ASR transcripts (lower is better), averaged over the languages each comparison shares (count in brackets; languages with fewer than 10 test sentences are excluded). Best synthetic system in bold; real speech is the ASR's error on human recordings of the same sentences. Sizes are parameter counts including each system's audio codec or vocoder.}

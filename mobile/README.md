@@ -1,8 +1,7 @@
 # Africa TTS on device (sherpa-onnx)
 
 Africa TTS runs on phones and desktops through [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx)'s
-Pocket TTS backend, in two modes: the **24-layer model unguided**, and **Turbo** (6 layers,
-guidance distilled in). The model reads **IPA**, so text goes through a small C front end first:
+Pocket TTS backend. The model reads **IPA**, so text goes through a small C front end first:
 
 ```
 text ──► africa_tts_frontend ──► IPA ──► sherpa-onnx Pocket TTS ──► 24 kHz audio
@@ -10,20 +9,17 @@ text ──► africa_tts_frontend ──► IPA ──► sherpa-onnx Pocket TT
           espeak-ng 1.51 (English)                        └── voice prompt: voices/<lang>.wav (default) or your own
 ```
 
-## Bundles
+## Bundle
 
-| Mode | How it works | Bundle | Download |
-|---|---|---|---|
-| Africa TTS, unguided | 24 layers, one pass per frame | ~437 MB | `huggingface-cli download AfriSpeech/africa-tts --include "sherpa-onnx/*" --local-dir .` |
-| Africa TTS Turbo | 6 layers, guidance distilled in, one pass per frame (~4x less compute) | smaller | `huggingface-cli download AfriSpeech/africa-tts-turbo --include "sherpa-onnx/*" --local-dir .` |
+209 MB:
+
+```bash
+huggingface-cli download AfriSpeech/africa-tts --include "sherpa-onnx/*" --local-dir .
+```
 
 Contents: `lm_main.int8.onnx lm_flow.int8.onnx decoder.int8.onnx encoder.onnx text_conditioner.onnx
 vocab.json token_scores.json g2p/ voices/ espeak-ng-data/`. int8 where it is safe; the encoder
-stays fp32 because int8 distorts the voice conditioning. The same app code runs either bundle.
-
-The third mode, the 24-layer model **with guidance**, runs only in Python
-(`AfricaTTS.load("africa-tts")`): guidance needs a second backbone pass per frame, which
-sherpa-onnx does not do.
+stays fp32 because int8 distorts the voice conditioning.
 
 ## Generation settings (match pocket-tts)
 
@@ -68,7 +64,7 @@ languages are unaffected.
 - `AfricaTts.kt`: front end + sherpa-onnx `OfflineTts` with the settings above, default voices.
 
 ```kotlin
-val tts = AfricaTts(modelDir = "${filesDir}/africa-tts-turbo")   // or the africa-tts bundle
+val tts = AfricaTts(modelDir = "${filesDir}/africa-tts")
 val audio = tts.speak("Akwaaba! Yɛfrɛ me Kofi.", lang = "twi")    // default Twi voice
 audio.save("${cacheDir}/out.wav")
 ```

@@ -19,8 +19,8 @@ from pathlib import Path
 import jiwer
 
 ORDER = ["real", "turbo", "guided", "unguided", "mms", "omnivoice", "orpheus"]
-TITLE = {"real": "Real speech", "turbo": "Africa TTS Turbo (110M)",
-         "guided": "Africa TTS, guided (336M)", "unguided": "Africa TTS, unguided (336M)",
+TITLE = {"real": "Real speech", "turbo": "Africa TTS (110M)",
+         "guided": "Africa TTS Base, guided (336M)", "unguided": "Africa TTS Base, unguided (336M)",
          "mms": "MMS-TTS (36M per language)", "omnivoice": "OmniVoice (813M)",
          "orpheus": "Sunbird Orpheus (3.3B)"}
 
@@ -78,7 +78,7 @@ def main() -> None:
     out = {"systems": systems, "languages": {c: {"name": names.get(c, c), "source": source[c],
                                                   "flags": sorted(flags[c]), **res[c]} for c in langs}}
 
-    # macro averages over shared languages, for each system pair with Turbo / each other
+    # macro averages over shared languages, for each system pair with Africa TTS / each other
     def avg(sys_list, key="cer"):
         shared = [c for c in langs if all(s in res[c] for s in sys_list)
                   and max(res[c][s]["n"] for s in res[c]) >= a.min_n]

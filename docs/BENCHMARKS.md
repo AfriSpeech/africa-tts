@@ -8,13 +8,13 @@ Yoruba, Swahili, Zulu, Amharic, Ewe and English, each language's default voice, 
 (voice prompts encoded once and cached). The Python package runs PyTorch on one thread
 (pocket-tts's default); sherpa-onnx uses int8 models on four threads.
 
-| Model and runtime | × real time | Real-time factor | Time to first audio (streaming, median) |
+| Runtime | × real time | Real-time factor | Time to first audio (streaming, median) |
 |---|---:|---:|---:|
-| **Turbo**, sherpa-onnx int8 | **2.52** | 0.40 | — |
-| **Turbo**, Python package | **2.38** | 0.42 | **0.17 s** |
-| 24 layers unguided, sherpa-onnx int8 | 0.82 | 1.22 | — |
-| 24 layers unguided, Python package | 0.90 | 1.11 | 0.52 s |
-| 24 layers guided, Python package | 0.47 | 2.11 | 0.72 s |
+| sherpa-onnx int8 | **2.52** | 0.40 | — |
+| Python package | **2.38** | 0.42 | **0.17 s** |
+
+For comparison, the 24-layer base model Africa TTS was distilled from runs at 0.47× real time
+guided (0.72 s to first audio) and 0.82-0.90× unguided.
 
 "× real time" is seconds of audio per second of compute: above 1, audio is generated faster than
 it plays. Raw results: [benchmarks/results/speed_modal_4vcpu.json](../benchmarks/results/speed_modal_4vcpu.json).
@@ -35,22 +35,24 @@ How well can the speech be understood? Each system reads the same held-out sente
 transcribes the audio. We report the **character error rate (CER, %, lower is better)** after
 NFC normalisation, lower-casing and punctuation removal.
 
-| Languages | Real speech | **Africa TTS Turbo** (110M) | Africa TTS, guided (336M) | Africa TTS, unguided (336M) | MMS-TTS (36M per language) | OmniVoice (813M) | Sunbird Orpheus (3.3B) |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| 27 that MMS-TTS supports |  | 9.0 | **8.7** | 10.6 | 10.3 |  |  |
-| 29 that OmniVoice supports |  | 8.8 | 8.8 | 10.4 |  | **8.4** |  |
-| 11 that Sunbird Orpheus supports |  | 5.9 | **5.6** | 7.3 |  |  | 10.3 |
-| 24 that have real recordings | 7.5 | **7.7** | **7.7** | 8.9 |  |  |  |
+| Languages | Real speech | **Africa TTS** (110M) | MMS-TTS (36M per language) | OmniVoice (813M) | Sunbird Orpheus (3.3B) |
+|---|---:|---:|---:|---:|---:|
+| 27 that MMS-TTS supports |  | **9.0** | 10.3 |  |  |
+| 29 that OmniVoice supports |  | 8.8 |  | **8.4** |  |
+| 11 that Sunbird Orpheus supports |  | **5.9** |  |  | 10.3 |
+| 24 that have real recordings | 7.5 | 7.7 |  |  |  |
 
 Means over the languages each comparison shares; best synthetic system in bold.
 
-- Turbo is more intelligible than MMS-TTS in 21 of 27 languages and than Sunbird Orpheus in 8
-  of 11. It matches the guided 24-layer model it was distilled from.
+- Africa TTS is more intelligible than MMS-TTS in 21 of 27 languages and than Sunbird Orpheus in
+  8 of 11.
 - OmniVoice is the most intelligible system: it is better in most of its languages, by small
-  margins (0.4 points on average), at about 7× Turbo's size.
+  margins (0.4 points on average), at about 7× Africa TTS's size.
+- Distillation costs nothing: over all 45 languages Africa TTS averages 9.1%, the same as the
+  guided 24-layer base model it was distilled from (unguided: 10.8%).
 - With diacritics removed before scoring, all CERs drop but the ranking is the same.
 
-Per-language results and the diacritic-free table:
+Per-language results (including the base model) and the diacritic-free table:
 [benchmarks/results/intelligibility.md](../benchmarks/results/intelligibility.md)
 (raw: [intelligibility.json](../benchmarks/results/intelligibility.json)).
 
@@ -60,7 +62,7 @@ Per-language results and the diacritic-free table:
   tiny splits are topped up from the next split), FLEURS test, WAXAL test, or FLORES+ devtest (text only), in that order of preference.
   Sentences with digits, under 20 or over 220 characters are dropped. None are in our training
   data.
-- **Voices:** Africa TTS uses each language's default voice at temperature 0.3. OmniVoice clones
+- **Voices:** Africa TTS (and its base model) uses each language's default voice at temperature 0.3. OmniVoice clones
   the same voice clip, with the clip's transcript taken from Omnilingual ASR where no full human
   transcript exists. MMS-TTS (uroman for non-Latin scripts) and Sunbird Orpheus (one fixed speaker
   per language, its recommended sampling) use their own voices.
@@ -80,7 +82,7 @@ Per-language results and the diacritic-free table:
 
 ```bash
 python benchmarks/build_testset.py BENCH                      # sentences + real recordings
-python benchmarks/synth_africa_tts.py BENCH --system turbo    # also guided, unguided
+python benchmarks/synth_africa_tts.py BENCH --system turbo    # Africa TTS (guided, unguided: base)
 python benchmarks/synth_baselines.py BENCH VOICES --system mms   # also omnivoice, orpheus
 python benchmarks/transcribe.py BENCH                          # Omnilingual ASR
 python benchmarks/score.py BENCH --min-n 10                    # results.json / results.md

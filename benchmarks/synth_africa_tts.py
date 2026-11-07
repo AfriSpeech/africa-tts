@@ -1,7 +1,7 @@
 """Synthesise the benchmark test set with Africa TTS, the way users run it: the africa_tts package,
 each language's default voice, temperature 0.3.
 
-Systems: turbo (africa-tts-turbo), guided (africa-tts, cfg 2.0), unguided (africa-tts, cfg 1.0).
+Systems: turbo (Africa TTS), guided / unguided (the 24-layer africa-tts-base, cfg 2.0 / 1.0).
 
 Usage: python synth_africa_tts.py BENCH_DIR --system turbo [--device cuda] [--shard i/n]
 Writes BENCH_DIR/synth/<system>/<lang>/<id>.wav
@@ -16,8 +16,8 @@ import torch
 
 from africa_tts import AfricaTTS
 
-SYSTEMS = {"turbo": ("africa-tts-turbo", 1.0), "guided": ("africa-tts", 2.0),
-           "unguided": ("africa-tts", 1.0)}
+SYSTEMS = {"turbo": ("africa-tts", 1.0), "guided": ("africa-tts-base", 2.0),
+           "unguided": ("africa-tts-base", 1.0)}
 
 
 def main() -> None:

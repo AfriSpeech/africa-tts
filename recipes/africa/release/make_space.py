@@ -10,15 +10,15 @@ import subprocess
 import sys
 from pathlib import Path
 
-LABELS = {"guided": ("Africa TTS · guided", "AfriSpeech/africa-tts"),
-          "unguided": ("Africa TTS · unguided", "AfriSpeech/africa-tts"),
-          "turbo": ("Africa TTS Turbo", "AfriSpeech/africa-tts-turbo"),
-          "teacher": ("Africa TTS", "AfriSpeech/africa-tts")}
+# label in meta.json -> (column title, HF repo, model name); "turbo" is the released Africa TTS
+LABELS = {"turbo": ("Africa TTS", "AfriSpeech/africa-tts", "Africa TTS"),
+          "guided": ("Base · guided", "AfriSpeech/africa-tts-base", "Africa TTS Base"),
+          "unguided": ("Base · unguided", "AfriSpeech/africa-tts-base", "Africa TTS Base"),
+          "teacher": ("Africa TTS Base", "AfriSpeech/africa-tts-base", "Africa TTS Base")}
 MODES = {
-    "guided": "24 layers with classifier-free guidance 2.0: two backbone passes per frame. Python.",
-    "unguided": "the same 24-layer model, one pass per frame. Python and on device (sherpa-onnx).",
-    "turbo": "6 layers distilled from the guided model, guidance built in, one pass per frame. "
-             "Python and on device.",
+    "turbo": "6 layers, guidance distilled in, one pass per frame. Python and on device.",
+    "guided": "the 24-layer base model it was distilled from, guidance 2.0: two passes per frame.",
+    "unguided": "the 24-layer base model, one pass per frame.",
 }
 NICE = {"english_eng": "English", "swahili_swa": "Swahili", "twi_twi": "Twi", "yoruba_yor": "Yoruba",
         "xhosa_xho": "Xhosa"}
@@ -143,14 +143,14 @@ def main() -> None:
     n_african = sum(1 for g in trained if g != "eng")
     repos = []
     for k in meta["labels"]:
-        name = "Africa TTS Turbo" if k == "turbo" else "Africa TTS"
+        name = LABELS[k][2]
         if (name, LABELS[k][1]) not in repos:
             repos.append((name, LABELS[k][1]))
     model_links = ("<a href='https://huggingface.co/spaces/AfriSpeech/africa-tts-demo' "
                    "style='background:var(--accent);color:var(--bg)'>🎙️ Try it live: type your own text →</a>"
                    + "".join(f"<a href='https://huggingface.co/{r}'>{html.escape(n)} →</a>" for n, r in repos))
     modes = "".join(f"<li><b>{html.escape(LABELS[k][0])}</b>: {html.escape(MODES[k])}</li>"
-                    for k in meta["labels"] if k in MODES)
+                    for k in meta["labels"] if k in MODES and len(meta["labels"]) > 1)
     modes_html = (f"<ul class='modes'>{modes}</ul><p class='note'>Different trade-offs, not a "
                   "quality ranking: compare them on your language.</p>") if modes else ""
     data_json = json.dumps(data, ensure_ascii=False).replace("</", "<" + chr(92) + "/")
@@ -160,8 +160,8 @@ def main() -> None:
 <header><h1>Africa TTS: one model, {n_african} African languages</h1>
 <p><strong>{n_african} African languages and English</strong> in one model. Below: samples in the
 {len(langs)} of them that have a Universal Declaration of Human Rights translation.</p>
-<p>Articles 1, 3 and 5 of the Universal Declaration of Human Rights, synthesised by AfriSpeech's
-Pocket TTS models in every training language with a complete UDHR translation. None of this text was in
+<p>Articles 1, 3 and 5 of the Universal Declaration of Human Rights, synthesised by Africa TTS
+in every training language with a complete UDHR translation. None of this text was in
 the training data. Each language is read in a voice cloned from a short clip of that language;
 the model reads IPA produced by <a href="https://github.com/AfriSpeech/africa-g2p">africa-g2p</a>.</p>
 {modes_html}<div class="models">{model_links}</div></header>
@@ -177,7 +177,7 @@ built on <a href="https://github.com/kyutai-labs/pocket-tts">Kyutai Pocket TTS</
         "---\ntitle: Africa TTS samples\nemoji: 🔊\ncolorFrom: yellow\ncolorTo: red\nsdk: static\n"
         "pinned: false\nlicense: cc-by-nc-4.0\nshort_description: UDHR read by Africa TTS in "
         f"{len(langs)} languages\n---\n\nListening samples for "
-        + " and ".join(f"[{LABELS[k][0]}](https://huggingface.co/{LABELS[k][1]})" for k in meta["labels"])
+        + " and ".join(f"[{n}](https://huggingface.co/{r})" for n, r in repos)
         + ".\n", encoding="utf-8")
     print(f"wrote {space}/index.html: {len(langs)} languages, labels {meta['labels']}")
 

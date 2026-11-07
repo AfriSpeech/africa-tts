@@ -1,0 +1,16 @@
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{lrrrr}
+\toprule
+ & \textbf{Real} & \textbf{Ours} & \textbf{Base, cfg 2} & \textbf{Base, cfg 1} \\
+ & \textit{speech} & \textit{110M} & \textit{336M} & \textit{336M} \\
+\midrule
+All (45) & & \textbf{9.1} & \textbf{9.1} & 10.8 \\
+With recordings (24) & 7.5 & \textbf{7.7} & \textbf{7.7} & 8.9 \\
+\bottomrule
+\end{tabular}
+\caption{Distillation: CER (\%) of \att{} and of the 24-layer base model it was distilled from, with guidance (cfg 2, two passes per frame) or without (cfg 1). Languages with fewer than 10 sentences excluded.}
+\label{tab:distill}
+\end{table}

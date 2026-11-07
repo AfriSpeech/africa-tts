@@ -78,7 +78,7 @@ model card.
 ## Reporting pronunciation problems
 
 The most useful report has: the language code, the exact text, what you heard, what it should
-be, and which model (Africa TTS or Turbo). `africa-tts --ipa-only "<text>" --lang <code>` shows the
+be. `africa-tts --ipa-only "<text>" --lang <code>` shows the
 IPA the model read: if the IPA is already wrong, the fix belongs in africa-g2p; if the IPA is
 right but the audio is wrong, it is a model issue (data or training).
 

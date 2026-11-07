@@ -3,7 +3,7 @@
     modal deploy server/modal_app.py          # from the repository root
 
 Same server as the Docker image: sherpa-onnx + africa-g2p + espeak-ng 1.51 (Debian bookworm), with
-the Turbo sherpa-onnx bundle baked into the image so a cold container starts in seconds.
+the Africa TTS sherpa-onnx bundle baked into the image so a cold container starts in seconds.
 Containers scale to zero when idle and up to MAX_CONTAINERS under load; each runs WORKERS model
 instances (WORKERS requests in parallel).
 
@@ -14,7 +14,7 @@ Callers with the API key are not limited: put it in a Modal secret named "africa
 (modal secret create africa-tts-api-key AFRICA_TTS_API_KEY=...); never in a web page.
 
 Settings (environment at deploy time):
-    AFRICA_TTS_MODEL         HF repo of the bundle (default AfriSpeech/africa-tts-turbo)
+    AFRICA_TTS_MODEL         HF repo of the bundle (default AfriSpeech/africa-tts)
     AFRICA_TTS_CORS_ORIGINS  browser origins allowed (default: the demo Space)
     AFRICA_TTS_MAX_CHARS     text limit per request (default 500)
     AFRICA_TTS_RATE_PER_MIN, AFRICA_TTS_CHARS_PER_HOUR, AFRICA_TTS_CHARS_PER_DAY   see limits.py
@@ -27,7 +27,7 @@ from pathlib import Path
 import modal
 
 ROOT = Path(__file__).resolve().parents[1]
-MODEL = os.environ.get("AFRICA_TTS_MODEL", "AfriSpeech/africa-tts-turbo")
+MODEL = os.environ.get("AFRICA_TTS_MODEL", "AfriSpeech/africa-tts")
 WORKERS, THREADS = 2, 2
 SPACE_ORIGIN = "https://afrispeech-africa-tts-demo.static.hf.space"
 

@@ -13,11 +13,6 @@ body:
       options: [native speaker, fluent, learner]
     validations: {required: true}
   - type: dropdown
-    id: model
-    attributes:
-      label: Model
-      options: [Africa TTS Turbo, Africa TTS, both]
-  - type: dropdown
     id: voice
     attributes:
       label: Voice

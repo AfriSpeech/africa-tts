@@ -2,8 +2,7 @@
 
 A production HTTP + WebSocket API for Africa TTS on CPU, built on
 [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) (ONNX Runtime) with the africa-g2p front
-end. No PyTorch, no GPU. Serves **Africa TTS Turbo** by default; the unguided 24-layer bundle
-works too (`AFRICA_TTS_MODEL=AfriSpeech/africa-tts`).
+end. No PyTorch, no GPU. Serves Africa TTS's sherpa-onnx bundle.
 
 sherpa-onnx itself ships WebSocket/HTTP servers only for speech *recognition*; this server
 fills the gap for Pocket TTS models, with the IPA front end and default voices built in.
@@ -20,7 +19,7 @@ Without Docker:
 
 ```bash
 pip install -r server/requirements.txt      # + apt install espeak-ng (1.51) for English
-AFRICA_TTS_MODEL=AfriSpeech/africa-tts-turbo uvicorn server.app:app --host 0.0.0.0 --port 8000
+AFRICA_TTS_MODEL=AfriSpeech/africa-tts uvicorn server.app:app --host 0.0.0.0 --port 8000
 ```
 
 The bundle (`sherpa-onnx/` of the model repo) is downloaded on first start; set
@@ -63,7 +62,7 @@ numbers.
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `AFRICA_TTS_MODEL` | `AfriSpeech/africa-tts-turbo` | HF repo whose `sherpa-onnx/` bundle to serve |
+| `AFRICA_TTS_MODEL` | `AfriSpeech/africa-tts` | HF repo whose `sherpa-onnx/` bundle to serve |
 | `AFRICA_TTS_BUNDLE` | | local bundle folder (skips the download) |
 | `AFRICA_TTS_WORKERS` | 2 | model instances = requests synthesised in parallel |
 | `AFRICA_TTS_THREADS` | 2 | ONNX Runtime threads per instance |
@@ -101,15 +100,7 @@ dynamic batching for it), so throughput comes from parallel instances: size
 `WORKERS x THREADS` to the CPU cores, and scale out with more containers behind a load balancer
 (the server is stateless). Each instance holds its own copy of the model in memory.
 
-Measured with the **24-layer unguided** bundle on a shared 20-vCPU server (load average ~7 from
-other jobs), 4 workers x 2 threads:
-
-| Concurrency | Throughput (seconds of audio per second) | Latency p50 (5-7 s sentences) |
-|---|---|---|
-| 1 | 0.59 | 8.8 s |
-| 4 | 1.73 | 9.1 s |
-
-Parallel workers scale (sherpa-onnx releases the Python GIL). **Turbo** on Modal (2 threads per
+Parallel workers scale (sherpa-onnx releases the Python GIL). On Modal (2 threads per
 worker): about 1.7-1.9 seconds of audio per second of compute per worker (e.g. 3.7 s of Twi in
 2.0 s, 11.4 s of Yoruba in 6.6 s), so a 2-worker container serves ~3.5 s of audio per second.
 Measure on your hardware with `client.py bench`.
@@ -119,8 +110,6 @@ Measure on your hardware with `client.py bench`.
 - **Streaming granularity:** sherpa-onnx emits audio per sentence (it splits on punctuation and
   merges very short sentences), so the first audio arrives once the first sentence is done.
   Shorter first sentences give earlier audio.
-- **Guidance:** the guided 24-layer mode needs a second pass per frame, which sherpa-onnx does
-  not run; serve it with the Python package (`AfricaTTS.load("africa-tts")`) if needed.
 - **English** uses espeak-ng 1.51 (Debian bookworm in the image); the image's front end was
   checked against the training IPA on the 5,442-row parity set (all identical). espeak-ng is
   GPL-3.0-or-later.

@@ -6,11 +6,6 @@ body:
     id: lang
     attributes: {label: Language code (ISO 639-3), placeholder: "twi"}
     validations: {required: true}
-  - type: dropdown
-    id: model
-    attributes:
-      label: Model
-      options: [Africa TTS Turbo, Africa TTS, both, not sure]
   - type: textarea
     id: text
     attributes: {label: Text you synthesised}

@@ -15,8 +15,7 @@ import java.io.File
  * [modelDir] is an unpacked model bundle on the file system (see mobile/README.md):
  *   lm_main.int8.onnx lm_flow.int8.onnx encoder.onnx decoder.int8.onnx text_conditioner.onnx
  *   vocab.json token_scores.json  g2p/<lang>.afg2p  voices/<lang>.wav  [espeak-ng-data/]
- * Runs either bundle: Africa TTS (24 layers, unguided) or Africa TTS Turbo (6 layers, guidance
- * distilled in). The guided 24-layer mode needs a second pass per frame and is Python-only.
+ * Runs the Africa TTS sherpa-onnx bundle (hf://AfriSpeech/africa-tts/sherpa-onnx/).
  */
 class AfricaTts(private val modelDir: String, numThreads: Int = 2) : AutoCloseable {
     private val frontend = AfricaTtsFrontend(

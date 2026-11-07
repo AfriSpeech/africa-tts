@@ -1,8 +1,23 @@
 # Model, data and limitations
 
+## How it was made
+
+Africa TTS is a 6-layer, 110M-parameter (codec included) Pocket TTS model. It was distilled from
+a 24-layer base model, [Africa TTS Base](https://huggingface.co/AfriSpeech/africa-tts-base),
+trained on the IPA of 897 hours of speech. The base model needs classifier-free guidance (2.0) to
+sound its best, which runs the backbone twice per frame; the student was trained to match that
+guided output, so the guidance is in its weights. Per frame, Africa TTS computes 6 layers where
+the guided base computes 48, and it is as intelligible
+([benchmark](BENCHMARKS.md#intelligibility)). Recipe: [recipes/africa/](../recipes/africa/README.md).
+
+The base model is released for research, not as a product: in Python,
+`AfricaTTS.load("africa-tts-base")` (guidance 2.0 by default, `cfg=1.0` for one pass per frame;
+guidance is implemented in [africa_tts/guidance.py](../africa_tts/guidance.py) and matches the
+training sampler, [tests/test_guidance_parity.py](../tests/test_guidance_parity.py)).
+
 ## Text front end
 
-The models read **IPA**, not spelling. The same conversion must run everywhere, because the
+The model reads **IPA**, not spelling. The same conversion must run everywhere, because the
 model only knows the IPA it was trained on:
 
 - **Python** (`africa_tts.to_ipa`): [africa-g2p](https://github.com/AfriSpeech/africa-g2p) pinned to
@@ -16,8 +31,8 @@ model only knows the IPA it was trained on:
 
 ## Using plain pocket-tts
 
-The models load in [pocket-tts](https://github.com/kyutai-labs/pocket-tts) directly, given IPA
-converted exactly as in training (pocket-tts has no guidance, so the 24-layer model runs unguided):
+The model loads in [pocket-tts](https://github.com/kyutai-labs/pocket-tts) directly, given IPA
+converted exactly as in training (its guidance is in the weights, so nothing else is needed):
 
 ```python
 # pip install "pocket-tts>=4.0.1" "africa-g2p[english] @ git+https://github.com/AfriSpeech/africa-g2p@76b53a8"
@@ -38,14 +53,14 @@ def to_ipa(text: str, lang: str) -> str:
         words.append(lead + (g2p(core, "eng", output="ipa").replace(" ", "") if core else "") + trail)
     return " ".join(words)
 
-model = TTSModel.load_model(config="hf://AfriSpeech/africa-tts-turbo/config.yaml")
+model = TTSModel.load_model(config="hf://AfriSpeech/africa-tts/config.yaml")
 voice = model.get_state_for_audio_prompt("hf://AfriSpeech/africa-tts/voices/twi.wav")
 audio = model.generate_audio(voice, to_ipa("Akwaaba! Yɛfrɛ me Kofi.", "twi"))
 scipy.io.wavfile.write("out.wav", model.sample_rate, audio.numpy())
 ```
 
-Or from the command line: `uvx pocket-tts generate --config hf://AfriSpeech/africa-tts-turbo/config.yaml
---voice hf://AfriSpeech/africa-tts/voices/twi.wav --text "<IPA>"`. The configs turn off Pocket
+Or from the command line: `uvx pocket-tts generate --config hf://AfriSpeech/africa-tts/config.yaml
+--voice hf://AfriSpeech/africa-tts/voices/twi.wav --text "<IPA>"`. The config turns off Pocket
 TTS's first-letter capitalisation and character replacement, since the input is IPA.
 
 ## Default voices
@@ -69,7 +84,7 @@ were removed; word timings come from ctc-forced-aligner for every language. Lang
 
 - Mostly read religious speech for the African languages; news, conversation and technical
   vocabulary are less natural, and languages with under ~2 h of data are weak.
-- Numbers must be spelled out: the models never saw digits.
+- Numbers must be spelled out: the model never saw digits.
 - Some africa-g2p tables do not mark tone (e.g. Fon, Ewe, Igbo, Ga), and a few rare Ge'ez
   syllables (e.g. ኳ) are missing from the Amharic table.
 - Loanwords follow the host language's spelling rules.

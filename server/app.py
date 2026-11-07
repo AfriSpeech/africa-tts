@@ -1,6 +1,6 @@
 """Africa TTS API server (sherpa-onnx, CPU).
 
-    AFRICA_TTS_MODEL=AfriSpeech/africa-tts-turbo uvicorn server.app:app --host 0.0.0.0 --port 8000
+    AFRICA_TTS_MODEL=AfriSpeech/africa-tts uvicorn server.app:app --host 0.0.0.0 --port 8000
 
 Endpoints
     GET  /health                    liveness + model info
@@ -12,7 +12,7 @@ Endpoints
                                     {"event": "done"} (or {"event": "error"})
 
 Configuration (environment)
-    AFRICA_TTS_MODEL     HF repo whose sherpa-onnx/ bundle to serve (default AfriSpeech/africa-tts-turbo)
+    AFRICA_TTS_MODEL     HF repo whose sherpa-onnx/ bundle to serve (default AfriSpeech/africa-tts)
     AFRICA_TTS_BUNDLE    local bundle folder (skips the download)
     AFRICA_TTS_WORKERS   parallel requests (model instances), default 2
     AFRICA_TTS_THREADS   ONNX Runtime threads per instance, default 2
@@ -49,7 +49,7 @@ def _bundle_dir() -> Path:
         return Path(os.environ["AFRICA_TTS_BUNDLE"])
     from huggingface_hub import snapshot_download
 
-    repo = os.environ.get("AFRICA_TTS_MODEL", "AfriSpeech/africa-tts-turbo")
+    repo = os.environ.get("AFRICA_TTS_MODEL", "AfriSpeech/africa-tts")
     root = snapshot_download(repo, allow_patterns=["sherpa-onnx/*"])
     return Path(root) / "sherpa-onnx"
 

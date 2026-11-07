@@ -1,7 +1,7 @@
 """Generate the paper's LaTeX tables and headline numbers from the benchmark results.
 
 Usage: python paper/make_tables.py RESULTS.json SPEED.json OUT_DIR
-Writes OUT_DIR/{speed,averages,perlang}.tex and OUT_DIR/numbers.tex (\\newcommand macros).
+Writes OUT_DIR/{speed,averages,distill,perlang}.tex and OUT_DIR/numbers.tex (\\newcommand macros).
 Best synthetic system per row in bold (real speech is a reference, never bolded).
 """
 
@@ -13,7 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 OURS = ["turbo", "guided", "unguided"]
 BASE = ["mms", "omnivoice", "orpheus"]
-NAME = {"real": "Real", "turbo": "Turbo", "guided": "Guided", "unguided": "Unguided",
+NAME = {"real": "Real", "turbo": "Africa TTS", "guided": "Base, guided", "unguided": "Base, unguided",
         "mms": "MMS-TTS", "omnivoice": "OmniVoice", "orpheus": "Orpheus"}
 SIZE = {"real": "speech", "turbo": "110M", "guided": "336M", "unguided": "336M",
         "mms": "36M/lang.", "omnivoice": "813M", "orpheus": "3.3B"}
@@ -22,24 +22,48 @@ COLS = ["real"] + SYN  # narrowed to the systems present in the results by set_c
 
 
 def set_cols(*results) -> None:
+    """Main tables: real speech, Africa TTS and the baselines (the base model only in distill)."""
     global COLS, SYN
     present = set().union(*(r["systems"] for r in results))
-    COLS = [s for s in ["real"] + OURS + BASE if s in present or s == "real"]
+    COLS = [s for s in ["real", "turbo"] + BASE if s in present or s == "real"]
     SYN = [s for s in COLS if s != "real"]
 
 
-def head(left: list[str], ours_label: str = "(ours)") -> str:
-    """Two header rows: an 'Africa TTS' span over our three modes, then system names and sizes."""
+def head(left: list[str], cols: list[str] | None = None) -> str:
+    """Two header rows: system names (ours marked), then sizes."""
+    cols = cols or COLS
     k = len(left)
-    first = COLS.index("turbo") + k + 1
-    pre = " & " * (k + COLS.index("turbo"))
-    post = " & " * (len(COLS) - COLS.index("unguided") - 1)
-    lines = [pre + r"\multicolumn{3}{c}{\textbf{Africa TTS} " + ours_label + "}" + post + r" \\",
-             rf"\cmidrule(lr){{{first}-{first + 2}}}",
-             " & ".join([rf"\textbf{{{x}}}" if x else "" for x in left]
-                        + [rf"\textbf{{{NAME[c]}}}" for c in COLS]) + r" \\",
-             " & ".join([""] * k + [rf"\textit{{{SIZE[c]}}}" for c in COLS]) + r" \\"]
-    return "\n".join(lines)
+    names = [rf"\textbf{{{NAME[c]}}}" + (" (ours)" if c == "turbo" else "") for c in cols]
+    return "\n".join([" & ".join([rf"\textbf{{{x}}}" if x else "" for x in left] + names) + r" \\",
+                      " & ".join([""] * k + [rf"\textit{{{SIZE[c]}}}" for c in cols]) + r" \\"])
+
+
+def distill_means(res: dict) -> tuple[list[str], dict]:
+    L = res["languages"]
+    sh = [c for c, v in L.items() if all(s in v for s in OURS)
+          and max(v[s]["n"] for s in OURS) >= 10]
+    return sh, {s: sum(L[c][s]["cer"] for c in sh) / len(sh) for s in OURS}
+
+
+def distill_table(res: dict) -> str:
+    cols = ["real"] + OURS
+    sh, mean = distill_means(res)
+    names = {"real": "Real", "turbo": "Ours", "guided": "Base, cfg 2", "unguided": "Base, cfg 1"}
+    hdr = "\n".join([" & ".join([""] + [rf"\textbf{{{names[c]}}}" for c in cols]) + r" \\",
+                     " & ".join([""] + [rf"\textit{{{SIZE[c]}}}" for c in cols]) + r" \\"])
+    lines = [r"\begin{table}[t]", r"\centering", r"\footnotesize", r"\setlength{\tabcolsep}{3.5pt}",
+             r"\begin{tabular}{lrrrr}", r"\toprule", hdr, r"\midrule",
+             f"All ({len(sh)}) & & " + " & ".join(cells(mean, OURS)) + r" \\"]
+    for comp in res["averages"]:
+        if comp["vs"] == "real":
+            lines.append(f"With recordings ({len(comp['languages'])}) & "
+                         + " & ".join(cells(comp["cer"], cols)) + r" \\")
+    lines += [r"\bottomrule", r"\end{tabular}",
+              r"\caption{Distillation: CER (\%) of \att{} and of the 24-layer base model it was"
+              r" distilled from, with guidance (cfg 2, two passes per frame) or without (cfg 1)."
+              r" Languages with fewer than 10 sentences excluded.}",
+              r"\label{tab:distill}", r"\end{table}"]
+    return "\n".join(lines) + "\n"
 
 
 
@@ -74,11 +98,11 @@ def src_short(s: str) -> str:
 
 def speed_table(sp: dict) -> str:
     r = sp["runs"]
-    rows = [("Africa TTS Turbo", "sherpa-onnx int8", r.get("turbo_sherpa_int8")),
-            ("Africa TTS Turbo", "PyTorch", r.get("turbo_python")),
-            ("Africa TTS unguided", "sherpa-onnx int8", r.get("24l_unguided_sherpa_int8")),
-            ("Africa TTS unguided", "PyTorch", r.get("24l_unguided_python")),
-            ("Africa TTS guided", "PyTorch", r.get("24l_guided_python"))]
+    rows = [("Africa TTS", "sherpa-onnx int8", r.get("turbo_sherpa_int8")),
+            ("Africa TTS", "PyTorch", r.get("turbo_python")),
+            ("Base, unguided", "sherpa-onnx int8", r.get("24l_unguided_sherpa_int8")),
+            ("Base, unguided", "PyTorch", r.get("24l_unguided_python")),
+            ("Base, guided", "PyTorch", r.get("24l_guided_python"))]
     lines = [r"\begin{table}[t]", r"\centering", r"\small", r"\begin{tabular}{llrr}", r"\toprule",
              r"\textbf{Model} & \textbf{Runtime} & \textbf{$\times$RT} $\uparrow$ & \textbf{TTFA} $\downarrow$ \\",
              r"\midrule"]
@@ -156,7 +180,11 @@ def numbers(res: dict, sp: dict) -> str:
               and max(langs[c][x]["n"] for x in SYN if x in langs[c]) >= 10]  # as in the means
         return sum(langs[c][a]["cer"] < langs[c][b]["cer"] for c in sh), len(sh)
 
-    for a in OURS:
+    sh, mean = distill_means(res)
+    macros["distN"] = len(sh)
+    for k2, v in mean.items():
+        macros[f"dist{k2}"] = f"{100 * v:.1f}"
+    for a in ["turbo"]:
         for b in BASE:
             if b in SYN:
                 w, n = wins(a, b, L)
@@ -186,6 +214,7 @@ def main() -> None:
     out.mkdir(parents=True, exist_ok=True)
     (out / "speed.tex").write_text(speed_table(sp))
     (out / "averages.tex").write_text(averages_table(res))
+    (out / "distill.tex").write_text(distill_table(res))
     (out / "perlang.tex").write_text(perlang_table(res))
     (out / "numbers.tex").write_text(numbers(res, sp))
     print((out / "numbers.tex").read_text())

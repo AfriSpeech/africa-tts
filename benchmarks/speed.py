@@ -3,7 +3,7 @@
 Measures, on this machine's CPU, for a set of sentences in several languages:
   - real-time factor (RTF = compute seconds / audio seconds; "x real time" = 1 / RTF)
   - time to first audio when streaming (Python package)
-for Turbo and the 24-layer model, in the Python package (PyTorch) and in sherpa-onnx (int8).
+for Africa TTS (turbo_*) and the 24-layer base model it was distilled from (24l_*), in the Python package (PyTorch) and in sherpa-onnx (int8).
 
 The Python package runs PyTorch on one thread (pocket-tts's default); --threads sets sherpa-onnx's.
 
@@ -111,11 +111,11 @@ def main() -> None:
     ap.add_argument("--skip", default="", help="comma-separated runs to skip")
     a = ap.parse_args()
     runs = {
-        "turbo_sherpa_int8": lambda: bench_sherpa("AfriSpeech/africa-tts-turbo", a.threads),
-        "turbo_python": lambda: bench_python("africa-tts-turbo", 1.0),
-        "24l_unguided_sherpa_int8": lambda: bench_sherpa("AfriSpeech/africa-tts", a.threads),
-        "24l_unguided_python": lambda: bench_python("africa-tts", 1.0),
-        "24l_guided_python": lambda: bench_python("africa-tts", 2.0),
+        "turbo_sherpa_int8": lambda: bench_sherpa("AfriSpeech/africa-tts", a.threads),
+        "turbo_python": lambda: bench_python("africa-tts", 1.0),
+        "24l_unguided_sherpa_int8": lambda: bench_sherpa("AfriSpeech/africa-tts-base", a.threads),
+        "24l_unguided_python": lambda: bench_python("africa-tts-base", 1.0),
+        "24l_guided_python": lambda: bench_python("africa-tts-base", 2.0),
     }
     res = {"cpu": cpu_name(), "threads": a.threads, "sentences": len(SENTENCES), "runs": {}}
     for name, fn in runs.items():

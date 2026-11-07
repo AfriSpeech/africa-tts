@@ -1,6 +1,6 @@
-"""Write the HF model card (README.md) for africa-tts or africa-tts-turbo.
+"""Write the HF model card (README.md) for AfriSpeech/africa-tts or AfriSpeech/africa-tts-base.
 
-Usage: python make_card.py {teacher|turbo} LANG_HOURS.json UDHR_META.json OUT/README.md [--bench results.json]
+Usage: python make_card.py {main|base} LANG_HOURS.json UDHR_META.json OUT/README.md [--bench results.json]
   results.json: from benchmarks/score.py (adds the benchmark section).
 """
 
@@ -13,8 +13,8 @@ DEMO = "https://huggingface.co/spaces/AfriSpeech/africa-tts-demo"
 GH = "https://github.com/AfriSpeech/africa-tts"
 NICE = {"english_eng": "English", "swahili_swa": "Swahili", "twi_twi": "Twi", "yoruba_yor": "Yoruba",
         "xhosa_xho": "Xhosa"}
-SYS = {"real": "Real speech", "turbo": "Africa TTS Turbo (110M)",
-         "guided": "Africa TTS, guided (336M)", "unguided": "Africa TTS, unguided (336M)",
+SYS = {"real": "Real speech", "turbo": "Africa TTS (110M)",
+         "guided": "Africa TTS Base, guided (336M)", "unguided": "Africa TTS Base, unguided (336M)",
          "mms": "MMS-TTS (36M per language)", "omnivoice": "OmniVoice (813M)",
          "orpheus": "Sunbird Orpheus (3.3B)"}
 
@@ -52,56 +52,76 @@ def cells_bold(vals: dict, cols: list[str], blank: str = "—") -> list[str]:
     """CERs as %, the lowest synthetic system in bold (real speech is a reference)."""
     shown = {s: pct(v) for s, v in vals.items() if v is not None and not
              (isinstance(v, float) and math.isnan(v))}
-    cands = [float(shown[s]) for s in shown if s != "real"]
+    cands = [float(shown[s]) for s in cols if s in shown and s != "real"]
     best = min(cands) if len(cands) > 1 else None
     return [(f"**{shown[s]}**" if s != "real" and best is not None and float(shown[s]) == best
              else shown[s]) if s in shown else blank for s in cols]
 
 
-def bench_section(res: dict, turbo: bool) -> str:
-    systems = res["systems"]
-    me = "turbo" if turbo else "guided"
-    order = [me] + [s for s in ("turbo", "guided", "unguided") if s != me and s in systems]
-    order += [s for s in ("mms", "omnivoice", "orpheus") if s in systems]
-    cols = [s for s in ["real", *order] if s in systems]
+BENCH_INTRO = """Intelligibility as **character error rate (CER, %, lower is better)**: each system reads the same
+held-out sentences (Omnilingual ASR corpus, FLEURS, WAXAL, FLORES+; none in our training data), and
+[Omnilingual ASR](https://huggingface.co/facebook/omniASR-LLM-7B) transcribes the audio. *Real
+speech* is the ASR on human recordings of the same sentences, a reference for the ASR's own error.
+Best synthetic system in bold."""
+
+
+def bench_section(res: dict, base: bool) -> str:
+    systems, L = res["systems"], res["languages"]
+    big = {c: v for c, v in L.items() if max(v[s]["n"] for s in v if s != "real" and isinstance(v[s], dict)
+                                              and "n" in v[s]) >= 10}
+    if base:  # the distillation: Africa TTS against the base model it was distilled from
+        cols = [s for s in ("real", "turbo", "guided", "unguided") if s in systems]
+        rows = ["| Languages | " + " | ".join(SYS[s] for s in cols) + " |", "|---|" + "---:|" * len(cols)]
+        sh = [c for c, v in big.items() if all(s in v for s in ("turbo", "guided", "unguided"))]
+        mean = {s: sum(big[c][s]["cer"] for c in sh) / len(sh) for s in ("turbo", "guided", "unguided")}
+        rows.append(f"| all {len(sh)} | | " + " | ".join(cells_bold(mean, cols[1:], "")) + " |")
+        for comp in res["averages"]:
+            if comp["vs"] == "real":
+                rows.append(f"| {len(comp['languages'])} with real recordings | "
+                            + " | ".join(cells_bold(comp["cer"], cols, "")) + " |")
+        return f"""## Benchmark
+
+{BENCH_INTRO} Languages with fewer than 10 test sentences are left out.
+
+{chr(10).join(rows)}
+
+Africa TTS matches the guided base model at a quarter of the layers and one pass per frame.
+Comparison with MMS-TTS, OmniVoice and Sunbird Orpheus: [Africa TTS](https://huggingface.co/AfriSpeech/africa-tts#benchmark).
+"""
+    cols = [s for s in ("real", "turbo", "mms", "omnivoice", "orpheus") if s in systems]
     rows = ["| Languages | " + " | ".join(SYS[s] for s in cols) + " |", "|---|" + "---:|" * len(cols)]
     for comp in res["averages"]:
         if comp["vs"] not in ("mms", "omnivoice", "orpheus", "real"):
             continue
         label = {"mms": "MMS-TTS supports", "omnivoice": "OmniVoice supports",
-                 "orpheus": "Sunbird Orpheus supports",
-                 "real": "have real recordings"}[comp["vs"]]
+                 "orpheus": "Sunbird Orpheus supports", "real": "have real recordings"}[comp["vs"]]
         rows.append(f"| {len(comp['languages'])} that {label} | "
                     + " | ".join(cells_bold(comp["cer"], cols, "")) + " |")
     per = ["| Language | " + " | ".join(SYS[s] for s in cols) + " |", "|---|" + "---:|" * len(cols)]
-    for c, v in res["languages"].items():
+    for c, v in L.items():
         cells = cells_bold({s: v[s]["cer"] for s in cols if s in v}, cols)
         per.append(f"| {v['name']} `{c}` | " + " | ".join(cells) + " |")
     return f"""## Benchmark
 
-Intelligibility as **character error rate (CER, %, lower is better)**: each system reads the same
-held-out sentences (Omnilingual ASR corpus, FLEURS, WAXAL, FLORES+; none in our training data), and
-[Omnilingual ASR](https://huggingface.co/facebook/omniASR-LLM-7B) transcribes the audio. *Real
-speech* is the ASR on human recordings of the same sentences, a reference for the ASR's own error.
-Averages are over the languages each comparison shares; the best synthetic system is in bold.
-Africa TTS uses each language's default voice; OmniVoice clones the same clip; MMS-TTS and Sunbird Orpheus use their own voices. Languages
-with fewer than 10 test sentences are left out of the averages.
+{BENCH_INTRO} Averages are over the languages each comparison shares, leaving out languages with
+fewer than 10 test sentences. Africa TTS uses each language's default voice; OmniVoice clones the
+same clip; MMS-TTS and Sunbird Orpheus use their own voices.
 
 {chr(10).join(rows)}
 
-<details><summary>Per language ({len(res["languages"])} languages)</summary>
+<details><summary>Per language ({len(L)} languages)</summary>
 
 {chr(10).join(per)}
 
 </details>
 
-Method, caveats and scripts: [benchmarks/]({GH}/tree/main/benchmarks).
+Method, caveats and scripts: [docs/BENCHMARKS.md]({GH}/blob/main/docs/BENCHMARKS.md).
 """
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("kind", choices=["teacher", "turbo"])
+    ap.add_argument("kind", choices=["main", "base"])
     ap.add_argument("hours")
     ap.add_argument("meta")
     ap.add_argument("out")
@@ -110,46 +130,46 @@ def main() -> None:
     hours = json.load(open(a.hours))
     meta = json.load(open(a.meta))
     udhr = {it["g2p"] for it in meta["items"]}
-    turbo = a.kind == "turbo"
-    repo = "AfriSpeech/africa-tts-turbo" if turbo else "AfriSpeech/africa-tts"
+    base = a.kind == "base"
+    repo = "AfriSpeech/africa-tts-base" if base else "AfriSpeech/africa-tts"
     langs = hours["langs"]
     african = [x for x in langs if x[0] != "eng"]
     rows = "\n".join(
         f"| {nice(n)} | `{g}`{f' (ISO `{RETIRED[g]}`)' if g in RETIRED else ''} | {h:.1f} | "
         f"{'✓' if g in udhr else ''} |" for g, n, h, _ in
         sorted(langs, key=lambda x: (x[0] != "eng", -x[2])))
-    short = "africa-tts-turbo" if turbo else "africa-tts"
-    if turbo:
+    if not base:
         what = (f"Fast text-to-speech for **{len(african)} African languages and English**, with voice "
-                f"cloning: the 6-layer version of [Africa TTS](https://huggingface.co/AfriSpeech/africa-tts), "
-                f"distilled with guidance built in, faster than real time on a CPU.")
+                "cloning, faster than real time on a CPU: **2.4× real time on 4 cores, first audio "
+                "after 0.17 s**, 110M parameters.")
         model = [
-            "6-layer [Pocket TTS](https://github.com/kyutai-labs/pocket-tts) FlowLM distilled from the "
-            "24-layer Africa TTS (guided, cfg 2.0) with Kyutai's `depth_distill` recipe, 200k steps.",
+            "6-layer [Pocket TTS](https://github.com/kyutai-labs/pocket-tts) FlowLM (110M parameters with "
+            "the Mimi codec), distilled with Kyutai's `depth_distill` recipe from the guided 24-layer "
+            "[Africa TTS Base](https://huggingface.co/AfriSpeech/africa-tts-base), so guidance is in its "
+            "weights; 200k steps.",
             "Reads IPA from [africa-g2p](https://github.com/AfriSpeech/africa-g2p) (English: espeak-ng); "
             "the package does the conversion.",
-            f"Ready [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) bundle in "
+            f"Ready [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) bundle (int8, 209 MB) in "
             f"[sherpa-onnx/](https://huggingface.co/{repo}/tree/main/sherpa-onnx) for servers and devices.",
         ]
     else:
-        what = (f"Text-to-speech for **{len(african)} African languages and English**, with voice cloning: "
-                f"the 24-layer model. [Africa TTS Turbo](https://huggingface.co/AfriSpeech/africa-tts-turbo) "
-                f"is its fast 6-layer version.")
+        what = (f"The 24-layer base model that [Africa TTS](https://huggingface.co/AfriSpeech/africa-tts) "
+                f"was distilled from ({len(african)} African languages and English), released for "
+                "research. **To synthesise speech, use [Africa TTS](https://huggingface.co/AfriSpeech/africa-tts)**: "
+                "it is as intelligible and several times faster.")
         model = [
-            "24-layer [Pocket TTS](https://github.com/kyutai-labs/pocket-tts) FlowLM (316M parameters), "
-            "fine-tuned from Kyutai's English model with a new 4,000-token IPA tokenizer; step 100k, "
-            "chosen by listening.",
-            "Reads IPA from [africa-g2p](https://github.com/AfriSpeech/africa-g2p) (English: espeak-ng); "
-            "the package does the conversion.",
-            "Two modes: **guided** (cfg 2.0, the package default for this model, Python) and "
-            f"**unguided** (`cfg=1.0`, also in the [sherpa-onnx bundle](https://huggingface.co/{repo}/tree/main/sherpa-onnx)). "
-            f"[How the modes work]({GH}/blob/main/docs/MODES.md).",
+            "24-layer [Pocket TTS](https://github.com/kyutai-labs/pocket-tts) FlowLM (336M parameters with "
+            "the Mimi codec), fine-tuned from Kyutai's English model with a new 4,000-token IPA "
+            "tokenizer; step 100k, chosen by listening.",
+            "Reads IPA from [africa-g2p](https://github.com/AfriSpeech/africa-g2p) (English: espeak-ng).",
+            "Runs with classifier-free guidance 2.0 by default (two passes per frame, Python only); "
+            f"`cfg=1.0` for one pass, also as a [sherpa-onnx bundle](https://huggingface.co/{repo}/tree/main/sherpa-onnx).",
         ]
     model.append(f"Trained on {hours['total']:.0f} h of real speech: JW recordings, "
                  "[africa-female-speech-v2](https://huggingface.co/datasets/AfriSpeech/africa-female-speech-v2), "
                  "Ghanaian English and HiFiTTS-2. "
                  f"[Data and recipe]({GH}/blob/main/docs/MODEL.md).")
-    bench = bench_section(json.load(open(a.bench)), turbo) if a.bench else ""
+    bench = bench_section(json.load(open(a.bench)), base) if a.bench else ""
     card = f"""---
 license: cc-by-nc-4.0
 language:
@@ -165,7 +185,7 @@ tags:
 - pocket-tts
 ---
 
-# {"Africa TTS Turbo" if turbo else "Africa TTS"}
+# {"Africa TTS Base" if base else "Africa TTS"}
 
 {what}
 
@@ -180,7 +200,7 @@ pip install "africa-tts @ git+{GH}"   # English also needs espeak-ng
 ```python
 from africa_tts import AfricaTTS
 
-tts = AfricaTTS.load("{short}")
+tts = AfricaTTS.load({'"africa-tts-base"' if base else ""})
 audio = tts.generate("Akwaaba! Yɛfrɛ me Kofi.", lang="twi")              # default Twi voice
 audio = tts.generate("Hello Ghana!", lang="eng", voice="my_voice.wav")  # clone a 3-10 s clip
 tts.save(audio, "out.wav")

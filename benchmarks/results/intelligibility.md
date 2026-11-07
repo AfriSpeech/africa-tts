@@ -1,4 +1,4 @@
-| Language | Code | Text source | Real speech | Africa TTS Turbo (110M) | Africa TTS, guided (336M) | Africa TTS, unguided (336M) | MMS-TTS (36M per language) | OmniVoice (813M) | Sunbird Orpheus (3.3B) |
+| Language | Code | Text source | Real speech | Africa TTS (110M) | Africa TTS Base, guided (336M) | Africa TTS Base, unguided (336M) | MMS-TTS (36M per language) | OmniVoice (813M) | Sunbird Orpheus (3.3B) |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|
 | Amharic | `amh` | fleurs/test | 8.0 | 5.7 | 5.6 | 8.3 | 10.9 | **4.8** | — |
 | Changana (Mozambique) | `tso` | flores_plus/devtest | — | 11.5 | 10.7 | 11.7 | **5.0** | — | — |
@@ -50,7 +50,7 @@
 
 Averages (mean of per-language CER, %, over the languages the systems share; best synthetic system in bold):
 
-| Comparison | Languages | Real speech | Africa TTS Turbo (110M) | Africa TTS, guided (336M) | Africa TTS, unguided (336M) | MMS-TTS (36M per language) | OmniVoice (813M) | Sunbird Orpheus (3.3B) |
+| Comparison | Languages | Real speech | Africa TTS (110M) | Africa TTS Base, guided (336M) | Africa TTS Base, unguided (336M) | MMS-TTS (36M per language) | OmniVoice (813M) | Sunbird Orpheus (3.3B) |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | vs MMS-TTS | 27 |  | 9.0 | **8.7** | 10.6 | 10.3 |  |  |
 | vs OmniVoice | 29 |  | 8.8 | 8.8 | 10.4 |  | **8.4** |  |
@@ -60,7 +60,7 @@ Averages (mean of per-language CER, %, over the languages the systems share; bes
 
 Same, with diacritics removed before scoring:
 
-| Comparison | Languages | Real speech | Africa TTS Turbo (110M) | Africa TTS, guided (336M) | Africa TTS, unguided (336M) | MMS-TTS (36M per language) | OmniVoice (813M) | Sunbird Orpheus (3.3B) |
+| Comparison | Languages | Real speech | Africa TTS (110M) | Africa TTS Base, guided (336M) | Africa TTS Base, unguided (336M) | MMS-TTS (36M per language) | OmniVoice (813M) | Sunbird Orpheus (3.3B) |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | vs MMS-TTS | 27 |  | 7.6 | **7.3** | 9.2 | 9.4 |  |  |
 | vs OmniVoice | 29 |  | 7.5 | 7.5 | 9.1 |  | **7.0** |  |

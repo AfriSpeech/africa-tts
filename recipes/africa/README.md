@@ -1,7 +1,8 @@
 # Recipe: Africa TTS (92 African languages + English, IPA input)
 
-How [AfriSpeech/africa-tts](https://huggingface.co/AfriSpeech/africa-tts) and
-[africa-tts-turbo](https://huggingface.co/AfriSpeech/africa-tts-turbo) were made, end to end.
+How [Africa TTS](https://huggingface.co/AfriSpeech/africa-tts) was made, end to end: a 24-layer
+base model ([africa-tts-base](https://huggingface.co/AfriSpeech/africa-tts-base)) trained on IPA,
+then distilled into the 6-layer released model.
 The same steps work for adding languages: anything with an africa-g2p IPA table and aligned
 speech can join.
 
@@ -60,7 +61,7 @@ SentencePiece Unigram, 4,000 pieces, character coverage 1.0, byte fallback; corp
 language with weight ∝ √hours. 2.41 tokens per word on validation (8k: 2.21, characters: 5.86).
 The result is in [tokenizer/](tokenizer/).
 
-## 4. Teacher (24 layers)
+## 4. Base model (24 layers)
 
 ```bash
 python -m training.train training/configs/finetune_africa_ipa.yaml
@@ -72,7 +73,7 @@ Validation every 1k steps, keep-best on validation loss, early stopping after 20
 without improvement. One H200: early-stopped at 113k steps (best validation loss at 93k); the
 release uses **step 100k**, chosen by listening.
 
-## 5. Turbo (6 layers, distilled)
+## 5. Africa TTS (6 layers, distilled)
 
 ```bash
 python -m training.train training/configs/depth_distill_africa_ipa.yaml
@@ -96,7 +97,7 @@ new schedule's value, 2.0e-4 -> 3.8e-4, below the 4e-4 peak).
 
 ```bash
 python recipes/africa/release/export_release.py training/configs/finetune_africa_ipa.yaml \
-    runs/africa_ipa_teacher/checkpoint_00100000.pt release/africa-tts AfriSpeech/africa-tts
+    runs/africa_ipa_teacher/checkpoint_00100000.pt release/africa-tts-base AfriSpeech/africa-tts-base
 python recipes/africa/release/select_voices.py train_final.jsonl release/voices     # default voices (JW)
 python recipes/africa/release/select_female_voices.py release/voices                # female voices, 17 languages
 python export/onnx/export_onnx.py --model-dir release/africa-tts --out-dir onnx/africa-tts --quantize
@@ -105,7 +106,7 @@ python mobile/make_bundle.py --onnx-dir onnx/africa-tts --g2p-dir g2p --voices-d
 python recipes/africa/release/synth_udhr.py ...   # UDHR texts per language (Space)
 python recipes/africa/release/synth_samples.py ... # Space audio, made with the africa_tts package
 python recipes/africa/release/make_space.py ... ; python recipes/africa/release/make_card.py ...
-python recipes/africa/release/make_video.py space_samples out.mp4 --label turbo [--langs twi,ewe,...]  # slideshow
+python recipes/africa/release/make_video.py space_samples out.mp4 --label africa-tts [--langs twi,ewe,...]  # slideshow
 python recipes/africa/release/experimental_languages.py ipa/train_all.jsonl africa_tts/languages_experimental.json --md table.md
 ```
 

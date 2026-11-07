@@ -1,7 +1,7 @@
 """Classifier-free guidance (CFG) for pocket-tts inference.
 
 pocket-tts generates without guidance. The 24-layer Africa TTS release was listened to with
-cfg 2.0 (also the output Turbo was distilled from), so this adds guidance to pocket-tts's own
+cfg 2.0 (also the output Africa TTS was distilled from), so this adds guidance to pocket-tts's own
 generation pipeline, exactly as the training code samples:
 
     conditioned branch   [BOS-before-voice, voice, text, audio...]   (the usual voice state)
@@ -13,7 +13,7 @@ Both branches are fed the same generated frames. The null branch's KV cache trav
 voice state (key NULL_KEY), so pocket-tts's chunking, state copies, streaming decoder and EOS
 logic are reused unchanged. Each frame runs the backbone twice: about 2x slower.
 
-Turbo has guidance distilled into it: use it with cfg 1 (no guidance).
+Africa TTS (6 layers) has guidance distilled into it: use it with cfg 1 (no guidance).
 """
 
 from functools import partial

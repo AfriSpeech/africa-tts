@@ -9,26 +9,24 @@ from pocket_tts import TTSModel
 
 from africa_tts.frontend import to_ipa
 from africa_tts.guidance import GuidedTTSModel
-
-MODELS = {
-    "africa-tts": "AfriSpeech/africa-tts",  # 24 layers; guided (default) or unguided (cfg=1.0)
-    "africa-tts-turbo": "AfriSpeech/africa-tts-turbo",  # 6 layers, guidance distilled in
-}
-# Classifier-free guidance per model: 2.0 for the 24-layer model (two passes per frame, the
-# setting its release was listened to with); Turbo was distilled from that guided output, so it
-# runs with none.
-DEFAULT_CFG = {"AfriSpeech/africa-tts": 2.0, "AfriSpeech/africa-tts-turbo": 1.0}
 from africa_tts.languages import EXPERIMENTAL as _EXPERIMENTAL
 from africa_tts.languages import LANGS as _LANGS
 from africa_tts.languages import experimental_languages, languages  # noqa: F401 (re-export)
+
+MODELS = {
+    "africa-tts": "AfriSpeech/africa-tts",  # the model: 6 layers, guidance distilled in
+    "africa-tts-base": "AfriSpeech/africa-tts-base",  # 24-layer base it was distilled from
+    "africa-tts-turbo": "AfriSpeech/africa-tts",  # former name of africa-tts
+}
+# Classifier-free guidance: the base model runs with 2.0 (two passes per frame), the setting it
+# was distilled with; Africa TTS has that guidance in its weights and runs with none.
+DEFAULT_CFG = {"AfriSpeech/africa-tts-base": 2.0}
 
 
 class AfricaTTS:
     """Africa TTS with the africa-g2p front end and a default voice per language.
 
-        tts = AfricaTTS.load()                            # Turbo (default): 6 layers, guidance distilled in
-        tts = AfricaTTS.load("africa-tts")                # 24 layers, guidance 2.0 (2 passes/frame)
-        tts = AfricaTTS.load("africa-tts", cfg=1.0)       # 24 layers, unguided (1 pass/frame)
+        tts = AfricaTTS.load()
         audio = tts.generate("Akwaaba! Yɛfrɛ me Kofi.", lang="twi")   # float32, 24 kHz
         tts.save(audio, "out.wav")
     """
@@ -40,19 +38,19 @@ class AfricaTTS:
         self.sample_rate = model.sample_rate
 
     @classmethod
-    def load(cls, name: str = "africa-tts-turbo", cfg: float | None = None,
+    def load(cls, name: str = "africa-tts", cfg: float | None = None,
              **kwargs) -> "AfricaTTS":
-        """`name`: "africa-tts", "africa-tts-turbo", a Hugging Face repo id, or a local folder
-        with config.yaml. `cfg`: classifier-free guidance (default 2.0 for africa-tts, 1.0 =
-        none for Turbo and anything else). Extra keyword arguments go to
-        pocket_tts.TTSModel.load_model."""
+        """`name`: "africa-tts" (default), a Hugging Face repo id, or a local folder with
+        config.yaml; "africa-tts-base" is the 24-layer model Africa TTS was distilled from, for
+        research. `cfg`: classifier-free guidance (default 1.0 = none; 2.0 for the base model).
+        Extra keyword arguments go to pocket_tts.TTSModel.load_model."""
         repo = MODELS.get(name, name)
         local = Path(repo)
         config = str(local / "config.yaml") if local.is_dir() else f"hf://{repo}/config.yaml"
         if cfg is None:
             cfg = DEFAULT_CFG.get(repo, 1.0)
-        if repo == MODELS["africa-tts-turbo"] and cfg != 1.0:
-            warnings.warn("Turbo already has guidance 2.0 built in; extra guidance over-sharpens it",
+        if repo == MODELS["africa-tts"] and cfg != 1.0:
+            warnings.warn("Africa TTS already has guidance built in; extra guidance over-sharpens it",
                           stacklevel=2)
         model = TTSModel.load_model(config=config, **kwargs)
         if cfg != 1.0:

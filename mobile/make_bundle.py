@@ -1,7 +1,7 @@
 """Assemble a self-contained on-device bundle for sherpa-onnx + the africa_tts front end.
 
-    python mobile/make_bundle.py --onnx-dir out/africa-tts-turbo --g2p-dir g2p --voices-dir voices \
-        --espeak-dir espeak-en --out bundle/africa-tts-turbo
+    python mobile/make_bundle.py --onnx-dir out/africa-tts --g2p-dir g2p --voices-dir voices \
+        --espeak-dir espeak-en --out bundle/africa-tts
 
 Layout (what mobile/android/.../AfricaTts.kt and the Python example expect):
     lm_main.int8.onnx lm_flow.int8.onnx decoder.int8.onnx   int8: the bulk of the compute
@@ -50,8 +50,8 @@ def main() -> None:
     ap.add_argument("--espeak-dir", type=Path, help="folder containing espeak-ng-data (English)")
     ap.add_argument("--espeak-license", type=Path, default=Path("/usr/share/common-licenses/GPL-3"))
     ap.add_argument("--out", type=Path, required=True)
-    ap.add_argument("--name", default="Africa TTS Turbo")
-    ap.add_argument("--repo", default="AfriSpeech/africa-tts-turbo")
+    ap.add_argument("--name", default="Africa TTS")
+    ap.add_argument("--repo", default="AfriSpeech/africa-tts")
     a = ap.parse_args()
     if a.out.exists():
         shutil.rmtree(a.out)

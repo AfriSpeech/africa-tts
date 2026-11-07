@@ -14,7 +14,7 @@ Below are the 657 African languages that have an africa-g2p IPA table but were n
 ```bash
 pip install "africa-tts @ git+https://github.com/AfriSpeech/africa-tts"
 africa-tts --list-experimental                       # tier, code, closest trained language, coverage
-africa-tts "Your sentence in your language." --lang bam -o test.wav                 # Turbo (default)
+africa-tts "Your sentence in your language." --lang bam -o test.wav
 africa-tts "Your sentence in your language." --lang bam --model africa-tts -o test.wav
 africa-tts --ipa-only "Your sentence" --lang bam     # the IPA the model reads
 ```

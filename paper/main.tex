@@ -20,7 +20,7 @@
 \setlength{\abovecaptionskip}{4pt}
 
 \newcommand{\att}{Africa TTS}
-\newcommand{\turbo}{Africa TTS Turbo}
+\newcommand{\attbase}{Africa TTS Base}
 \input{tables/numbers}
 
 \title{\att{}: Fast, CPU-Friendly Speech Synthesis\\for 92 African Languages from Phonemes}
@@ -37,20 +37,21 @@ Mich-Seth Owusu\\[2pt]
 \maketitle
 
 \begin{abstract}
-We present \att{}, a text-to-speech system for 92 African languages and English that runs
-faster than real time on an ordinary CPU. All languages share one input space: text is converted
-to IPA by rule-based grapheme-to-phoneme tables, so a single model learns sounds rather than
-orthographies. A 24-layer continuous-latent audio language model, built on Pocket TTS, is
-trained on the IPA, and a 6-layer student, \turbo{} (110M parameters), is distilled from it
-with classifier-free guidance folded into its weights. \turbo{} generates speech
-\xrtturbopython{}$\times$ faster than real time on four CPU cores and starts streaming within
-\ttfaturbopython{}\,s. On held-out sentences in \nTrainedLangs{} languages, transcribed by
-Omnilingual ASR, \turbo{} reaches a mean character error rate (CER) of \avgMmsturbo{}\% against
-\avgMmsMms{}\% for MMS-TTS (better in \turboBeatsMms{} languages) and \avgOrphturbo{}\% against
-\avgOrphOrph{}\% for the 3.3B-parameter Sunbird Orpheus, and comes within
-\(0.4\) points of the 813M-parameter OmniVoice (\avgOmniturbo{}\% vs.\ \avgOmniOmni{}\%) at
-about a seventh of its size. Models,
-code, voices and the benchmark are released.
+We present \att{}, a 110M-parameter text-to-speech model for 92 African languages and English
+that runs faster than real time on an ordinary CPU. All languages share one input space: text is
+converted to IPA by rule-based grapheme-to-phoneme tables, so a single model learns sounds rather
+than orthographies. \att{} is a 6-layer continuous-latent audio language model built on Pocket
+TTS, distilled from a 24-layer base model with classifier-free guidance folded into its weights.
+It generates speech \xrtturbopython{}$\times$ faster than real time on four CPU cores, starts
+streaming within \ttfaturbopython{}\,s, and fits in a 209\,MB on-device bundle. On held-out
+sentences in \nTrainedLangs{} languages, transcribed by Omnilingual ASR, \att{} reaches a mean
+character error rate (CER) of \avgMmsturbo{}\% against \avgMmsMms{}\% for MMS-TTS (better in
+\turboBeatsMms{} languages) and \avgOrphturbo{}\% against \avgOrphOrph{}\% for the
+3.3B-parameter Sunbird Orpheus, and comes within 0.4 points of the 813M-parameter OmniVoice
+(\avgOmniturbo{}\% vs.\ \avgOmniOmni{}\%) at about a seventh of its size. Distillation loses no
+intelligibility: \att{} matches its guided base model (\distturbo{}\% vs.\ \distguided{}\%) with
+a quarter of the layers and one pass per frame. The model, code, voices and the benchmark are
+released.
 \end{abstract}
 
 \section{Introduction}
@@ -64,7 +65,7 @@ language for more than a thousand languages, and OmniVoice~\cite{zhu2026omnivoic
 zero-shot in more than six hundred. But per-language models do not share what languages have in
 common, and large zero-shot models need accelerators to run fast.
 
-We present \textbf{\att{}}, a single text-to-speech model for 92 African languages and English,
+We present \textbf{\att{}}, a 110M-parameter text-to-speech model for 92 African languages and English,
 built on Kyutai's Pocket TTS~\cite{pockettts,rouard2025calm}, a continuous-latent audio language
 model designed to run faster than real time on a CPU. Two choices shape the system:
 \begin{enumerate}
@@ -72,8 +73,8 @@ model designed to run faster than real time on a CPU. Two choices shape the syst
   grapheme-to-phoneme tables~\cite{africag2p} (espeak-ng~\cite{espeakng} for English), so the
   model learns sounds rather than 92 orthographies, and languages with little data share
   acoustic knowledge with their neighbours.
-  \item \textbf{Speech for the CPU.} A 6-layer student, \textbf{\turbo{}} (110M parameters
-  including the codec), is distilled from the 24-layer teacher with classifier-free
+  \item \textbf{Speech for the CPU.} \att{} has 6 layers (110M parameters including the
+  codec). It is distilled from a 24-layer base model, \attbase{}, with classifier-free
   guidance~\cite{ho2022cfg} folded into its weights. It generates speech
   \xrtturbopython{}$\times$ faster than real time on four CPU cores and starts streaming after
   \ttfaturbopython{}\,s, and ships as int8 ONNX bundles for servers and phones.
@@ -81,15 +82,16 @@ model designed to run faster than real time on a CPU. Two choices shape the syst
 
 We evaluate intelligibility with Omnilingual ASR~\cite{omniasr2025} on held-out sentences in
 \nTrainedLangs{} languages, against MMS-TTS, OmniVoice and Sunbird Orpheus, with human recordings of the same sentences as a reference.
-Our contributions are: (i) a single phoneme-input TTS model covering 92 African languages,
-trained on open data; (ii) a 110M-parameter distilled model that is fast enough for
-CPU-only and on-device use, with ONNX exports; and (iii) an open intelligibility benchmark over \nTrainedLangs{} languages comparing four systems, with all
+Our contributions are: (i) \att{}, a single phoneme-input TTS model covering 92 African
+languages, small and fast enough for CPU-only and on-device use, with ONNX exports; (ii) a
+depth-distillation recipe that keeps the 24-layer base model's guided intelligibility at a
+quarter of the layers and one pass per frame; and (iii) an open intelligibility benchmark over \nTrainedLangs{} languages comparing four systems, with all
 synthesised audio and transcripts.
 
-All models, voices, code, the benchmark and its outputs are released.\footnote{Code:
-\url{https://github.com/AfriSpeech/africa-tts}; models:
-\url{https://huggingface.co/AfriSpeech/africa-tts-turbo} and
-\url{https://huggingface.co/AfriSpeech/africa-tts}; live demo:
+The model, voices, code, the benchmark and its outputs are released.\footnote{Code:
+\url{https://github.com/AfriSpeech/africa-tts}; model:
+\url{https://huggingface.co/AfriSpeech/africa-tts} (base model:
+\url{https://huggingface.co/AfriSpeech/africa-tts-base}); live demo:
 \url{https://huggingface.co/spaces/AfriSpeech/africa-tts-demo}.}
 
 \section{Related Work}
@@ -135,25 +137,24 @@ input errors are normalised, e.g.\ Greek and Cyrillic lookalikes of the African 
 with 4{,}000 pieces is trained on the IPA, sampling languages in proportion to the square root
 of their hours (2.41 tokens per word).
 
-\subsection{Teacher}
-The 24-layer teacher (336M parameters, of which 20M are the Mimi codec) is
+\subsection{Base model}
+The 24-layer base model, \attbase{} (336M parameters, of which 20M are the Mimi codec), is
 warm-started from Kyutai's English Pocket TTS with a fresh text embedding table for the IPA
 vocabulary, and fine-tuned on one H200 GPU with batch 64, learning rate $2\times10^{-4}$ and
 20\% text and voice dropout (enabling classifier-free guidance). Training early-stopped at
-113k steps; the release uses step 100k, chosen by listening. At inference the teacher runs
-either \emph{guided} (cfg 2.0: two backbone passes per frame) or \emph{unguided} (one pass).
+113k steps; we use step 100k, chosen by listening. It sounds best with guidance (cfg 2.0),
+which runs the backbone twice per frame: too slow for a CPU (Table~\ref{tab:speed}).
 
-\subsection{\turbo{}: depth distillation}
-The 6-layer student is initialised from teacher layers 0, 1, 2, 21, 22 and 23, with the text
-table, flow head and end-of-speech head copied, and trained to match the teacher's guided
+\subsection{\att{}: depth distillation}
+\att{} is a 6-layer student initialised from base-model layers 0, 1, 2, 21, 22 and 23, with the
+text table, flow head and end-of-speech head copied, and trained to match the base model's guided
 output, so guidance costs nothing at inference. It trains for 200k steps (cosine schedule,
 peak $4\times10^{-4}$); among checkpoints at 150k, 175k and 200k, 200k was preferred in
-listening tests. Per frame, Turbo computes 6 layers where the guided teacher computes 48.
+listening tests. Per frame, \att{} computes 6 layers where the guided base model computes 48.
 
 \subsection{Deployment}
-Both models export to ONNX and run in sherpa-onnx~\cite{sherpaonnx} with int8 weights: 209\,MB
-for Turbo and 437\,MB for the teacher, including the front end and default voices. The int8
-models match PyTorch within $6.5\times10^{-5}$ before quantisation and the decoder at 116\,dB
+\att{} exports to ONNX and runs in sherpa-onnx~\cite{sherpaonnx} with int8 weights in a 209\,MB
+bundle that includes the front end and default voices. The exported graphs match PyTorch within $6.5\times10^{-5}$ before quantisation and the decoder at 116\,dB
 SNR. A CPU-only API server (HTTP, WebSocket streaming) powers a public demo that scales to zero.
 
 \section{Evaluation}
@@ -161,8 +162,9 @@ SNR. A CPU-only API server (HTTP, WebSocket streaming) powers a public demo that
 
 \subsection{Speed}
 Table~\ref{tab:speed} reports speed on a dedicated 4-vCPU cloud machine over eight sentences in
-eight languages. Turbo is the only configuration comfortably faster than real time, and it
-starts streaming within \ttfaturbopython{}\,s.
+eight languages. \att{} runs \xrtturbopython{}$\times$ faster than real time and starts
+streaming within \ttfaturbopython{}\,s; the guided base model it was distilled from runs at
+\xrtfullguidedpython{}$\times$, slower than real time.
 
 \input{tables/speed}
 
@@ -175,8 +177,8 @@ Sentences with digits, under 20 or over 220 characters are removed, and Greek or
 lookalike letters in FLORES+ are replaced by the intended African letters. None of these
 sentences is in our training data.
 
-\paragraph{Systems.} \att{} in its three modes (Turbo, guided, unguided) uses each language's
-default voice and temperature 0.3. MMS-TTS~\cite{pratap2023mms} is run for every language
+\paragraph{Systems.} \att{} uses each language's default voice and temperature 0.3, as does
+the base model in the distillation comparison. MMS-TTS~\cite{pratap2023mms} is run for every language
 with a released model, with uroman for non-Latin scripts. OmniVoice~\cite{zhu2026omnivoice}
 is run for every language in its list, cloning the same default voice clip as \att{}; as
 OmniVoice also conditions on the prompt's transcript, each prompt is transcribed with the
@@ -195,21 +197,26 @@ read synthetic speech is cleaner than spontaneous or noisy recordings. Means are
 languages each comparison shares.
 
 \subsection{Results}
-Table~\ref{tab:averages} summarises intelligibility. Against MMS-TTS, the strongest widely
-used per-language baseline, every guided configuration is more intelligible: \turbo{} averages
-\avgMmsturbo{}\% CER against \avgMmsMms{}\% and is better in \turboBeatsMms{} languages, and the
-guided teacher in \guidedBeatsMms{}. Sunbird Orpheus, a 3.3B-parameter model, is the least
-intelligible system on the \avgNOrph{} languages it covers (\avgOrphOrph{}\% against
-\avgOrphturbo{}\% for \turbo{}, which is better in \turboBeatsOrph{} of them). OmniVoice is the
-most intelligible system overall: on its \avgNOmni{} shared languages it averages
-\avgOmniOmni{}\% against \avgOmniturbo{}\% for both \turbo{} and the guided teacher, and it is
-better in most individual languages, by small margins. \turbo{} closes most of that gap at
-about a seventh of OmniVoice's parameters while running faster than real time on a CPU
-(Table~\ref{tab:speed}). Distillation costs nothing in intelligibility: \turbo{} matches the
-guided 24-layer teacher, while the unguided teacher is clearly worse (\avgMmsunguided{}\% on
-the MMS-TTS languages). On the \avgNreal{} languages with human recordings, \turbo{} and the
-guided teacher (\avgrealturbo{}\%) are within 0.2 points of the ASR's error on real speech
-(\avgrealreal{}\%). Removing diacritics lowers all CERs but leaves the ranking unchanged.
+Table~\ref{tab:averages} summarises intelligibility. Against MMS-TTS, the strongest widely used
+per-language baseline, \att{} is more intelligible: it averages \avgMmsturbo{}\% CER against
+\avgMmsMms{}\% and is better in \turboBeatsMms{} languages. Sunbird Orpheus, a 3.3B-parameter
+model, is the least intelligible system on the \avgNOrph{} languages it covers
+(\avgOrphOrph{}\% against \avgOrphturbo{}\% for \att{}, which is better in \turboBeatsOrph{} of
+them). OmniVoice is the most intelligible system overall: on its \avgNOmni{} shared languages it
+averages \avgOmniOmni{}\% against \avgOmniturbo{}\% for \att{}, and it is better in most
+individual languages, by small margins. \att{} closes most of that gap at about a seventh of
+OmniVoice's parameters while running faster than real time on a CPU (Table~\ref{tab:speed}).
+On the \avgNreal{} languages with human recordings, \att{} (\avgrealturbo{}\%) is within
+0.2 points of the ASR's error on real speech (\avgrealreal{}\%). Removing diacritics lowers all
+CERs but leaves the ranking unchanged.
+
+\input{tables/distill}
+
+\paragraph{Distillation.} Table~\ref{tab:distill} compares \att{} with the base model it was
+distilled from. Over all \distN{} languages, \att{} (\distturbo{}\%) matches the guided base
+model (\distguided{}\%) and is clearly better than the base model without guidance
+(\distunguided{}\%): folding guidance into a 6-layer student keeps its benefit while removing
+three quarters of the layers and the second pass, a 5$\times$ speed-up on a CPU.
 
 \section{Limitations}
 The ASR-based metric measures intelligibility only, not naturalness or speaker similarity, and
@@ -224,8 +231,9 @@ misused to impersonate people; the models are released for non-commercial use un
 CC-BY-NC-4.0.
 
 \section{Conclusion}
-\att{} shows that one phoneme-input model can serve 92 African languages and that, distilled
-to 110M parameters, it runs faster than real time on a CPU without losing intelligibility. It
+\att{} shows that one 110M-parameter phoneme-input model can serve 92 African languages
+faster than real time on a CPU: distilled from a 24-layer base model, it keeps that model's
+guided intelligibility. It
 is clearly more intelligible than per-language MMS-TTS models and a much
 larger Sunbird Orpheus, and close to OmniVoice at a fraction of its size. Future work includes
 human listening tests with native speakers, more conversational training speech, and tone

@@ -24,12 +24,12 @@ pinned: true
 license: cc-by-nc-4.0
 short_description: Type text in 92 African languages or English, hear it spoken
 models:
-- AfriSpeech/africa-tts-turbo
+- AfriSpeech/africa-tts
 ---
 
-Live demo of [Africa TTS Turbo](https://huggingface.co/AfriSpeech/africa-tts-turbo). The page calls
+Live demo of [Africa TTS](https://huggingface.co/AfriSpeech/africa-tts). The page calls
 a rate-limited public API ([server code](https://github.com/AfriSpeech/africa-tts/tree/main/server));
-pre-generated samples for every model are in
+pre-generated samples in 53 languages are in
 [africa-tts-samples](https://huggingface.co/spaces/AfriSpeech/africa-tts-samples).
 """
 
@@ -89,10 +89,10 @@ footer ul{padding-left:18px;margin:6px 0}
 <body><div class="wrap">
 <h1>Africa TTS, live</h1>
 <p class="lede">Type a sentence in one of <b>92 African languages or English</b> and hear it spoken by
-<b>Africa TTS Turbo</b>, a fast open text-to-speech model that reads African languages through
+<b>Africa TTS</b>, a fast open text-to-speech model that reads African languages through
 their pronunciation (IPA). Use each language's default voice, or clone your own from a short clip.</p>
 <div class="links">
-<a href="https://huggingface.co/AfriSpeech/africa-tts-turbo" target="_blank" rel="noopener">Model: africa-tts-turbo</a>
+<a href="https://huggingface.co/AfriSpeech/africa-tts" target="_blank" rel="noopener">Model: africa-tts</a>
 <a href="https://huggingface.co/spaces/AfriSpeech/africa-tts-samples" target="_blank" rel="noopener">Samples in 53 languages</a>
 <a href="https://github.com/AfriSpeech/africa-tts" target="_blank" rel="noopener">Code &amp; API on GitHub</a>
 </div>

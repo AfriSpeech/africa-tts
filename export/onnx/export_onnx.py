@@ -4,7 +4,7 @@
     python export_onnx.py --model-dir release/africa-tts --out-dir out/africa-tts [--quantize]
 
 Input folder: config.yaml + model.safetensors + tokenizer.json (a pocket-tts model, e.g.
-AfriSpeech/africa-tts or africa-tts-turbo; any number of FlowLM layers). Output:
+AfriSpeech/africa-tts or africa-tts-base; any number of FlowLM layers). Output:
 
     lm_main.onnx           FlowLM backbone, stateful (KV cache in/out)
     lm_flow.onnx           flow head, one LSD step: x + dt * flow_dir

@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir -r server/requirements.txt
 COPY africa_tts africa_tts
 COPY server server
 
-ENV AFRICA_TTS_MODEL=AfriSpeech/africa-tts-turbo \
+ENV AFRICA_TTS_MODEL=AfriSpeech/africa-tts \
     AFRICA_TTS_WORKERS=2 \
     AFRICA_TTS_THREADS=2 \
     PYTHONUNBUFFERED=1
