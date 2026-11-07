@@ -1,6 +1,6 @@
 # Twi recipe: a new language on the English teacher, with a merged tokenizer
 
-How the Twi Pocket TTS was built (Ghana NLP, November 2026), written so the next
+How the Twi Pocket TTS was built (November 2026), written so the next
 language can reuse it. Scripts assume they run from a project root holding `data/`
 (on the H200: `/mnt/volume_d2wey28/projects/pocket-tts-twi`).
 

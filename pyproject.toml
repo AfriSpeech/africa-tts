@@ -5,7 +5,7 @@ description = "Fast text-to-speech for 92 African languages and English: audio.c
 readme = "README.md"
 requires-python = ">=3.10,<3.15"
 license = { text = "MIT" }
-authors = [{ name = "AfriSpeech / Ghana NLP" }]
+authors = [{ name = "AfriSpeech" }]
 keywords = ["tts", "text-to-speech", "african-languages", "speech-synthesis", "voice-cloning", "ipa"]
 classifiers = [
     "Programming Language :: Python :: 3",

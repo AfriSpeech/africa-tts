@@ -221,7 +221,7 @@ data are weak; some G2P tables do not mark tone. Do not use voice cloning to imp
 ## License
 
 CC-BY-NC-4.0 (non-commercial), following the licences of the training recordings. Built on
-[Kyutai's Pocket TTS](https://huggingface.co/kyutai/pocket-tts). By [AfriSpeech](https://huggingface.co/AfriSpeech) / Ghana NLP.
+[Kyutai's Pocket TTS](https://huggingface.co/kyutai/pocket-tts). By [AfriSpeech](https://huggingface.co/AfriSpeech).
 """
     open(a.out, "w", encoding="utf-8").write(card)
     print("wrote", a.out)

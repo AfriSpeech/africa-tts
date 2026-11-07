@@ -88,4 +88,4 @@ tts = AfricaTTS.load(device="cuda")     # PyTorch on an NVIDIA GPU
 ## License
 
 Code: MIT ([LICENSE](https://github.com/AfriSpeech/africa-tts/blob/main/LICENSE)). Model and default voices: CC-BY-NC-4.0. espeak-ng (English) is
-GPL-3.0-or-later. Built by [AfriSpeech](https://huggingface.co/AfriSpeech) / Ghana NLP.
+GPL-3.0-or-later. Built by [AfriSpeech](https://huggingface.co/AfriSpeech).
