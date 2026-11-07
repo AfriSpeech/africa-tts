@@ -130,10 +130,21 @@ def trim_silence(audio: np.ndarray, sr: int, pad_sec: float = 0.18, fade_ms: flo
 
 
 def _read_voice(path: str) -> tuple[np.ndarray, int]:
-    import soundfile as sf
+    resolved = _resolve_hf(path)
+    try:
+        import soundfile as sf
 
-    audio, sr = sf.read(_resolve_hf(path), dtype="float32", always_2d=True)
-    audio = audio.mean(1)
+        audio, sr = sf.read(resolved, dtype="float32", always_2d=True)
+        audio = audio.mean(1)
+    except ImportError:
+        import scipy.io.wavfile
+
+        sr, raw = scipy.io.wavfile.read(resolved)
+        audio = raw.mean(1) if raw.ndim > 1 else raw
+        if audio.dtype != np.float32:
+            max_v = float(np.iinfo(audio.dtype).max) if np.issubdtype(audio.dtype, np.integer) else 1.0
+            audio = (audio / max_v).astype(np.float32)
+
     audio = trim_silence(audio, sr)
     if len(audio) < sr:
         raise ValueError("voice audio must be at least 1 s (3-10 s of clean speech recommended)")
@@ -202,7 +213,11 @@ class _TorchEngine:
 
     def _state(self, voice: str):
         if voice not in self._states:
-            self._states[voice] = self.model.get_state_for_audio_prompt(_resolve_hf(voice))
+            import torch
+
+            audio, _ = _read_voice(voice)
+            tensor = torch.from_numpy(audio[None]).float()
+            self._states[voice] = self.model.get_state_for_audio_prompt(tensor)
         return self._states[voice]
 
     def generate(self, ipa: str, voice: str) -> np.ndarray:
