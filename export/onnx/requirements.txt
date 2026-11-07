@@ -1,0 +1,5 @@
+# ONNX export for sherpa-onnx; not needed for inference with the Python package.
+# pip install -e . -r export/onnx/requirements.txt
+onnx>=1.17
+onnxruntime>=1.17
+sherpa-onnx>=1.12

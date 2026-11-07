@@ -1,37 +1,24 @@
 [project]
 name = "africa-tts"
 version = "0.1.0"
-description = "Pocket TTS for 92 African languages and English: inference, training recipe, mobile export"
+description = "Fast, CPU-friendly text-to-speech for 92 African languages and English (Pocket TTS)"
 readme = "README.md"
 requires-python = ">=3.10,<3.15"
-license = { text = "MIT (code); models CC-BY-NC-4.0" }
+license = { text = "MIT" }
 authors = [{ name = "AfriSpeech / Ghana NLP" }]
+keywords = ["tts", "text-to-speech", "african-languages", "speech-synthesis", "voice-cloning", "ipa"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+]
 dependencies = [
-    # The exact pocket-tts and africa-g2p revisions the models were trained and tested with.
-    "pocket-tts @ git+https://github.com/kyutai-labs/pocket-tts@91a9e96433bfe23375eea719b03f0081466f8e20",
-    "africa-g2p[english] @ git+https://github.com/AfriSpeech/africa-g2p@76b53a8fa2a688812e369837d179d4710c111a7a",
+    "pocket-tts>=4.0.1,<5",
+    # 0.3.3 = commit 76b53a8, the G2P tables the model was trained with (0.3.2 predates fixes)
+    "africa-g2p[english]>=0.3.3,<0.4",
     "numpy>=1.24",
     "scipy>=1.5",
 ]
-
-[project.optional-dependencies]
-# Training (training/) and the African data recipe (recipes/africa/).
-train = [
-    "pyyaml>=6.0",
-    "soundfile>=0.12",
-    "sphn>=0.1.4",
-    "torchaudio",
-    "tqdm>=4.60",
-    "sentencepiece>=0.2.1",
-    "pyarrow>=14",
-    "jiwer>=3.0",
-    "transformers>=4.40",
-    "ctc-forced-aligner @ git+https://github.com/MahmoudAshraf97/ctc-forced-aligner",
-    "uroman",
-    "huggingface_hub>=0.30",
-]
-# ONNX export for sherpa-onnx (export/).
-export = ["onnx>=1.17", "onnxruntime>=1.17", "sherpa-onnx>=1.12"]
 
 [project.scripts]
 africa-tts = "africa_tts.cli:main"
@@ -44,9 +31,6 @@ Source = "https://github.com/AfriSpeech/africa-tts"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-[tool.hatch.metadata]
-allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["africa_tts"]

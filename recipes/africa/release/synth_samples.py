@@ -1,5 +1,5 @@
 """Samples for the Space, made exactly the way users run the models: the africa_tts package
-(pocket-tts inference; guidance 2.0 for africa-tts-base via africa_tts.guidance, none for africa-tts;
+(pocket-tts inference; guidance 2.0 for africa-tts-base via recipes/africa/guidance.py, none for africa-tts;
 temperature 0.3) with each language's bundled default voice.
 
 Texts come from a meta.json written by synth_udhr.py (UDHR Articles 1, 3, 5 per language). Each
@@ -17,7 +17,12 @@ from pathlib import Path
 import scipy.io.wavfile
 from pocket_tts.utils.utils import download_if_necessary
 
+import sys
+
 from africa_tts import AfricaTTS
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from guidance import load_base  # noqa: E402
 
 
 def main() -> None:
@@ -27,8 +32,7 @@ def main() -> None:
     ap.add_argument("--label", required=True)
     ap.add_argument("--model", required=True, help="africa-tts | africa-tts-base | local folder")
     ap.add_argument("--device", default="cpu")
-    ap.add_argument("--cfg", type=float, default=None,
-                    help="classifier-free guidance (default: the model's, 2.0 for africa-tts)")
+    ap.add_argument("--cfg", type=float, default=2.0, help="guidance for africa-tts-base (default 2.0)")
     a = ap.parse_args()
     (a.out / "audio").mkdir(parents=True, exist_ok=True)
     meta_out = a.out / "meta.json"
@@ -40,8 +44,11 @@ def main() -> None:
                  for it in src["items"]]
         meta = {"labels": [], "items": items}
 
-    tts = AfricaTTS.load(a.model, cfg=a.cfg)
-    print(f"model {a.model}: cfg {tts.cfg}", flush=True)
+    if a.model == "africa-tts-base":
+        tts = load_base(a.cfg)
+    else:
+        tts = AfricaTTS.load(a.model)
+    print(f"model {a.model}", flush=True)
     tts.model.to(a.device)
     for i, it in enumerate(meta["items"]):
         g = it["g2p"]

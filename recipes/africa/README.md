@@ -16,7 +16,7 @@ git clone https://github.com/AfriSpeech/africa-g2p third_party/africa-g2p
 git -C third_party/africa-g2p checkout 76b53a8
 cmake -S third_party/africa-g2p/native -B third_party/africa-g2p/native/build && cmake --build third_party/africa-g2p/native/build -j
 python third_party/africa-g2p/native/tools/export_tables.py --all
-pip install -e ".[train]"      # + espeak-ng 1.51 (apt install espeak-ng on Ubuntu 22.04/24.04)
+pip install -e . -r recipes/africa/requirements.txt   # + espeak-ng 1.51 (apt install espeak-ng on Ubuntu 22.04/24.04)
 ```
 
 ## 1. Data (number-free, real speech only)

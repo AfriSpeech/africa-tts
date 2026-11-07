@@ -16,7 +16,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("text", nargs="?")
     ap.add_argument("--lang", "-l", help="ISO 639-3 code, e.g. twi, ewe, hau, yor, zul, eng")
     ap.add_argument("--model", "-m", default="africa-tts",
-                    help="africa-tts (default) | africa-tts-base | HF repo | local folder")
+                    help="africa-tts (default), or a local folder with a downloaded copy")
     ap.add_argument("--voice", "-v", help="WAV to clone (default: the language's bundled voice)")
     ap.add_argument("--out", "-o", default="out.wav")
     ap.add_argument("--ipa", action="store_true", help="TEXT is already IPA")

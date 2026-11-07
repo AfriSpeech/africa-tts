@@ -8,19 +8,14 @@ import numpy as np
 from pocket_tts import TTSModel
 
 from africa_tts.frontend import to_ipa
-from africa_tts.guidance import GuidedTTSModel
 from africa_tts.languages import EXPERIMENTAL as _EXPERIMENTAL
 from africa_tts.languages import LANGS as _LANGS
 from africa_tts.languages import experimental_languages, languages  # noqa: F401 (re-export)
 
 MODELS = {
-    "africa-tts": "AfriSpeech/africa-tts",  # the model: 6 layers, guidance distilled in
-    "africa-tts-base": "AfriSpeech/africa-tts-base",  # 24-layer base it was distilled from
-    "africa-tts-turbo": "AfriSpeech/africa-tts",  # former name of africa-tts
+    "africa-tts": "AfriSpeech/africa-tts",
+    "africa-tts-turbo": "AfriSpeech/africa-tts",  # former name
 }
-# Classifier-free guidance: the base model runs with 2.0 (two passes per frame), the setting it
-# was distilled with; Africa TTS has that guidance in its weights and runs with none.
-DEFAULT_CFG = {"AfriSpeech/africa-tts-base": 2.0}
 
 
 class AfricaTTS:
@@ -31,31 +26,20 @@ class AfricaTTS:
         tts.save(audio, "out.wav")
     """
 
-    def __init__(self, model: TTSModel, repo: str, cfg: float = 1.0) -> None:
+    def __init__(self, model: TTSModel, repo: str) -> None:
         self.model = model
         self.repo = repo
-        self.cfg = cfg
         self.sample_rate = model.sample_rate
 
     @classmethod
-    def load(cls, name: str = "africa-tts", cfg: float | None = None,
-             **kwargs) -> "AfricaTTS":
-        """`name`: "africa-tts" (default), a Hugging Face repo id, or a local folder with
-        config.yaml; "africa-tts-base" is the 24-layer model Africa TTS was distilled from, for
-        research. `cfg`: classifier-free guidance (default 1.0 = none; 2.0 for the base model).
-        Extra keyword arguments go to pocket_tts.TTSModel.load_model."""
+    def load(cls, name: str = "africa-tts", **kwargs) -> "AfricaTTS":
+        """Load Africa TTS (downloaded from Hugging Face on first use, then cached). `name` can also
+        be a local folder with config.yaml, e.g. a downloaded copy for offline use. Extra keyword
+        arguments go to pocket_tts.TTSModel.load_model."""
         repo = MODELS.get(name, name)
         local = Path(repo)
         config = str(local / "config.yaml") if local.is_dir() else f"hf://{repo}/config.yaml"
-        if cfg is None:
-            cfg = DEFAULT_CFG.get(repo, 1.0)
-        if repo == MODELS["africa-tts"] and cfg != 1.0:
-            warnings.warn("Africa TTS already has guidance built in; extra guidance over-sharpens it",
-                          stacklevel=2)
-        model = TTSModel.load_model(config=config, **kwargs)
-        if cfg != 1.0:
-            model = GuidedTTSModel.wrap(model, cfg)
-        return cls(model, repo, cfg)
+        return cls(TTSModel.load_model(config=config, **kwargs), repo)
 
     def default_voice(self, lang: str) -> str:
         """The bundled voice prompt for `lang`: 3.5-6 s of speech in that language (a female voice

@@ -1,0 +1,14 @@
+# Training (training/) and the African data recipe (recipes/africa/); not needed for inference.
+# pip install -e . -r recipes/africa/requirements.txt   (+ espeak-ng 1.51 from apt/brew)
+pyyaml>=6.0
+soundfile>=0.12
+sphn>=0.1.4
+torchaudio
+tqdm>=4.60
+sentencepiece>=0.2.1
+pyarrow>=14
+jiwer>=3.0
+transformers>=4.40
+uroman
+huggingface_hub>=0.30
+ctc-forced-aligner @ git+https://github.com/MahmoudAshraf97/ctc-forced-aligner

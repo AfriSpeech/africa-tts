@@ -119,6 +119,10 @@ Method, caveats and scripts: [docs/BENCHMARKS.md]({GH}/blob/main/docs/BENCHMARKS
 """
 
 
+MAIN_QUICK = '## Quick start\n\n```bash\npip install africa-tts   # English also needs espeak-ng\n```\n\n```python\nfrom africa_tts import AfricaTTS\n\ntts = AfricaTTS.load()\naudio = tts.generate("Akwaaba! Yɛfrɛ me Kofi.", lang="twi")              # default Twi voice\naudio = tts.generate("Hello Ghana!", lang="eng", voice="my_voice.wav")  # clone a 3-10 s clip\ntts.save(audio, "out.wav")\n```\n\nOutput: 24 kHz mono. Every language has a default voice. Spell out numbers. Plain pocket-tts works\ntoo, with IPA input: [see how]({GH}/blob/main/docs/MODEL.md#using-plain-pocket-tts).\n\n'.replace('{GH}', 'https://github.com/AfriSpeech/africa-tts')
+BASE_USE = '## Use\n\nNot supported by the `africa-tts` package, which runs Africa TTS. For research, the repository\'s\n[`recipes/africa/guidance.py`]({GH}/blob/main/recipes/africa/guidance.py) runs it with guidance:\n\n```python\nimport sys; sys.path.insert(0, "recipes/africa")   # from a clone of {GH}\nfrom guidance import load_base\n\ntts = load_base(cfg=2.0)   # cfg=1.0: one pass per frame\naudio = tts.generate("Akwaaba! Yɛfrɛ me Kofi.", lang="twi")\n```\n\n'.replace('{GH}', 'https://github.com/AfriSpeech/africa-tts')
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("kind", choices=["main", "base"])
@@ -162,14 +166,15 @@ def main() -> None:
             "the Mimi codec), fine-tuned from Kyutai's English model with a new 4,000-token IPA "
             "tokenizer; step 100k, chosen by listening.",
             "Reads IPA from [africa-g2p](https://github.com/AfriSpeech/africa-g2p) (English: espeak-ng).",
-            "Runs with classifier-free guidance 2.0 by default (two passes per frame, Python only); "
-            f"`cfg=1.0` for one pass, also as a [sherpa-onnx bundle](https://huggingface.co/{repo}/tree/main/sherpa-onnx).",
+            "Best with classifier-free guidance 2.0 (two passes per frame); an unguided "
+            f"[sherpa-onnx bundle](https://huggingface.co/{repo}/tree/main/sherpa-onnx) is included.",
         ]
     model.append(f"Trained on {hours['total']:.0f} h of real speech: JW recordings, "
                  "[africa-female-speech-v2](https://huggingface.co/datasets/AfriSpeech/africa-female-speech-v2), "
                  "Ghanaian English and HiFiTTS-2. "
                  f"[Data and recipe]({GH}/blob/main/docs/MODEL.md).")
     bench = bench_section(json.load(open(a.bench)), base) if a.bench else ""
+    quick = BASE_USE if base else MAIN_QUICK
     card = f"""---
 license: cc-by-nc-4.0
 language:
@@ -191,25 +196,7 @@ tags:
 
 🎙️ [**Try it live**]({DEMO}) · 🔊 [Samples in {len(udhr)} languages]({SPACE}) · 💻 [Code, server, mobile]({GH})
 
-## Quick start
-
-```bash
-pip install "africa-tts @ git+{GH}"   # English also needs espeak-ng
-```
-
-```python
-from africa_tts import AfricaTTS
-
-tts = AfricaTTS.load({'"africa-tts-base"' if base else ""})
-audio = tts.generate("Akwaaba! Yɛfrɛ me Kofi.", lang="twi")              # default Twi voice
-audio = tts.generate("Hello Ghana!", lang="eng", voice="my_voice.wav")  # clone a 3-10 s clip
-tts.save(audio, "out.wav")
-```
-
-Every language has a default voice. Spell out numbers. Plain pocket-tts works too, with IPA input:
-[see how]({GH}/blob/main/docs/MODEL.md#using-plain-pocket-tts).
-
-{bench}
+{quick}{bench}
 ## Model
 
 {chr(10).join(f"- {m}" for m in model)}

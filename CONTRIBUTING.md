@@ -40,7 +40,7 @@ quality drops silently. So:
 ```bash
 git clone https://github.com/AfriSpeech/africa-tts && cd africa-tts
 python -m venv .venv && source .venv/bin/activate
-pip install -e ".[train,export]"
+pip install -e . -r recipes/africa/requirements.txt -r export/onnx/requirements.txt
 sudo apt install espeak-ng          # 1.51 on Ubuntu 22.04/24.04; brew install espeak-ng on macOS
 ```
 

@@ -11,13 +11,17 @@ import argparse
 import json
 from pathlib import Path
 
+import sys
+
 import scipy.io.wavfile
 import torch
 
 from africa_tts import AfricaTTS
 
-SYSTEMS = {"turbo": ("africa-tts", 1.0), "guided": ("africa-tts-base", 2.0),
-           "unguided": ("africa-tts-base", 1.0)}
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "recipes" / "africa"))
+from guidance import load_base  # noqa: E402  (research: the 24-layer base model, with guidance)
+
+SYSTEMS = {"turbo": None, "guided": 2.0, "unguided": 1.0}  # base model: guidance coefficient
 
 
 def main() -> None:
@@ -29,9 +33,8 @@ def main() -> None:
     a = ap.parse_args()
     i, n = map(int, a.shard.split("/"))
     rows = [json.loads(line) for line in open(a.bench / "testset.jsonl")][i::n]
-    model, cfg = SYSTEMS[a.system]
     torch.manual_seed(0)
-    tts = AfricaTTS.load(model, cfg=cfg)
+    tts = AfricaTTS.load() if a.system == "turbo" else load_base(SYSTEMS[a.system])
     tts.model.to(a.device)
     done = 0
     for r in rows:

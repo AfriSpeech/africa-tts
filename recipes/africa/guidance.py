@@ -1,8 +1,8 @@
-"""Classifier-free guidance (CFG) for pocket-tts inference.
+"""Classifier-free guidance (CFG) for pocket-tts inference: research use, not part of the package.
 
-pocket-tts generates without guidance. The 24-layer Africa TTS release was listened to with
-cfg 2.0 (also the output Africa TTS was distilled from), so this adds guidance to pocket-tts's own
-generation pipeline, exactly as the training code samples:
+The 24-layer base model (AfriSpeech/africa-tts-base) is run with cfg 2.0, the output Africa TTS
+was distilled from (benchmark, samples, paper). pocket-tts generates without guidance, so this adds
+it to pocket-tts's own generation pipeline, exactly as the training code samples:
 
     conditioned branch   [BOS-before-voice, voice, text, audio...]   (the usual voice state)
     null branch          [BOS-before-voice,               audio...]   (no voice, no text)
@@ -13,7 +13,10 @@ Both branches are fed the same generated frames. The null branch's KV cache trav
 voice state (key NULL_KEY), so pocket-tts's chunking, state copies, streaming decoder and EOS
 logic are reused unchanged. Each frame runs the backbone twice: about 2x slower.
 
-Africa TTS (6 layers) has guidance distilled into it: use it with cfg 1 (no guidance).
+Africa TTS (6 layers) has guidance distilled into it and needs none.
+
+    sys.path.insert(0, "recipes/africa"); from guidance import load_base
+    tts = load_base(cfg=2.0)   # an AfricaTTS (default voices, IPA front end) on the base model
 """
 
 from functools import partial
@@ -100,3 +103,15 @@ class GuidedTTSModel(TTSModel):
                                         b=self.noise_clamp)
         latent = _DECODE[fl.flow_type](partial(fl.flow_net, z), noise, self.sampler_decode_steps)
         return latent[:, None, :], is_eos
+
+
+def load_base(cfg: float = 2.0, repo: str = "AfriSpeech/africa-tts-base", **kwargs):
+    """The 24-layer base model behind the africa_tts interface, with guidance `cfg` (1.0 = none)."""
+    from africa_tts.tts import AfricaTTS
+
+    local = Path(repo)
+    config = str(local / "config.yaml") if local.is_dir() else f"hf://{repo}/config.yaml"
+    model = TTSModel.load_model(config=config, **kwargs)
+    if cfg != 1.0:
+        model = GuidedTTSModel.wrap(model, cfg)
+    return AfricaTTS(model, repo)

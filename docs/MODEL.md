@@ -10,10 +10,9 @@ guided output, so the guidance is in its weights. Per frame, Africa TTS computes
 the guided base computes 48, and it is as intelligible
 ([benchmark](BENCHMARKS.md#intelligibility)). Recipe: [recipes/africa/](../recipes/africa/README.md).
 
-The base model is released for research, not as a product: in Python,
-`AfricaTTS.load("africa-tts-base")` (guidance 2.0 by default, `cfg=1.0` for one pass per frame;
-guidance is implemented in [africa_tts/guidance.py](../africa_tts/guidance.py) and matches the
-training sampler, [tests/test_guidance_parity.py](../tests/test_guidance_parity.py)).
+The base model is released for research and is not supported by the `africa-tts` package.
+[recipes/africa/guidance.py](../recipes/africa/guidance.py) runs it with guidance (`load_base()`),
+matching the training sampler ([tests/test_guidance_parity.py](../tests/test_guidance_parity.py)).
 
 ## Text front end
 

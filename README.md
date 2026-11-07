@@ -9,7 +9,7 @@ voice, so all you need is text and a language code.
 🤗 [Model](https://huggingface.co/AfriSpeech/africa-tts)
 
 > An ongoing project: native-speaker feedback is what improves it most. See
-> [CONTRIBUTING.md](CONTRIBUTING.md).
+> [CONTRIBUTING.md](https://github.com/AfriSpeech/africa-tts/blob/main/CONTRIBUTING.md).
 
 ## ⚡ Runs on a CPU, no GPU needed
 
@@ -19,20 +19,20 @@ playback can start almost at once. It has 110M parameters, and the on-device bun
 209 MB, so it runs on laptops, servers and phones.
 
 Measured on a dedicated 4-vCPU cloud machine (Modal); your laptop may be faster. Measure your own
-machine with [`benchmarks/speed.py`](benchmarks/speed.py); details in
-[docs/BENCHMARKS.md](docs/BENCHMARKS.md#speed).
+machine with [`benchmarks/speed.py`](https://github.com/AfriSpeech/africa-tts/blob/main/benchmarks/speed.py); details in
+[docs/BENCHMARKS.md](https://github.com/AfriSpeech/africa-tts/blob/main/docs/BENCHMARKS.md#speed).
 
 ## 🎯 Intelligible
 
 On held-out sentences in 47 languages, transcribed by Omnilingual ASR, Africa TTS has a lower
 character error rate than MMS-TTS (9.0% vs 10.3%, better in 21 of 27 languages) and the 3.3B
 Sunbird Orpheus (5.9% vs 10.3%), and is close to the 813M OmniVoice (8.8% vs 8.4%) at a
-seventh of its size: [benchmark](docs/BENCHMARKS.md#intelligibility).
+seventh of its size: [benchmark](https://github.com/AfriSpeech/africa-tts/blob/main/docs/BENCHMARKS.md#intelligibility).
 
 ## Install
 
 ```bash
-pip install "africa-tts @ git+https://github.com/AfriSpeech/africa-tts"
+pip install "africa-tts @ git+https://github.com/AfriSpeech/africa-tts"   # PyPI release coming
 # English also needs espeak-ng: apt install espeak-ng / brew install espeak-ng
 ```
 
@@ -60,18 +60,18 @@ tts.save(audio, "out.wav")
 
 | | |
 |---|---|
-| **API server** | HTTP, WebSocket streaming, OpenAI-compatible; Docker or Modal, CPU only: [server/](server/) |
-| **On device** | sherpa-onnx bundles, C front end, Android wrapper: [mobile/](mobile/) |
-| **Experimental languages** | 657 untrained languages, read through their closest trained one; help us test: [docs/EXPERIMENTAL_LANGUAGES.md](docs/EXPERIMENTAL_LANGUAGES.md) |
+| **API server** | HTTP, WebSocket streaming, OpenAI-compatible; Docker or Modal, CPU only: [server/](https://github.com/AfriSpeech/africa-tts/tree/main/server) |
+| **On device** | sherpa-onnx bundles, C front end, Android wrapper: [mobile/](https://github.com/AfriSpeech/africa-tts/tree/main/mobile) |
+| **Experimental languages** | 657 untrained languages, read through their closest trained one; help us test: [docs/EXPERIMENTAL_LANGUAGES.md](https://github.com/AfriSpeech/africa-tts/blob/main/docs/EXPERIMENTAL_LANGUAGES.md) |
 
 ## More
 
-- [Benchmarks](docs/BENCHMARKS.md): speed, and intelligibility per language
-- [Model, how it was made, data and limitations](docs/MODEL.md)
-- [Training recipe](recipes/africa/README.md) · [ONNX export](export/onnx/) · [training code](training/)
-- [Status and roadmap](docs/ROADMAP.md) · [Contributing](CONTRIBUTING.md)
+- [Benchmarks](https://github.com/AfriSpeech/africa-tts/blob/main/docs/BENCHMARKS.md): speed, and intelligibility per language
+- [Model, how it was made, data and limitations](https://github.com/AfriSpeech/africa-tts/blob/main/docs/MODEL.md)
+- [Training recipe](https://github.com/AfriSpeech/africa-tts/blob/main/recipes/africa/README.md) · [ONNX export](https://github.com/AfriSpeech/africa-tts/tree/main/export/onnx) · [training code](https://github.com/AfriSpeech/africa-tts/tree/main/training)
+- [Status and roadmap](https://github.com/AfriSpeech/africa-tts/blob/main/docs/ROADMAP.md) · [Contributing](https://github.com/AfriSpeech/africa-tts/blob/main/CONTRIBUTING.md)
 
 ## License
 
-Code: MIT ([LICENSE](LICENSE)). Model and default voices: CC-BY-NC-4.0. espeak-ng (English) is
+Code: MIT ([LICENSE](https://github.com/AfriSpeech/africa-tts/blob/main/LICENSE)). Model and default voices: CC-BY-NC-4.0. espeak-ng (English) is
 GPL-3.0-or-later. Built by [AfriSpeech](https://huggingface.co/AfriSpeech) / Ghana NLP.

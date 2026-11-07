@@ -1,4 +1,4 @@
-"""Guided pocket-tts inference (africa_tts.guidance) == the training code's guided sampler.
+"""Guided pocket-tts inference (recipes/africa/guidance.py) == the training code's guided sampler.
 
 Generates with training's TrainableTTS.generate(cfg_coef=2.0), recording each frame's noise,
 then replays the same noise through GuidedTTSModel (pocket-tts's own pipeline) from the same
@@ -13,13 +13,14 @@ from pathlib import Path
 import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "recipes" / "africa"))
 import yaml
 from pocket_tts import TTSModel
 from pocket_tts.data.audio import audio_read
 from pocket_tts.data.audio_utils import convert_audio
 from pocket_tts.models import tts_model as tm
 
-from africa_tts.guidance import GuidedTTSModel
+from guidance import GuidedTTSModel  # noqa: E402
 from training.args import load_args
 from training.modules.builders import build_models
 
