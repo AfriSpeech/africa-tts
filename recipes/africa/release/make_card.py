@@ -87,25 +87,26 @@ def bench_section(res: dict, base: bool) -> str:
 Africa TTS matches the guided base model at a quarter of the layers and one pass per frame.
 Comparison with MMS-TTS and OmniVoice: [Africa TTS](https://huggingface.co/AfriSpeech/africa-tts#benchmark).
 """
-    cols = [s for s in ("real", "turbo", "mms", "omnivoice") if s in systems]
+    cols = [s for s in ("real", "turbo", "mms") if s in systems]
     per = ["| Language | " + " | ".join(SYS[s] for s in cols) + " |", "|---|" + "---:|" * len(cols)]
     for c, v in L.items():
+        if "mms" not in v:  # the card compares with MMS-TTS only
+            continue
         cells = cells_bold({s: v[s]["cer"] for s in cols if s in v}, cols)
         per.append(f"| {v['name']} `{c}` | " + " | ".join(cells) + " |")
     return f"""## Benchmark
 
 Each system reads the same held-out sentences (Omnilingual ASR corpus, FLEURS, WAXAL, FLORES+;
 none in our training data), and [Omnilingual ASR](https://huggingface.co/facebook/omniASR-LLM-7B)
-transcribes the audio: lower **character error rate (CER)** means more intelligible speech. Per
-language (at least 10 test sentences), Africa TTS beats MMS-TTS in 21 of the 27 languages both
-support; OmniVoice, seven times larger, beats Africa TTS in 24 of 29.
+transcribes the audio: a lower **character error rate (CER)** means more intelligible speech.
+On the 27 languages both support (at least 10 test sentences each), Africa TTS has the lower
+error rate than MMS-TTS in 21:
 
-![CER per language for Africa TTS, MMS-TTS and OmniVoice](assets/benchmark_cer.png)
+![CER per language, Africa TTS vs MMS-TTS: lower is better](assets/benchmark_cer.png)
 
-Africa TTS uses each language's default voice; OmniVoice clones the same clip; MMS-TTS uses its
-own voices.
+Africa TTS uses each language's default voice; MMS-TTS uses its own voices.
 
-<details><summary>CER per language (%, lower is better; {len(L)} languages)</summary>
+<details><summary>CER per language (%, lower is better; {len(per) - 2} languages)</summary>
 
 *Real speech* is the ASR on human recordings of the same sentences, a reference for the ASR's own
 error. Best synthetic system in bold.
@@ -114,7 +115,7 @@ error. Best synthetic system in bold.
 
 </details>
 
-Method, caveats and scripts: [docs/BENCHMARKS.md]({GH}/blob/main/docs/BENCHMARKS.md).
+Method, caveats, OmniVoice and all languages: [docs/BENCHMARKS.md]({GH}/blob/main/docs/BENCHMARKS.md).
 """
 
 
