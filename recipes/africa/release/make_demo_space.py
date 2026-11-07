@@ -36,6 +36,9 @@ pre-generated samples in 53 languages are in
 PAGE = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Africa TTS live demo</title>
 <style>
 :root{--bg:#fbfaf7;--fg:#1b1a17;--muted:#6b675f;--card:#fff;--line:#e7e3da;--accent:#a0471d;
