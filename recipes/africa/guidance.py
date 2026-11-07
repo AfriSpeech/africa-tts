@@ -16,7 +16,7 @@ logic are reused unchanged. Each frame runs the backbone twice: about 2x slower.
 Africa TTS (6 layers) has guidance distilled into it and needs none.
 
     sys.path.insert(0, "recipes/africa"); from guidance import load_base
-    tts = load_base(cfg=2.0)   # an AfricaTTS (default voices, IPA front end) on the base model
+    tts = load_base(cfg=2.0)   # default voices and IPA front end, on pocket-tts / PyTorch
 """
 
 from functools import partial
@@ -105,13 +105,46 @@ class GuidedTTSModel(TTSModel):
         return latent[:, None, :], is_eos
 
 
-def load_base(cfg: float = 2.0, repo: str = "AfriSpeech/africa-tts-base", **kwargs):
-    """The 24-layer base model behind the africa_tts interface, with guidance `cfg` (1.0 = none)."""
-    from africa_tts.tts import AfricaTTS
+class TorchTTS:
+    """The africa_tts interface (default voices, IPA front end) on pocket-tts / PyTorch, for
+    research: guidance and GPU runs (benchmark, samples, paper). The package uses sherpa-onnx."""
 
+    def __init__(self, model: TTSModel, repo: str) -> None:
+        self.model, self.repo, self.sample_rate = model, repo, model.sample_rate
+        self._states: dict = {}
+
+    def default_voice(self, lang: str) -> str:
+        from africa_tts.languages import voice_language
+
+        return f"hf://AfriSpeech/africa-tts/voices/{voice_language(lang)}.wav"
+
+    def generate(self, text: str, lang: str, voice=None, ipa: bool = False):
+        import numpy as np
+
+        from africa_tts.frontend import to_ipa
+
+        v = str(voice) if voice else self.default_voice(lang)
+        if v not in self._states:
+            self._states[v] = self.model.get_state_for_audio_prompt(v)
+        audio = self.model.generate_audio(self._states[v], text if ipa else to_ipa(text, lang))
+        return audio.detach().cpu().numpy().astype(np.float32)
+
+    def save(self, audio, path) -> None:
+        import scipy.io.wavfile
+
+        scipy.io.wavfile.write(str(path), self.sample_rate, audio)
+
+
+def load_torch(repo: str = "AfriSpeech/africa-tts", cfg: float = 1.0, **kwargs) -> TorchTTS:
+    """A model through pocket-tts / PyTorch, with guidance `cfg` (1.0 = none)."""
     local = Path(repo)
     config = str(local / "config.yaml") if local.is_dir() else f"hf://{repo}/config.yaml"
     model = TTSModel.load_model(config=config, **kwargs)
     if cfg != 1.0:
         model = GuidedTTSModel.wrap(model, cfg)
-    return AfricaTTS(model, repo)
+    return TorchTTS(model, repo)
+
+
+def load_base(cfg: float = 2.0, repo: str = "AfriSpeech/africa-tts-base", **kwargs) -> TorchTTS:
+    """The 24-layer base model, with guidance `cfg` (1.0 = none)."""
+    return load_torch(repo, cfg, **kwargs)

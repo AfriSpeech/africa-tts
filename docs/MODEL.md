@@ -34,7 +34,7 @@ The model loads in [pocket-tts](https://github.com/kyutai-labs/pocket-tts) direc
 converted exactly as in training (its guidance is in the weights, so nothing else is needed):
 
 ```python
-# pip install "pocket-tts>=4.0.1" "africa-g2p[english] @ git+https://github.com/AfriSpeech/africa-g2p@76b53a8"
+# pip install "pocket-tts>=4.0.1" "africa-g2p[english]>=0.3.4"
 import re
 import scipy.io.wavfile
 from africa_g2p import g2p

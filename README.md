@@ -13,13 +13,10 @@ voice, so all you need is text and a language code.
 
 ## ⚡ Runs on a CPU, no GPU needed
 
-**Africa TTS speaks 2.4× faster than real time on 4 CPU cores, and starts streaming audio
-0.17 s after it gets the text.** A 10-second sentence takes about 4 seconds to generate, and
-playback can start almost at once. It has 110M parameters, and the on-device bundle (int8) is
-209 MB, so it runs on laptops, servers and phones.
-
-Measured on a dedicated 4-vCPU cloud machine (Modal); your laptop may be faster. Measure your own
-machine with [`benchmarks/speed.py`](https://github.com/AfriSpeech/africa-tts/blob/main/benchmarks/speed.py); details in
+**Africa TTS speaks 2.5× faster than real time on 4 CPU cores** (a dedicated 4-vCPU cloud
+machine): a 10-second sentence takes about 4 seconds. It has 110M parameters and the int8 model is
+about 190 MB, so it runs on laptops, servers and phones. Speed depends on the CPU: on a 2020
+laptop (AMD Ryzen 5 4500U) it is about 1.3× real time. Measure your own machine with [`benchmarks/speed.py`](https://github.com/AfriSpeech/africa-tts/blob/main/benchmarks/speed.py); details in
 [docs/BENCHMARKS.md](https://github.com/AfriSpeech/africa-tts/blob/main/docs/BENCHMARKS.md#speed).
 
 ## 🎯 Intelligible
@@ -32,9 +29,14 @@ seventh of its size: [benchmark](https://github.com/AfriSpeech/africa-tts/blob/m
 ## Install
 
 ```bash
-pip install "africa-tts @ git+https://github.com/AfriSpeech/africa-tts"   # PyPI release coming
+pip install africa-tts
 # English also needs espeak-ng: apt install espeak-ng / brew install espeak-ng
 ```
+
+No PyTorch and no GPU: it runs on ONNX Runtime (sherpa-onnx). The first time, it asks before
+downloading the model (about 190 MB) from Hugging Face, then caches it and works offline. In
+scripts, approve the download with `--yes`, `AfricaTTS.load(download=True)`, or
+`africa-tts --download` beforehand.
 
 ## Use
 

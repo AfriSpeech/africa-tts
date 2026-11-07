@@ -5,13 +5,18 @@
 Measured with [`benchmarks/speed.py`](../benchmarks/speed.py) on a dedicated 4-vCPU Modal CPU
 container ([`benchmarks/speed_modal.py`](../benchmarks/speed_modal.py)): 8 sentences in Twi, Hausa,
 Yoruba, Swahili, Zulu, Amharic, Ewe and English, each language's default voice, after a warm-up
-(voice prompts encoded once and cached). The Python package runs PyTorch on one thread
-(pocket-tts's default); sherpa-onnx uses int8 models on four threads.
+(voice prompts encoded once and cached). sherpa-onnx (int8, four threads) is what the
+`africa-tts` package, the API server and the mobile bundle run; PyTorch (fp32, one thread, through
+pocket-tts) is shown for comparison.
 
 | Runtime | × real time | Real-time factor | Time to first audio (streaming, median) |
 |---|---:|---:|---:|
-| sherpa-onnx int8 | **2.52** | 0.40 | — |
-| Python package | **2.38** | 0.42 | **0.17 s** |
+| sherpa-onnx int8 (`africa-tts` package) | **2.52** | 0.40 | after the first sentence |
+| PyTorch fp32 (pocket-tts) | 2.38 | 0.42 | 0.17 s |
+
+Speed depends on the CPU. On a 2020 laptop without fast int8 instructions (AMD Ryzen 5 4500U, 6
+cores), sherpa-onnx runs at about 1.3× real time and PyTorch at about 2×: there, plain pocket-tts
+([Using plain pocket-tts](MODEL.md#using-plain-pocket-tts)) is the faster route.
 
 For comparison, the 24-layer base model Africa TTS was distilled from runs at 0.47× real time
 guided (0.72 s to first audio) and 0.82-0.90× unguided.
@@ -24,7 +29,7 @@ workers × cores ([server/](../server/README.md#scaling)).
 Run it on your machine:
 
 ```bash
-pip install "africa-tts @ git+https://github.com/AfriSpeech/africa-tts" sherpa-onnx soundfile
+pip install africa-tts pocket-tts   # pocket-tts (PyTorch) only for the PyTorch rows
 python benchmarks/speed.py --threads 4
 ```
 

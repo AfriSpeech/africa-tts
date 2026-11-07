@@ -42,15 +42,11 @@ def cpu_name() -> str:
 
 
 def bench_python(model: str, cfg: float) -> dict:
-    from africa_tts import AfricaTTS
+    # pocket-tts / PyTorch on 1 thread (its default): Africa TTS, or the 24-layer base model
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "recipes" / "africa"))
+    from guidance import load_base, load_torch
 
-    if model == "africa-tts":
-        tts = AfricaTTS.load()  # pocket-tts runs PyTorch on 1 thread (its default)
-    else:  # research comparison: the 24-layer base model, with or without guidance
-        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "recipes" / "africa"))
-        from guidance import load_base
-
-        tts = load_base(cfg)
+    tts = load_torch() if model == "africa-tts" else load_base(cfg)
     from africa_tts.frontend import to_ipa
 
     tts.generate("Akwaaba.", "twi")  # warm-up

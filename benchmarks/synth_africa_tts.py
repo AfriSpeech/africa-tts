@@ -1,5 +1,5 @@
-"""Synthesise the benchmark test set with Africa TTS, the way users run it: the africa_tts package,
-each language's default voice, temperature 0.3.
+"""Synthesise the benchmark test set with Africa TTS through pocket-tts / PyTorch on GPU (the
+model the package runs in int8 sherpa-onnx), each language's default voice, temperature 0.3.
 
 Systems: turbo (Africa TTS), guided / unguided (the 24-layer africa-tts-base, cfg 2.0 / 1.0).
 
@@ -16,10 +16,8 @@ import sys
 import scipy.io.wavfile
 import torch
 
-from africa_tts import AfricaTTS
-
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "recipes" / "africa"))
-from guidance import load_base  # noqa: E402  (research: the 24-layer base model, with guidance)
+from guidance import load_base, load_torch  # noqa: E402  (pocket-tts / PyTorch, guidance)
 
 SYSTEMS = {"turbo": None, "guided": 2.0, "unguided": 1.0}  # base model: guidance coefficient
 
@@ -34,7 +32,7 @@ def main() -> None:
     i, n = map(int, a.shard.split("/"))
     rows = [json.loads(line) for line in open(a.bench / "testset.jsonl")][i::n]
     torch.manual_seed(0)
-    tts = AfricaTTS.load() if a.system == "turbo" else load_base(SYSTEMS[a.system])
+    tts = load_torch() if a.system == "turbo" else load_base(SYSTEMS[a.system])
     tts.model.to(a.device)
     done = 0
     for r in rows:

@@ -1,6 +1,7 @@
 """Africa TTS through sherpa-onnx (the on-device runtime), from Python.
 
-    pip install sherpa-onnx soundfile "africa-g2p[english] @ git+https://github.com/AfriSpeech/africa-g2p@76b53a8"
+    pip install sherpa-onnx soundfile "africa-g2p[english]>=0.3.4"
+    (or just `pip install africa-tts`, which wraps this same bundle)
     huggingface-cli download AfriSpeech/africa-tts --include "sherpa-onnx/*" --local-dir .
     python speak_sherpa.py sherpa-onnx "Akwaaba! Yɛfrɛ me Kofi." --lang twi -o out.wav
 

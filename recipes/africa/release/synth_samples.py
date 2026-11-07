@@ -19,10 +19,8 @@ from pocket_tts.utils.utils import download_if_necessary
 
 import sys
 
-from africa_tts import AfricaTTS
-
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from guidance import load_base  # noqa: E402
+from guidance import load_base, load_torch  # noqa: E402
 
 
 def main() -> None:
@@ -47,7 +45,7 @@ def main() -> None:
     if a.model == "africa-tts-base":
         tts = load_base(a.cfg)
     else:
-        tts = AfricaTTS.load(a.model)
+        tts = load_torch(a.model if a.model != "africa-tts" else "AfriSpeech/africa-tts")
     print(f"model {a.model}", flush=True)
     tts.model.to(a.device)
     for i, it in enumerate(meta["items"]):
