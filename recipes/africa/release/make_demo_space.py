@@ -121,7 +121,7 @@ their pronunciation (IPA). Use each language's default voice, or clone your own 
 <label><input type="radio" name="voice" value="default" checked> Default voice for this language</label>
 <label><input type="radio" name="voice" value="own"> My own voice</label>
 </div>
-<details class="dv" id="dv"><summary>Hear the default voice</summary><audio id="dvaudio" controls preload="none"></audio></details>
+<details class="dv" id="dv"><summary>Hear the default voice</summary><div class="small" style="margin:4px 0 6px">Short reference clip (~4–5 s) used for voice cloning:</div><audio id="dvaudio" controls preload="none"></audio></details>
 <div id="own">
 <button class="btn2" id="recbtn" type="button">● Record (up to 10 s)</button>
 <span class="small">or</span>
@@ -264,6 +264,8 @@ document.querySelectorAll("input[name=voice]").forEach(r => r.onchange = () => {
 
 // ---- synthesis
 async function speak() {
+  $("dvaudio").pause();
+  $("ownaudio").pause();
   const t = text.value.trim();
   const st = $("status"); st.className = "";
   if (!t) { st.textContent = "Type something first."; return; }
@@ -287,12 +289,16 @@ async function speak() {
     const blob = await r.blob();
     if (lastUrl) URL.revokeObjectURL(lastUrl);
     lastUrl = URL.createObjectURL(blob);
-    $("result").src = lastUrl; $("dl").href = lastUrl;
+    const resAudio = $("result");
+    resAudio.pause();
+    resAudio.src = lastUrl;
+    resAudio.load();
+    $("dl").href = lastUrl;
     $("dl").download = `africa-tts-${sel.value}.wav`;
     const a = r.headers.get("X-Audio-Seconds"), c = r.headers.get("X-Compute-Seconds");
     $("rmeta").textContent = a && c ? `${(+a).toFixed(1)} s of audio, generated in ${(+c).toFixed(1)} s on CPU` : "";
     $("out").classList.add("on"); st.textContent = "";
-    $("result").play().catch(() => {});
+    resAudio.play().catch(() => {});
   } catch (e) {
     st.className = "err";
     st.textContent = e.message === "Failed to fetch" ? "Could not reach the server. Check your connection and try again." : e.message;
