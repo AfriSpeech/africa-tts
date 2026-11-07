@@ -29,7 +29,6 @@
 \newcommand{\distunguided}{10.8}
 \newcommand{\turboBeatsMms}{21 of 27}
 \newcommand{\turboBeatsOmni}{5 of 29}
-\newcommand{\turboBeatsOrph}{8 of 11}
 \newcommand{\avgMmsturbo}{9.0}
 \newcommand{\avgMmsguided}{8.7}
 \newcommand{\avgMmsunguided}{10.6}
@@ -40,18 +39,12 @@
 \newcommand{\avgOmniunguided}{10.4}
 \newcommand{\avgOmniOmni}{8.4}
 \newcommand{\avgNOmni}{29}
-\newcommand{\avgOrphturbo}{5.9}
-\newcommand{\avgOrphguided}{5.6}
-\newcommand{\avgOrphunguided}{7.3}
-\newcommand{\avgOrphOrph}{10.3}
-\newcommand{\avgNOrph}{11}
-\newcommand{\avgallturbo}{6.0}
-\newcommand{\avgallguided}{5.7}
-\newcommand{\avgallunguided}{7.2}
-\newcommand{\avgallMms}{7.8}
-\newcommand{\avgallOmni}{4.3}
-\newcommand{\avgallOrph}{9.8}
-\newcommand{\avgNall}{6}
+\newcommand{\avgallturbo}{8.6}
+\newcommand{\avgallguided}{8.3}
+\newcommand{\avgallunguided}{10.5}
+\newcommand{\avgallMms}{11.1}
+\newcommand{\avgallOmni}{8.2}
+\newcommand{\avgNall}{14}
 \newcommand{\avgrealreal}{7.5}
 \newcommand{\avgrealturbo}{7.7}
 \newcommand{\avgrealguided}{7.7}
@@ -89,8 +82,7 @@ It generates speech \xrtturbopython{}$\times$ faster than real time on four CPU 
 streaming within \ttfaturbopython{}\,s, and fits in a 209\,MB on-device bundle. On held-out
 sentences in \nTrainedLangs{} languages, transcribed by Omnilingual ASR, \att{} reaches a mean
 character error rate (CER) of \avgMmsturbo{}\% against \avgMmsMms{}\% for MMS-TTS (better in
-\turboBeatsMms{} languages) and \avgOrphturbo{}\% against \avgOrphOrph{}\% for the
-3.3B-parameter Sunbird Orpheus, and comes within 0.4 points of the 813M-parameter OmniVoice
+\turboBeatsMms{} languages), and comes within 0.4 points of the 813M-parameter OmniVoice
 (\avgOmniturbo{}\% vs.\ \avgOmniOmni{}\%) at about a seventh of its size. Distillation loses no
 intelligibility: \att{} matches its guided base model (\distturbo{}\% vs.\ \distguided{}\%) with
 a quarter of the layers and one pass per frame. The model, code, voices and the benchmark are
@@ -125,7 +117,7 @@ model designed to run faster than real time on a CPU. Two choices shape the syst
 \end{enumerate}
 
 We evaluate intelligibility with Omnilingual ASR~\cite{omniasr2025} on held-out sentences in
-\nTrainedLangs{} languages, against MMS-TTS, OmniVoice and Sunbird Orpheus, with human recordings of the same sentences as a reference.
+\nTrainedLangs{} languages, against MMS-TTS and OmniVoice, with human recordings of the same sentences as a reference.
 Our contributions are: (i) \att{}, a single phoneme-input TTS model covering 92 African
 languages, small and fast enough for CPU-only and on-device use, with GGUF and ONNX exports; (ii) a
 depth-distillation recipe that keeps the 24-layer base model's guided intelligibility at a
@@ -146,9 +138,7 @@ studio-quality single-speaker data and VITS baselines for ten sub-Saharan langua
 recordings, using uroman~\cite{hermjakob2018uroman} romanisation for non-Latin scripts. OmniVoice
 \cite{zhu2026omnivoice} is a single 0.6B-class discrete non-autoregressive model trained on
 581k hours of open data in over 600 languages, with zero-shot voice cloning. WAXAL
-\cite{diack2026waxal} recently added ASR and TTS corpora for over twenty African languages, and
-Sunbird Orpheus~\cite{sunbirdorpheus} fine-tunes a 3B-parameter speech language model on these
-and other data for a dozen languages of East, West and Southern Africa.
+\cite{diack2026waxal} recently added ASR and TTS corpora for over twenty African languages.
 
 \paragraph{Efficient speech language models.} Pocket TTS~\cite{pockettts} follows the
 continuous audio language model of \citet{rouard2025calm}: a causal Transformer predicts, frame
@@ -208,24 +198,22 @@ demo and scales to zero. The PyTorch model remains available for unquantised and
 \begin{table*}[t]
 \centering
 \small
-\begin{tabular}{lrrrrr}
+\begin{tabular}{lrrrr}
 \toprule
- & \textbf{Real} & \textbf{Africa TTS} (ours) & \textbf{MMS-TTS} & \textbf{OmniVoice} & \textbf{Orpheus} \\
- & \textit{speech} & \textit{110M} & \textit{36M/lang.} & \textit{813M} & \textit{3.3B} \\
+ & \textbf{Real} & \textbf{Africa TTS} (ours) & \textbf{MMS-TTS} & \textbf{OmniVoice} \\
+ & \textit{speech} & \textit{110M} & \textit{36M/lang.} & \textit{813M} \\
 \midrule
-\multicolumn{6}{l}{\textit{CER (\%)}} \\
-Languages MMS-TTS supports (27) &  & \textbf{9.0} & 10.3 &  &  \\
-Languages OmniVoice supports (29) &  & 8.8 &  & \textbf{8.4} &  \\
-Languages Sunbird Orpheus supports (11) &  & \textbf{5.9} &  &  & 10.3 \\
-All systems (6) &  & 6.0 & 7.8 & \textbf{4.3} & 9.8 \\
-Languages with real recordings (24) & 7.5 & 7.7 &  &  &  \\
+\multicolumn{5}{l}{\textit{CER (\%)}} \\
+Languages MMS-TTS supports (27) &  & \textbf{9.0} & 10.3 &  \\
+Languages OmniVoice supports (29) &  & 8.8 &  & \textbf{8.4} \\
+All systems (14) &  & 8.6 & 11.1 & \textbf{8.2} \\
+Languages with real recordings (24) & 7.5 & 7.7 &  &  \\
 \midrule
-\multicolumn{6}{l}{\textit{CER without diacritics (\%)}} \\
-Languages MMS-TTS supports (27) &  & \textbf{7.6} & 9.4 &  &  \\
-Languages OmniVoice supports (29) &  & 7.5 &  & \textbf{7.0} &  \\
-Languages Sunbird Orpheus supports (11) &  & \textbf{4.6} &  &  & 8.8 \\
-All systems (6) &  & 4.4 & 6.5 & \textbf{3.0} & 7.7 \\
-Languages with real recordings (24) & 6.6 & 6.5 &  &  &  \\
+\multicolumn{5}{l}{\textit{CER without diacritics (\%)}} \\
+Languages MMS-TTS supports (27) &  & \textbf{7.6} & 9.4 &  \\
+Languages OmniVoice supports (29) &  & 7.5 &  & \textbf{7.0} \\
+All systems (14) &  & 7.5 & 10.4 & \textbf{7.3} \\
+Languages with real recordings (24) & 6.6 & 6.5 &  &  \\
 \bottomrule
 \end{tabular}
 \caption{Intelligibility on languages Africa TTS was trained on: mean per-language character error rate of Omnilingual ASR transcripts (lower is better), averaged over the languages each comparison shares (count in brackets; languages with fewer than 10 test sentences are excluded). Best synthetic system in bold; real speech is the ASR's error on human recordings of the same sentences. Sizes are parameter counts including each system's audio codec or vocoder.}
@@ -270,10 +258,7 @@ the base model in the distillation comparison. MMS-TTS~\cite{pratap2023mms} is r
 with a released model, with uroman for non-Latin scripts. OmniVoice~\cite{zhu2026omnivoice}
 is run for every language in its list, cloning the same default voice clip as \att{}; as
 OmniVoice also conditions on the prompt's transcript, each prompt is transcribed with the
-evaluation ASR where no full human transcript exists. Sunbird Orpheus~\cite{sunbirdorpheus}, a
-3.3B-parameter Llama-based model that generates SNAC codec tokens, is run for the languages in
-its training mix with one fixed speaker per language and its recommended sampling settings
-(temperature 0.6, top-$p$ 0.95, repetition penalty 1.1). Parameter counts are measured on the
+evaluation ASR where no full human transcript exists. Parameter counts are measured on the
 released checkpoints and include each system's codec or vocoder.
 
 \paragraph{Metric.} Each output is transcribed by Omnilingual ASR (\texttt{omniASR\_LLM\_7B\_v2},
@@ -287,12 +272,10 @@ languages each comparison shares.
 \subsection{Results}
 Table~\ref{tab:averages} summarises intelligibility. Against MMS-TTS, the strongest widely used
 per-language baseline, \att{} is more intelligible: it averages \avgMmsturbo{}\% CER against
-\avgMmsMms{}\% and is better in \turboBeatsMms{} languages. Sunbird Orpheus, a 3.3B-parameter
-model, is the least intelligible system on the \avgNOrph{} languages it covers
-(\avgOrphOrph{}\% against \avgOrphturbo{}\% for \att{}, which is better in \turboBeatsOrph{} of
-them). OmniVoice is the most intelligible system overall: on its \avgNOmni{} shared languages it
-averages \avgOmniOmni{}\% against \avgOmniturbo{}\% for \att{}, and it is better in most
-individual languages, by small margins. \att{} closes most of that gap at about a seventh of
+\avgMmsMms{}\% and is better in \turboBeatsMms{} languages. OmniVoice is the more intelligible
+system: on its \avgNOmni{} shared languages it averages \avgOmniOmni{}\% against
+\avgOmniturbo{}\% for \att{}, and \att{} is better in only \turboBeatsOmni{} of them, so OmniVoice
+wins most languages, by small margins. \att{} closes most of that gap at about a seventh of
 OmniVoice's parameters while running faster than real time on a CPU (Table~\ref{tab:speed}).
 On the \avgNreal{} languages with human recordings, \att{} (\avgrealturbo{}\%) is within
 0.2 points of the ASR's error on real speech (\avgrealreal{}\%). Removing diacritics lowers all
@@ -337,8 +320,8 @@ CC-BY-NC-4.0.
 \att{} shows that one 110M-parameter phoneme-input model can serve 92 African languages
 faster than real time on a CPU: distilled from a 24-layer base model, it keeps that model's
 guided intelligibility. It
-is clearly more intelligible than per-language MMS-TTS models and a much
-larger Sunbird Orpheus, and close to OmniVoice at a fraction of its size. Future work includes
+is clearly more intelligible than per-language MMS-TTS models, and close to OmniVoice at a
+fraction of its size. Future work includes
 human listening tests with native speakers, more conversational training speech, and tone
 marking in more G2P tables.
 
@@ -352,58 +335,58 @@ marking in more G2P tables.
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{llcrrrrrr}
+\begin{tabular}{llcrrrrr}
 \toprule
-\textbf{Language} & \textbf{Code} & \textbf{Src} & \textbf{$n$} & \textbf{Real} & \textbf{Africa TTS} (ours) & \textbf{MMS-TTS} & \textbf{OmniVoice} & \textbf{Orpheus} \\
- &  &  &  & \textit{speech} & \textit{110M} & \textit{36M/lang.} & \textit{813M} & \textit{3.3B} \\
+\textbf{Language} & \textbf{Code} & \textbf{Src} & \textbf{$n$} & \textbf{Real} & \textbf{Africa TTS} (ours) & \textbf{MMS-TTS} & \textbf{OmniVoice} \\
+ &  &  &  & \textit{speech} & \textit{110M} & \textit{36M/lang.} & \textit{813M} \\
 \midrule
-Amharic & \texttt{amh} & FL & 50 & 8.0 & 5.7 & 10.9 & \textbf{4.8} & -- \\
-Changana (Mozambique) & \texttt{tso} & FR & 50 & -- & 11.5 & \textbf{5.0} & -- & -- \\
-Chitumbuka$^\dagger$ & \texttt{tum} & FR & 50 & -- & 11.5 & -- & -- & -- \\
-Chokwe & \texttt{cjk} & FR & 50 & -- & 14.9 & -- & \textbf{12.9} & -- \\
-Cibemba & \texttt{bem} & FR & 50 & -- & \textbf{5.3} & 7.3 & -- & -- \\
-Cinyanja & \texttt{nya} & FL & 50 & 8.0 & 5.0 & 7.1 & \textbf{2.6} & -- \\
-Dagaare & \texttt{dga} & WX & 50 & 22.1 & \textbf{10.4} & 10.6 & -- & -- \\
-English & \texttt{eng} & FL & 50 & 2.3 & 2.4 & 3.5 & \textbf{2.0} & 2.3 \\
-Ewe & \texttt{ewe} & FR & 50 & -- & 6.4 & \textbf{6.2} & -- & 6.3 \\
-Fante & \texttt{fat} & OC & 50 & 13.9 & \textbf{7.3} & -- & 8.6 & -- \\
-Fon & \texttt{fon} & FR & 50 & -- & 22.5 & \textbf{20.9} & -- & -- \\
-Frafra & \texttt{gur} & OC & 50 & 5.5 & 9.8 & -- & \textbf{9.1} & -- \\
-Hausa & \texttt{hau} & FL & 50 & 4.7 & 4.2 & 6.2 & \textbf{3.6} & 8.6 \\
-Herero & \texttt{her} & OC & 14 & 3.8 & 4.8 & -- & \textbf{1.5} & -- \\
-Igbo & \texttt{ibo} & FL & 50 & 8.2 & 6.9 & -- & \textbf{6.6} & 17.5 \\
-Isoko & \texttt{iso} & OC & 5 & 13.8 & 29.4 & -- & \textbf{14.9} & -- \\
-Jula & \texttt{dyu} & FR & 50 & -- & \textbf{23.8} & 29.7 & 47.9 & -- \\
-Kabiye & \texttt{kbp} & FR & 50 & -- & \textbf{11.1} & 11.7 & -- & -- \\
-Kabuverdianu & \texttt{kea} & FL & 50 & 2.6 & 11.9 & -- & \textbf{8.6} & -- \\
-Kabyle & \texttt{kab} & FR & 50 & -- & 14.0 & 14.5 & \textbf{6.8} & -- \\
-Kamba & \texttt{kam} & FL & 50 & 10.3 & 14.6 & -- & \textbf{13.5} & -- \\
-Kikuyu & \texttt{kik} & FR & 50 & -- & \textbf{7.0} & 8.3 & -- & 21.3 \\
-Kimbundu$^\dagger$ & \texttt{kmb} & FR & 50 & -- & 12.5 & -- & -- & -- \\
-Kinyarwanda & \texttt{kin} & FR & 50 & -- & 3.2 & 6.3 & \textbf{1.8} & 10.4 \\
-Kirundi & \texttt{run} & FR & 50 & -- & \textbf{3.0} & 10.2 & -- & -- \\
-Kpelle & \texttt{xpe} & OC & 1 & 21.1 & 34.1 & -- & \textbf{26.0} & -- \\
-Lingala & \texttt{lin} & FL & 50 & 3.1 & 3.8 & -- & \textbf{3.4} & 3.8 \\
-Luganda & \texttt{lug} & FL & 50 & 7.3 & 8.2 & 8.8 & \textbf{5.2} & 6.6 \\
-Macua & \texttt{vmw} & FR & 50 & -- & 6.7 & \textbf{6.0} & -- & -- \\
-Malagasy & \texttt{mlg} & OC & 50 & 3.6 & 8.8 & 9.6 & \textbf{5.2} & -- \\
-Mauritian Creole & \texttt{mfe} & FR & 50 & -- & 7.1 & \textbf{5.9} & -- & -- \\
-Meru & \texttt{mer} & OC & 21 & 9.2 & \textbf{14.1} & -- & 25.6 & -- \\
-Mooré & \texttt{mos} & FR & 50 & -- & 15.4 & \textbf{14.1} & -- & -- \\
-Ndonga & \texttt{ndo} & OC & 13 & 14.0 & 5.9 & -- & \textbf{5.6} & -- \\
-Sango & \texttt{sag} & FR & 50 & -- & \textbf{10.0} & 10.6 & -- & -- \\
-Sena & \texttt{seh} & FR & 50 & -- & \textbf{6.2} & 7.3 & -- & -- \\
-Sepedi & \texttt{nso} & FL & 50 & 5.9 & 4.9 & -- & \textbf{4.1} & -- \\
-Shona & \texttt{sna} & FL & 50 & 2.9 & 3.0 & 6.1 & \textbf{1.9} & -- \\
-Swahili & \texttt{swh} & FL & 50 & 1.8 & 1.2 & 2.6 & \textbf{0.6} & 2.6 \\
-Swati$^\dagger$ & \texttt{ssw} & FR & 50 & -- & 9.5 & -- & -- & -- \\
-Tigrinya & \texttt{tir} & FR & 50 & -- & 11.9 & 17.6 & \textbf{7.7} & -- \\
-Twi & \texttt{twi} & FR & 50 & -- & \textbf{12.1} & 13.1 & 12.5 & -- \\
-Umbundu & \texttt{umb} & FL & 50 & 9.5 & 16.6 & -- & \textbf{14.8} & -- \\
-Wolof & \texttt{wol} & FL & 50 & 10.3 & 12.2 & -- & \textbf{7.2} & -- \\
-Xhosa & \texttt{xho} & FL & 50 & 3.4 & 4.3 & -- & \textbf{3.5} & 5.9 \\
-Yoruba & \texttt{yor} & FL & 50 & 15.9 & 17.0 & 19.3 & \textbf{12.8} & 28.2 \\
-Zulu & \texttt{zul} & FL & 50 & 3.7 & \textbf{2.2} & -- & 2.4 & -- \\
+Amharic & \texttt{amh} & FL & 50 & 8.0 & 5.7 & 10.9 & \textbf{4.8} \\
+Changana (Mozambique) & \texttt{tso} & FR & 50 & -- & 11.5 & \textbf{5.0} & -- \\
+Chitumbuka$^\dagger$ & \texttt{tum} & FR & 50 & -- & 11.5 & -- & -- \\
+Chokwe & \texttt{cjk} & FR & 50 & -- & 14.9 & -- & \textbf{12.9} \\
+Cibemba & \texttt{bem} & FR & 50 & -- & \textbf{5.3} & 7.3 & -- \\
+Cinyanja & \texttt{nya} & FL & 50 & 8.0 & 5.0 & 7.1 & \textbf{2.6} \\
+Dagaare & \texttt{dga} & WX & 50 & 22.1 & \textbf{10.4} & 10.6 & -- \\
+English & \texttt{eng} & FL & 50 & 2.3 & 2.4 & 3.5 & \textbf{2.0} \\
+Ewe & \texttt{ewe} & FR & 50 & -- & 6.4 & \textbf{6.2} & -- \\
+Fante & \texttt{fat} & OC & 50 & 13.9 & \textbf{7.3} & -- & 8.6 \\
+Fon & \texttt{fon} & FR & 50 & -- & 22.5 & \textbf{20.9} & -- \\
+Frafra & \texttt{gur} & OC & 50 & 5.5 & 9.8 & -- & \textbf{9.1} \\
+Hausa & \texttt{hau} & FL & 50 & 4.7 & 4.2 & 6.2 & \textbf{3.6} \\
+Herero & \texttt{her} & OC & 14 & 3.8 & 4.8 & -- & \textbf{1.5} \\
+Igbo & \texttt{ibo} & FL & 50 & 8.2 & 6.9 & -- & \textbf{6.6} \\
+Isoko & \texttt{iso} & OC & 5 & 13.8 & 29.4 & -- & \textbf{14.9} \\
+Jula & \texttt{dyu} & FR & 50 & -- & \textbf{23.8} & 29.7 & 47.9 \\
+Kabiye & \texttt{kbp} & FR & 50 & -- & \textbf{11.1} & 11.7 & -- \\
+Kabuverdianu & \texttt{kea} & FL & 50 & 2.6 & 11.9 & -- & \textbf{8.6} \\
+Kabyle & \texttt{kab} & FR & 50 & -- & 14.0 & 14.5 & \textbf{6.8} \\
+Kamba & \texttt{kam} & FL & 50 & 10.3 & 14.6 & -- & \textbf{13.5} \\
+Kikuyu & \texttt{kik} & FR & 50 & -- & \textbf{7.0} & 8.3 & -- \\
+Kimbundu$^\dagger$ & \texttt{kmb} & FR & 50 & -- & 12.5 & -- & -- \\
+Kinyarwanda & \texttt{kin} & FR & 50 & -- & 3.2 & 6.3 & \textbf{1.8} \\
+Kirundi & \texttt{run} & FR & 50 & -- & \textbf{3.0} & 10.2 & -- \\
+Kpelle & \texttt{xpe} & OC & 1 & 21.1 & 34.1 & -- & \textbf{26.0} \\
+Lingala & \texttt{lin} & FL & 50 & 3.1 & 3.8 & -- & \textbf{3.4} \\
+Luganda & \texttt{lug} & FL & 50 & 7.3 & 8.2 & 8.8 & \textbf{5.2} \\
+Macua & \texttt{vmw} & FR & 50 & -- & 6.7 & \textbf{6.0} & -- \\
+Malagasy & \texttt{mlg} & OC & 50 & 3.6 & 8.8 & 9.6 & \textbf{5.2} \\
+Mauritian Creole & \texttt{mfe} & FR & 50 & -- & 7.1 & \textbf{5.9} & -- \\
+Meru & \texttt{mer} & OC & 21 & 9.2 & \textbf{14.1} & -- & 25.6 \\
+Mooré & \texttt{mos} & FR & 50 & -- & 15.4 & \textbf{14.1} & -- \\
+Ndonga & \texttt{ndo} & OC & 13 & 14.0 & 5.9 & -- & \textbf{5.6} \\
+Sango & \texttt{sag} & FR & 50 & -- & \textbf{10.0} & 10.6 & -- \\
+Sena & \texttt{seh} & FR & 50 & -- & \textbf{6.2} & 7.3 & -- \\
+Sepedi & \texttt{nso} & FL & 50 & 5.9 & 4.9 & -- & \textbf{4.1} \\
+Shona & \texttt{sna} & FL & 50 & 2.9 & 3.0 & 6.1 & \textbf{1.9} \\
+Swahili & \texttt{swh} & FL & 50 & 1.8 & 1.2 & 2.6 & \textbf{0.6} \\
+Swati$^\dagger$ & \texttt{ssw} & FR & 50 & -- & 9.5 & -- & -- \\
+Tigrinya & \texttt{tir} & FR & 50 & -- & 11.9 & 17.6 & \textbf{7.7} \\
+Twi & \texttt{twi} & FR & 50 & -- & \textbf{12.1} & 13.1 & 12.5 \\
+Umbundu & \texttt{umb} & FL & 50 & 9.5 & 16.6 & -- & \textbf{14.8} \\
+Wolof & \texttt{wol} & FL & 50 & 10.3 & 12.2 & -- & \textbf{7.2} \\
+Xhosa & \texttt{xho} & FL & 50 & 3.4 & 4.3 & -- & \textbf{3.5} \\
+Yoruba & \texttt{yor} & FL & 50 & 15.9 & 17.0 & 19.3 & \textbf{12.8} \\
+Zulu & \texttt{zul} & FL & 50 & 3.7 & \textbf{2.2} & -- & 2.4 \\
 \bottomrule
 \end{tabular}
 \caption{CER (\%) per trained language. Src: OC Omnilingual ASR corpus, FL FLEURS, WX WAXAL, FR FLORES+ (text only, no real recordings). $n$: sentences. $^\dagger$: no Omnilingual ASR language code; transcribed without one. Best synthetic system in bold.}

@@ -2,58 +2,58 @@
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{llcrrrrrr}
+\begin{tabular}{llcrrrrr}
 \toprule
-\textbf{Language} & \textbf{Code} & \textbf{Src} & \textbf{$n$} & \textbf{Real} & \textbf{Africa TTS} (ours) & \textbf{MMS-TTS} & \textbf{OmniVoice} & \textbf{Orpheus} \\
- &  &  &  & \textit{speech} & \textit{110M} & \textit{36M/lang.} & \textit{813M} & \textit{3.3B} \\
+\textbf{Language} & \textbf{Code} & \textbf{Src} & \textbf{$n$} & \textbf{Real} & \textbf{Africa TTS} (ours) & \textbf{MMS-TTS} & \textbf{OmniVoice} \\
+ &  &  &  & \textit{speech} & \textit{110M} & \textit{36M/lang.} & \textit{813M} \\
 \midrule
-Amharic & \texttt{amh} & FL & 50 & 8.0 & 5.7 & 10.9 & \textbf{4.8} & -- \\
-Changana (Mozambique) & \texttt{tso} & FR & 50 & -- & 11.5 & \textbf{5.0} & -- & -- \\
-Chitumbuka$^\dagger$ & \texttt{tum} & FR & 50 & -- & 11.5 & -- & -- & -- \\
-Chokwe & \texttt{cjk} & FR & 50 & -- & 14.9 & -- & \textbf{12.9} & -- \\
-Cibemba & \texttt{bem} & FR & 50 & -- & \textbf{5.3} & 7.3 & -- & -- \\
-Cinyanja & \texttt{nya} & FL & 50 & 8.0 & 5.0 & 7.1 & \textbf{2.6} & -- \\
-Dagaare & \texttt{dga} & WX & 50 & 22.1 & \textbf{10.4} & 10.6 & -- & -- \\
-English & \texttt{eng} & FL & 50 & 2.3 & 2.4 & 3.5 & \textbf{2.0} & 2.3 \\
-Ewe & \texttt{ewe} & FR & 50 & -- & 6.4 & \textbf{6.2} & -- & 6.3 \\
-Fante & \texttt{fat} & OC & 50 & 13.9 & \textbf{7.3} & -- & 8.6 & -- \\
-Fon & \texttt{fon} & FR & 50 & -- & 22.5 & \textbf{20.9} & -- & -- \\
-Frafra & \texttt{gur} & OC & 50 & 5.5 & 9.8 & -- & \textbf{9.1} & -- \\
-Hausa & \texttt{hau} & FL & 50 & 4.7 & 4.2 & 6.2 & \textbf{3.6} & 8.6 \\
-Herero & \texttt{her} & OC & 14 & 3.8 & 4.8 & -- & \textbf{1.5} & -- \\
-Igbo & \texttt{ibo} & FL & 50 & 8.2 & 6.9 & -- & \textbf{6.6} & 17.5 \\
-Isoko & \texttt{iso} & OC & 5 & 13.8 & 29.4 & -- & \textbf{14.9} & -- \\
-Jula & \texttt{dyu} & FR & 50 & -- & \textbf{23.8} & 29.7 & 47.9 & -- \\
-Kabiye & \texttt{kbp} & FR & 50 & -- & \textbf{11.1} & 11.7 & -- & -- \\
-Kabuverdianu & \texttt{kea} & FL & 50 & 2.6 & 11.9 & -- & \textbf{8.6} & -- \\
-Kabyle & \texttt{kab} & FR & 50 & -- & 14.0 & 14.5 & \textbf{6.8} & -- \\
-Kamba & \texttt{kam} & FL & 50 & 10.3 & 14.6 & -- & \textbf{13.5} & -- \\
-Kikuyu & \texttt{kik} & FR & 50 & -- & \textbf{7.0} & 8.3 & -- & 21.3 \\
-Kimbundu$^\dagger$ & \texttt{kmb} & FR & 50 & -- & 12.5 & -- & -- & -- \\
-Kinyarwanda & \texttt{kin} & FR & 50 & -- & 3.2 & 6.3 & \textbf{1.8} & 10.4 \\
-Kirundi & \texttt{run} & FR & 50 & -- & \textbf{3.0} & 10.2 & -- & -- \\
-Kpelle & \texttt{xpe} & OC & 1 & 21.1 & 34.1 & -- & \textbf{26.0} & -- \\
-Lingala & \texttt{lin} & FL & 50 & 3.1 & 3.8 & -- & \textbf{3.4} & 3.8 \\
-Luganda & \texttt{lug} & FL & 50 & 7.3 & 8.2 & 8.8 & \textbf{5.2} & 6.6 \\
-Macua & \texttt{vmw} & FR & 50 & -- & 6.7 & \textbf{6.0} & -- & -- \\
-Malagasy & \texttt{mlg} & OC & 50 & 3.6 & 8.8 & 9.6 & \textbf{5.2} & -- \\
-Mauritian Creole & \texttt{mfe} & FR & 50 & -- & 7.1 & \textbf{5.9} & -- & -- \\
-Meru & \texttt{mer} & OC & 21 & 9.2 & \textbf{14.1} & -- & 25.6 & -- \\
-Mooré & \texttt{mos} & FR & 50 & -- & 15.4 & \textbf{14.1} & -- & -- \\
-Ndonga & \texttt{ndo} & OC & 13 & 14.0 & 5.9 & -- & \textbf{5.6} & -- \\
-Sango & \texttt{sag} & FR & 50 & -- & \textbf{10.0} & 10.6 & -- & -- \\
-Sena & \texttt{seh} & FR & 50 & -- & \textbf{6.2} & 7.3 & -- & -- \\
-Sepedi & \texttt{nso} & FL & 50 & 5.9 & 4.9 & -- & \textbf{4.1} & -- \\
-Shona & \texttt{sna} & FL & 50 & 2.9 & 3.0 & 6.1 & \textbf{1.9} & -- \\
-Swahili & \texttt{swh} & FL & 50 & 1.8 & 1.2 & 2.6 & \textbf{0.6} & 2.6 \\
-Swati$^\dagger$ & \texttt{ssw} & FR & 50 & -- & 9.5 & -- & -- & -- \\
-Tigrinya & \texttt{tir} & FR & 50 & -- & 11.9 & 17.6 & \textbf{7.7} & -- \\
-Twi & \texttt{twi} & FR & 50 & -- & \textbf{12.1} & 13.1 & 12.5 & -- \\
-Umbundu & \texttt{umb} & FL & 50 & 9.5 & 16.6 & -- & \textbf{14.8} & -- \\
-Wolof & \texttt{wol} & FL & 50 & 10.3 & 12.2 & -- & \textbf{7.2} & -- \\
-Xhosa & \texttt{xho} & FL & 50 & 3.4 & 4.3 & -- & \textbf{3.5} & 5.9 \\
-Yoruba & \texttt{yor} & FL & 50 & 15.9 & 17.0 & 19.3 & \textbf{12.8} & 28.2 \\
-Zulu & \texttt{zul} & FL & 50 & 3.7 & \textbf{2.2} & -- & 2.4 & -- \\
+Amharic & \texttt{amh} & FL & 50 & 8.0 & 5.7 & 10.9 & \textbf{4.8} \\
+Changana (Mozambique) & \texttt{tso} & FR & 50 & -- & 11.5 & \textbf{5.0} & -- \\
+Chitumbuka$^\dagger$ & \texttt{tum} & FR & 50 & -- & 11.5 & -- & -- \\
+Chokwe & \texttt{cjk} & FR & 50 & -- & 14.9 & -- & \textbf{12.9} \\
+Cibemba & \texttt{bem} & FR & 50 & -- & \textbf{5.3} & 7.3 & -- \\
+Cinyanja & \texttt{nya} & FL & 50 & 8.0 & 5.0 & 7.1 & \textbf{2.6} \\
+Dagaare & \texttt{dga} & WX & 50 & 22.1 & \textbf{10.4} & 10.6 & -- \\
+English & \texttt{eng} & FL & 50 & 2.3 & 2.4 & 3.5 & \textbf{2.0} \\
+Ewe & \texttt{ewe} & FR & 50 & -- & 6.4 & \textbf{6.2} & -- \\
+Fante & \texttt{fat} & OC & 50 & 13.9 & \textbf{7.3} & -- & 8.6 \\
+Fon & \texttt{fon} & FR & 50 & -- & 22.5 & \textbf{20.9} & -- \\
+Frafra & \texttt{gur} & OC & 50 & 5.5 & 9.8 & -- & \textbf{9.1} \\
+Hausa & \texttt{hau} & FL & 50 & 4.7 & 4.2 & 6.2 & \textbf{3.6} \\
+Herero & \texttt{her} & OC & 14 & 3.8 & 4.8 & -- & \textbf{1.5} \\
+Igbo & \texttt{ibo} & FL & 50 & 8.2 & 6.9 & -- & \textbf{6.6} \\
+Isoko & \texttt{iso} & OC & 5 & 13.8 & 29.4 & -- & \textbf{14.9} \\
+Jula & \texttt{dyu} & FR & 50 & -- & \textbf{23.8} & 29.7 & 47.9 \\
+Kabiye & \texttt{kbp} & FR & 50 & -- & \textbf{11.1} & 11.7 & -- \\
+Kabuverdianu & \texttt{kea} & FL & 50 & 2.6 & 11.9 & -- & \textbf{8.6} \\
+Kabyle & \texttt{kab} & FR & 50 & -- & 14.0 & 14.5 & \textbf{6.8} \\
+Kamba & \texttt{kam} & FL & 50 & 10.3 & 14.6 & -- & \textbf{13.5} \\
+Kikuyu & \texttt{kik} & FR & 50 & -- & \textbf{7.0} & 8.3 & -- \\
+Kimbundu$^\dagger$ & \texttt{kmb} & FR & 50 & -- & 12.5 & -- & -- \\
+Kinyarwanda & \texttt{kin} & FR & 50 & -- & 3.2 & 6.3 & \textbf{1.8} \\
+Kirundi & \texttt{run} & FR & 50 & -- & \textbf{3.0} & 10.2 & -- \\
+Kpelle & \texttt{xpe} & OC & 1 & 21.1 & 34.1 & -- & \textbf{26.0} \\
+Lingala & \texttt{lin} & FL & 50 & 3.1 & 3.8 & -- & \textbf{3.4} \\
+Luganda & \texttt{lug} & FL & 50 & 7.3 & 8.2 & 8.8 & \textbf{5.2} \\
+Macua & \texttt{vmw} & FR & 50 & -- & 6.7 & \textbf{6.0} & -- \\
+Malagasy & \texttt{mlg} & OC & 50 & 3.6 & 8.8 & 9.6 & \textbf{5.2} \\
+Mauritian Creole & \texttt{mfe} & FR & 50 & -- & 7.1 & \textbf{5.9} & -- \\
+Meru & \texttt{mer} & OC & 21 & 9.2 & \textbf{14.1} & -- & 25.6 \\
+Mooré & \texttt{mos} & FR & 50 & -- & 15.4 & \textbf{14.1} & -- \\
+Ndonga & \texttt{ndo} & OC & 13 & 14.0 & 5.9 & -- & \textbf{5.6} \\
+Sango & \texttt{sag} & FR & 50 & -- & \textbf{10.0} & 10.6 & -- \\
+Sena & \texttt{seh} & FR & 50 & -- & \textbf{6.2} & 7.3 & -- \\
+Sepedi & \texttt{nso} & FL & 50 & 5.9 & 4.9 & -- & \textbf{4.1} \\
+Shona & \texttt{sna} & FL & 50 & 2.9 & 3.0 & 6.1 & \textbf{1.9} \\
+Swahili & \texttt{swh} & FL & 50 & 1.8 & 1.2 & 2.6 & \textbf{0.6} \\
+Swati$^\dagger$ & \texttt{ssw} & FR & 50 & -- & 9.5 & -- & -- \\
+Tigrinya & \texttt{tir} & FR & 50 & -- & 11.9 & 17.6 & \textbf{7.7} \\
+Twi & \texttt{twi} & FR & 50 & -- & \textbf{12.1} & 13.1 & 12.5 \\
+Umbundu & \texttt{umb} & FL & 50 & 9.5 & 16.6 & -- & \textbf{14.8} \\
+Wolof & \texttt{wol} & FL & 50 & 10.3 & 12.2 & -- & \textbf{7.2} \\
+Xhosa & \texttt{xho} & FL & 50 & 3.4 & 4.3 & -- & \textbf{3.5} \\
+Yoruba & \texttt{yor} & FL & 50 & 15.9 & 17.0 & 19.3 & \textbf{12.8} \\
+Zulu & \texttt{zul} & FL & 50 & 3.7 & \textbf{2.2} & -- & 2.4 \\
 \bottomrule
 \end{tabular}
 \caption{CER (\%) per trained language. Src: OC Omnilingual ASR corpus, FL FLEURS, WX WAXAL, FR FLORES+ (text only, no real recordings). $n$: sentences. $^\dagger$: no Omnilingual ASR language code; transcribed without one. Best synthetic system in bold.}

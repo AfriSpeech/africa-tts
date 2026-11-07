@@ -1,4 +1,4 @@
-\begin{thebibliography}{23}
+\begin{thebibliography}{22}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -135,12 +135,6 @@ Simon Rouard, Manu Orsini, Axel Roebel, Neil Zeghidour, and Alexandre
 {ShugoAI}.
 \newblock audio.cpp.
 \newblock \url{https://github.com/0xShug0/audio.cpp}, 2026.
-
-\bibitem[{Sunbird AI}(2025)]{sunbirdorpheus}
-{Sunbird AI}.
-\newblock orpheus-3b-tts-multilingual.
-\newblock \url{https://huggingface.co/Sunbird/orpheus-3b-tts-multilingual},
-  2025.
 
 \bibitem[Zhu et~al.(2026)Zhu, Ye, Kang, Yao, Guo, Kuang, Han, Zhuang, Lin, and
   Povey]{zhu2026omnivoice}

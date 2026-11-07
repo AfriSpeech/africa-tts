@@ -15,8 +15,7 @@ NICE = {"english_eng": "English", "swahili_swa": "Swahili", "twi_twi": "Twi", "y
         "xhosa_xho": "Xhosa"}
 SYS = {"real": "Real speech", "turbo": "Africa TTS (110M)",
          "guided": "Africa TTS Base, guided (336M)", "unguided": "Africa TTS Base, unguided (336M)",
-         "mms": "MMS-TTS (36M per language)", "omnivoice": "OmniVoice (813M)",
-         "orpheus": "Sunbird Orpheus (3.3B)"}
+         "mms": "MMS-TTS (36M per language)", "omnivoice": "OmniVoice (813M)"}
 
 # Hub language tags: every training language's current ISO 639-3 code, plus its ISO 639-1 code
 # and macrolanguage where they exist (the Hub's language filter mostly uses 639-1, e.g. "sw").
@@ -86,30 +85,30 @@ def bench_section(res: dict, base: bool) -> str:
 {chr(10).join(rows)}
 
 Africa TTS matches the guided base model at a quarter of the layers and one pass per frame.
-Comparison with MMS-TTS, OmniVoice and Sunbird Orpheus: [Africa TTS](https://huggingface.co/AfriSpeech/africa-tts#benchmark).
+Comparison with MMS-TTS and OmniVoice: [Africa TTS](https://huggingface.co/AfriSpeech/africa-tts#benchmark).
 """
-    cols = [s for s in ("real", "turbo", "mms", "omnivoice", "orpheus") if s in systems]
-    rows = ["| Languages | " + " | ".join(SYS[s] for s in cols) + " |", "|---|" + "---:|" * len(cols)]
-    for comp in res["averages"]:
-        if comp["vs"] not in ("mms", "omnivoice", "orpheus", "real"):
-            continue
-        label = {"mms": "MMS-TTS supports", "omnivoice": "OmniVoice supports",
-                 "orpheus": "Sunbird Orpheus supports", "real": "have real recordings"}[comp["vs"]]
-        rows.append(f"| {len(comp['languages'])} that {label} | "
-                    + " | ".join(cells_bold(comp["cer"], cols, "")) + " |")
+    cols = [s for s in ("real", "turbo", "mms", "omnivoice") if s in systems]
     per = ["| Language | " + " | ".join(SYS[s] for s in cols) + " |", "|---|" + "---:|" * len(cols)]
     for c, v in L.items():
         cells = cells_bold({s: v[s]["cer"] for s in cols if s in v}, cols)
         per.append(f"| {v['name']} `{c}` | " + " | ".join(cells) + " |")
     return f"""## Benchmark
 
-{BENCH_INTRO} Averages are over the languages each comparison shares, leaving out languages with
-fewer than 10 test sentences. Africa TTS uses each language's default voice; OmniVoice clones the
-same clip; MMS-TTS and Sunbird Orpheus use their own voices.
+Each system reads the same held-out sentences (Omnilingual ASR corpus, FLEURS, WAXAL, FLORES+;
+none in our training data), and [Omnilingual ASR](https://huggingface.co/facebook/omniASR-LLM-7B)
+transcribes the audio. In each language, the system whose speech the ASR transcribes with the
+lower **character error rate (CER)** wins. Head to head, over the languages both systems support
+(with at least 10 test sentences):
 
-{chr(10).join(rows)}
+![Africa TTS is better than MMS-TTS in 21 of 27 languages, and better than OmniVoice in 5 of 29](assets/benchmark_wins.png)
 
-<details><summary>Per language ({len(L)} languages)</summary>
+Africa TTS uses each language's default voice; OmniVoice clones the same clip; MMS-TTS uses its
+own voices.
+
+<details><summary>CER per language (%, lower is better; {len(L)} languages)</summary>
+
+*Real speech* is the ASR on human recordings of the same sentences, a reference for the ASR's own
+error. Best synthetic system in bold.
 
 {chr(10).join(per)}
 

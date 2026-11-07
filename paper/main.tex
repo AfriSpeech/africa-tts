@@ -46,8 +46,7 @@ It generates speech \xrtturbopython{}$\times$ faster than real time on four CPU 
 streaming within \ttfaturbopython{}\,s, and fits in a 209\,MB on-device bundle. On held-out
 sentences in \nTrainedLangs{} languages, transcribed by Omnilingual ASR, \att{} reaches a mean
 character error rate (CER) of \avgMmsturbo{}\% against \avgMmsMms{}\% for MMS-TTS (better in
-\turboBeatsMms{} languages) and \avgOrphturbo{}\% against \avgOrphOrph{}\% for the
-3.3B-parameter Sunbird Orpheus, and comes within 0.4 points of the 813M-parameter OmniVoice
+\turboBeatsMms{} languages), and comes within 0.4 points of the 813M-parameter OmniVoice
 (\avgOmniturbo{}\% vs.\ \avgOmniOmni{}\%) at about a seventh of its size. Distillation loses no
 intelligibility: \att{} matches its guided base model (\distturbo{}\% vs.\ \distguided{}\%) with
 a quarter of the layers and one pass per frame. The model, code, voices and the benchmark are
@@ -82,7 +81,7 @@ model designed to run faster than real time on a CPU. Two choices shape the syst
 \end{enumerate}
 
 We evaluate intelligibility with Omnilingual ASR~\cite{omniasr2025} on held-out sentences in
-\nTrainedLangs{} languages, against MMS-TTS, OmniVoice and Sunbird Orpheus, with human recordings of the same sentences as a reference.
+\nTrainedLangs{} languages, against MMS-TTS and OmniVoice, with human recordings of the same sentences as a reference.
 Our contributions are: (i) \att{}, a single phoneme-input TTS model covering 92 African
 languages, small and fast enough for CPU-only and on-device use, with GGUF and ONNX exports; (ii) a
 depth-distillation recipe that keeps the 24-layer base model's guided intelligibility at a
@@ -103,9 +102,7 @@ studio-quality single-speaker data and VITS baselines for ten sub-Saharan langua
 recordings, using uroman~\cite{hermjakob2018uroman} romanisation for non-Latin scripts. OmniVoice
 \cite{zhu2026omnivoice} is a single 0.6B-class discrete non-autoregressive model trained on
 581k hours of open data in over 600 languages, with zero-shot voice cloning. WAXAL
-\cite{diack2026waxal} recently added ASR and TTS corpora for over twenty African languages, and
-Sunbird Orpheus~\cite{sunbirdorpheus} fine-tunes a 3B-parameter speech language model on these
-and other data for a dozen languages of East, West and Southern Africa.
+\cite{diack2026waxal} recently added ASR and TTS corpora for over twenty African languages.
 
 \paragraph{Efficient speech language models.} Pocket TTS~\cite{pockettts} follows the
 continuous audio language model of \citet{rouard2025calm}: a causal Transformer predicts, frame
@@ -186,10 +183,7 @@ the base model in the distillation comparison. MMS-TTS~\cite{pratap2023mms} is r
 with a released model, with uroman for non-Latin scripts. OmniVoice~\cite{zhu2026omnivoice}
 is run for every language in its list, cloning the same default voice clip as \att{}; as
 OmniVoice also conditions on the prompt's transcript, each prompt is transcribed with the
-evaluation ASR where no full human transcript exists. Sunbird Orpheus~\cite{sunbirdorpheus}, a
-3.3B-parameter Llama-based model that generates SNAC codec tokens, is run for the languages in
-its training mix with one fixed speaker per language and its recommended sampling settings
-(temperature 0.6, top-$p$ 0.95, repetition penalty 1.1). Parameter counts are measured on the
+evaluation ASR where no full human transcript exists. Parameter counts are measured on the
 released checkpoints and include each system's codec or vocoder.
 
 \paragraph{Metric.} Each output is transcribed by Omnilingual ASR (\texttt{omniASR\_LLM\_7B\_v2},
@@ -203,12 +197,10 @@ languages each comparison shares.
 \subsection{Results}
 Table~\ref{tab:averages} summarises intelligibility. Against MMS-TTS, the strongest widely used
 per-language baseline, \att{} is more intelligible: it averages \avgMmsturbo{}\% CER against
-\avgMmsMms{}\% and is better in \turboBeatsMms{} languages. Sunbird Orpheus, a 3.3B-parameter
-model, is the least intelligible system on the \avgNOrph{} languages it covers
-(\avgOrphOrph{}\% against \avgOrphturbo{}\% for \att{}, which is better in \turboBeatsOrph{} of
-them). OmniVoice is the most intelligible system overall: on its \avgNOmni{} shared languages it
-averages \avgOmniOmni{}\% against \avgOmniturbo{}\% for \att{}, and it is better in most
-individual languages, by small margins. \att{} closes most of that gap at about a seventh of
+\avgMmsMms{}\% and is better in \turboBeatsMms{} languages. OmniVoice is the more intelligible
+system: on its \avgNOmni{} shared languages it averages \avgOmniOmni{}\% against
+\avgOmniturbo{}\% for \att{}, and \att{} is better in only \turboBeatsOmni{} of them, so OmniVoice
+wins most languages, by small margins. \att{} closes most of that gap at about a seventh of
 OmniVoice's parameters while running faster than real time on a CPU (Table~\ref{tab:speed}).
 On the \avgNreal{} languages with human recordings, \att{} (\avgrealturbo{}\%) is within
 0.2 points of the ASR's error on real speech (\avgrealreal{}\%). Removing diacritics lowers all
@@ -238,8 +230,8 @@ CC-BY-NC-4.0.
 \att{} shows that one 110M-parameter phoneme-input model can serve 92 African languages
 faster than real time on a CPU: distilled from a 24-layer base model, it keeps that model's
 guided intelligibility. It
-is clearly more intelligible than per-language MMS-TTS models and a much
-larger Sunbird Orpheus, and close to OmniVoice at a fraction of its size. Future work includes
+is clearly more intelligible than per-language MMS-TTS models, and close to OmniVoice at a
+fraction of its size. Future work includes
 human listening tests with native speakers, more conversational training speech, and tone
 marking in more G2P tables.
 

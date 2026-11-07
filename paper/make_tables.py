@@ -12,11 +12,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OURS = ["turbo", "guided", "unguided"]
-BASE = ["mms", "omnivoice", "orpheus"]
+BASE = ["mms", "omnivoice"]
 NAME = {"real": "Real", "turbo": "Africa TTS", "guided": "Base, guided", "unguided": "Base, unguided",
-        "mms": "MMS-TTS", "omnivoice": "OmniVoice", "orpheus": "Orpheus"}
+        "mms": "MMS-TTS", "omnivoice": "OmniVoice"}
 SIZE = {"real": "speech", "turbo": "110M", "guided": "336M", "unguided": "336M",
-        "mms": "36M/lang.", "omnivoice": "813M", "orpheus": "3.3B"}
+        "mms": "36M/lang.", "omnivoice": "813M"}
 SYN = OURS + BASE
 COLS = ["real"] + SYN  # narrowed to the systems present in the results by set_cols()
 
@@ -122,7 +122,7 @@ def speed_table(sp: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
-LABEL = {"mms": "MMS-TTS", "omnivoice": "OmniVoice", "orpheus": "Sunbird Orpheus"}
+LABEL = {"mms": "MMS-TTS", "omnivoice": "OmniVoice"}
 
 
 def averages_table(res: dict) -> str:
@@ -201,8 +201,7 @@ def numbers(res: dict, sp: dict) -> str:
             macros[f"ttfa{key}"] = f"{v['first_audio_s']:.2f}"
     out = []
     for k, v in macros.items():
-        name = re.sub(r"[^A-Za-z]", "", k.replace("omnivoice", "Omni").replace("mms", "Mms")
-                      .replace("orpheus", "Orph"))
+        name = re.sub(r"[^A-Za-z]", "", k.replace("omnivoice", "Omni").replace("mms", "Mms"))
         out.append(f"\\newcommand{{\\{name}}}{{{v}}}")
     return "\n".join(out) + "\n"
 

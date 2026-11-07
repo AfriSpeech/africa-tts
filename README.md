@@ -24,10 +24,10 @@ GPU, and on a 4-vCPU cloud machine it speaks 2.4× faster than real time
 
 ## 🎯 Intelligible
 
-On held-out sentences in 47 languages, transcribed by Omnilingual ASR, Africa TTS has a lower
-character error rate than MMS-TTS (9.0% vs 10.3%, better in 21 of 27 languages) and the 3.3B
-Sunbird Orpheus (5.9% vs 10.3%), and is close to the 813M OmniVoice (8.8% vs 8.4%) at a
-seventh of its size: [benchmark](https://github.com/AfriSpeech/africa-tts/blob/main/docs/BENCHMARKS.md#intelligibility).
+On held-out sentences transcribed by Omnilingual ASR, Africa TTS is more intelligible than
+MMS-TTS in 21 of 27 languages. The 813M OmniVoice, seven times its size, is more intelligible in
+24 of 29, by small margins:
+[benchmark](https://github.com/AfriSpeech/africa-tts/blob/main/docs/BENCHMARKS.md#intelligibility).
 
 ## Install
 
