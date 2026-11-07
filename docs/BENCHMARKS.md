@@ -39,10 +39,7 @@ How well can the speech be understood? Each system reads the same held-out sente
 transcribes the audio. We report the **character error rate (CER, %, lower is better)** after
 NFC normalisation, lower-casing and punctuation removal.
 
-In each language, the system with the lower CER wins. Head to head, over the languages both
-systems support (at least 10 test sentences each):
-
-![Africa TTS is better than MMS-TTS in 21 of 27 languages, and better than OmniVoice in 5 of 29](benchmark_wins.png)
+![CER per language for Africa TTS, MMS-TTS and OmniVoice](benchmark_cer.png)
 
 - Against MMS-TTS, Africa TTS wins 21 of 27 languages (average CER 9.0% vs 10.3%).
 - OmniVoice wins 24 of 29, by small margins (8.4% vs 8.8% on average), at about 7× Africa TTS's

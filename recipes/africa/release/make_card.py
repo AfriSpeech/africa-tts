@@ -96,11 +96,11 @@ Comparison with MMS-TTS and OmniVoice: [Africa TTS](https://huggingface.co/AfriS
 
 Each system reads the same held-out sentences (Omnilingual ASR corpus, FLEURS, WAXAL, FLORES+;
 none in our training data), and [Omnilingual ASR](https://huggingface.co/facebook/omniASR-LLM-7B)
-transcribes the audio. In each language, the system whose speech the ASR transcribes with the
-lower **character error rate (CER)** wins. Head to head, over the languages both systems support
-(with at least 10 test sentences):
+transcribes the audio: lower **character error rate (CER)** means more intelligible speech. Per
+language (at least 10 test sentences), Africa TTS beats MMS-TTS in 21 of the 27 languages both
+support; OmniVoice, seven times larger, beats Africa TTS in 24 of 29.
 
-![Africa TTS is better than MMS-TTS in 21 of 27 languages, and better than OmniVoice in 5 of 29](assets/benchmark_wins.png)
+![CER per language for Africa TTS, MMS-TTS and OmniVoice](assets/benchmark_cer.png)
 
 Africa TTS uses each language's default voice; OmniVoice clones the same clip; MMS-TTS uses its
 own voices.
