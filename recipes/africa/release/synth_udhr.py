@@ -95,8 +95,11 @@ def main() -> None:
         eng = English()
         items, voice_rows, skipped = [], {}, []
         for g in langs:
+            # The collection files several translations under one code (e.g. swh: Chimwiini,
+            # Kibajuni and standard Swahili); prefer the one whose file is named after the code.
             keys = [PREFER[g]] if g in PREFER else [k for c in CODE_ALIAS.get(g, [g])
-                                                    for k in index.get(c, [])]
+                                                    for k in sorted(index.get(c, []),
+                                                                    key=lambda f, c=c: f != c)]
             texts = next((t for k in keys if (t := articles(k))), None)
             if texts is None:
                 skipped.append(g)
