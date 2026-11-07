@@ -64,7 +64,7 @@ def main() -> None:
     out.mkdir(parents=True)
     # The names the loader looks for (Linux: sonames such as libggml.so.0), each copied once
     # with symlinks resolved, since wheels cannot hold symlinks.
-    keep = {"win32": r"^(audiocpp|ggml[\w-]*)\.dll$",
+    keep = {"win32": r"^(lib)?(audiocpp|ggml[\w-]*)\.dll$",
             "darwin": r"^lib(audiocpp|ggml[\w-]*)(\.\d+)?\.(dylib|so)$"}.get(
         sys.platform, r"^(libaudiocpp\.so|lib(?!audiocpp)[\w-]+\.so\.\d+|libggml-cpu-[\w-]+\.so)$")
     found = []

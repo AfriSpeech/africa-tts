@@ -34,8 +34,13 @@ def _lib_path() -> Path:
     env = os.environ.get("AFRICA_TTS_AUDIOCPP_LIB")
     if env:
         return Path(env)
-    name = {"win32": "audiocpp.dll", "darwin": "libaudiocpp.dylib"}.get(sys.platform, "libaudiocpp.so")
-    return Path(__file__).parent / "lib" / name
+    lib = Path(__file__).parent / "lib"
+    names = {"win32": ["audiocpp.dll", "libaudiocpp.dll"],  # MSVC or MinGW build
+             "darwin": ["libaudiocpp.dylib"]}.get(sys.platform, ["libaudiocpp.so"])
+    for name in names:
+        if (lib / name).exists():
+            return lib / name
+    return lib / names[0]
 
 
 def available() -> bool:
@@ -52,6 +57,8 @@ def lib():
             f"the audio.cpp engine is not included in this installation ({path} is missing): "
             "install a platform wheel of africa-tts, or use the PyTorch engine "
             '(pip install "africa-tts[torch]", AfricaTTS.load(backend="torch"))')
+    if sys.platform == "win32":  # dependent DLLs (ggml, runtime) sit next to it
+        os.add_dll_directory(str(path.parent))
     L = C.CDLL(str(path))
     P, S, N, F = C.c_void_p, C.c_char_p, C.c_int, C.POINTER(C.c_float)
     sig = {
