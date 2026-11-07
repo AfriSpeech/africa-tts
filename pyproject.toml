@@ -1,7 +1,7 @@
 [project]
 name = "africa-tts"
-version = "0.2.0"
-description = "Fast CPU text-to-speech for 92 African languages and English, no PyTorch needed"
+version = "0.3.0"
+description = "Fast, CPU-friendly text-to-speech for 92 African languages and English (Pocket TTS)"
 readme = "README.md"
 requires-python = ">=3.10,<3.15"
 license = { text = "MIT" }
@@ -13,13 +13,12 @@ classifiers = [
     "Topic :: Multimedia :: Sound/Audio :: Speech",
 ]
 dependencies = [
-    # Inference only, no PyTorch: the int8 sherpa-onnx bundle (ONNX Runtime) on CPU.
-    "sherpa-onnx>=2.0.1,<3",
+    "pocket-tts>=4.0.1,<5",
     # 0.3.4: the G2P tables the model was trained with (commit 76b53a8; 0.3.2 predates fixes)
     "africa-g2p[english]>=0.3.4,<0.4",
     "huggingface_hub>=0.30",
     "numpy>=1.24",
-    "soundfile>=0.12",
+    "scipy>=1.5",
 ]
 
 [project.scripts]

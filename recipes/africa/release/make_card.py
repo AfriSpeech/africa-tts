@@ -119,7 +119,7 @@ Method, caveats and scripts: [docs/BENCHMARKS.md]({GH}/blob/main/docs/BENCHMARKS
 """
 
 
-MAIN_QUICK = '## Quick start\n\n```bash\npip install africa-tts   # English also needs espeak-ng\n```\n\n```python\nfrom africa_tts import AfricaTTS\n\ntts = AfricaTTS.load()\naudio = tts.generate("Akwaaba! Yɛfrɛ me Kofi.", lang="twi")              # default Twi voice\naudio = tts.generate("Hello Ghana!", lang="eng", voice="my_voice.wav")  # clone a 3-10 s clip\ntts.save(audio, "out.wav")\n```\n\nNo PyTorch: it runs on sherpa-onnx. The first run asks before downloading the model (about\n190 MB), then works offline. Output: 24 kHz mono. Every language has a default voice. Spell out\nnumbers. Plain pocket-tts works too, with IPA input: [see how]({GH}/blob/main/docs/MODEL.md#using-plain-pocket-tts).\n\n'.replace('{GH}', 'https://github.com/AfriSpeech/africa-tts')
+MAIN_QUICK = '## Quick start\n\n```bash\npip install africa-tts   # English also needs espeak-ng\n```\n\n```python\nfrom africa_tts import AfricaTTS\n\ntts = AfricaTTS.load()\naudio = tts.generate("Akwaaba! Yɛfrɛ me Kofi.", lang="twi")              # default Twi voice\naudio = tts.generate("Hello Ghana!", lang="eng", voice="my_voice.wav")  # clone a 3-10 s clip\ntts.save(audio, "out.wav")\n```\n\nThe first run asks before downloading the model (about 440 MB), then works offline. Output:\n24 kHz mono. Every language has a default voice. Spell out\nnumbers. Plain pocket-tts works too, with IPA input: [see how]({GH}/blob/main/docs/MODEL.md#using-plain-pocket-tts).\n\n'.replace('{GH}', 'https://github.com/AfriSpeech/africa-tts')
 BASE_USE = '## Use\n\nNot supported by the `africa-tts` package, which runs Africa TTS. For research, the repository\'s\n[`recipes/africa/guidance.py`]({GH}/blob/main/recipes/africa/guidance.py) runs it with guidance:\n\n```python\nimport sys; sys.path.insert(0, "recipes/africa")   # from a clone of {GH}\nfrom guidance import load_base\n\ntts = load_base(cfg=2.0)   # cfg=1.0: one pass per frame\naudio = tts.generate("Akwaaba! Yɛfrɛ me Kofi.", lang="twi")\n```\n\n'.replace('{GH}', 'https://github.com/AfriSpeech/africa-tts')
 
 
@@ -144,8 +144,8 @@ def main() -> None:
         sorted(langs, key=lambda x: (x[0] != "eng", -x[2])))
     if not base:
         what = (f"Fast text-to-speech for **{len(african)} African languages and English**, with voice "
-                "cloning, faster than real time on a CPU (**2.5× real time on 4 cores**), no PyTorch "
-                "needed, 110M parameters.")
+                "cloning, faster than real time on a CPU: **2.4× real time on 4 cores, first audio "
+                "after 0.17 s**, 110M parameters.")
         model = [
             "6-layer [Pocket TTS](https://github.com/kyutai-labs/pocket-tts) FlowLM (110M parameters with "
             "the Mimi codec), distilled with Kyutai's `depth_distill` recipe from the guided 24-layer "

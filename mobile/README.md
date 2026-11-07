@@ -87,8 +87,8 @@ sherpa-onnx 2.0.1 (Python). The Android NDK build and the Kotlin classes have no
 ## Desktop / Python
 
 ```bash
-pip install africa-tts      # the Python package runs this same sherpa-onnx bundle
-africa-tts "Akwaaba! Yɛfrɛ me Kofi." --lang twi -o out.wav
+pip install sherpa-onnx soundfile "africa-g2p[english]>=0.3.4"
+python mobile/python/speak_sherpa.py sherpa-onnx "Akwaaba! Yɛfrɛ me Kofi." --lang twi -o out.wav
 ```
 
 ## Exporting your own model
