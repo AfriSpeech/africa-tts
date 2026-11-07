@@ -120,13 +120,14 @@ model designed to run faster than real time on a CPU. Two choices shape the syst
   codec). It is distilled from a 24-layer base model, \attbase{}, with classifier-free
   guidance~\cite{ho2022cfg} folded into its weights. It generates speech
   \xrtturbopython{}$\times$ faster than real time on four CPU cores and starts streaming after
-  \ttfaturbopython{}\,s, and ships as int8 ONNX bundles for servers and phones.
+  \ttfaturbopython{}\,s. It ships as a 144\,MB 8-bit GGUF model for audio.cpp (desktops and
+  servers) and an int8 ONNX bundle for phones.
 \end{enumerate}
 
 We evaluate intelligibility with Omnilingual ASR~\cite{omniasr2025} on held-out sentences in
 \nTrainedLangs{} languages, against MMS-TTS, OmniVoice and Sunbird Orpheus, with human recordings of the same sentences as a reference.
 Our contributions are: (i) \att{}, a single phoneme-input TTS model covering 92 African
-languages, small and fast enough for CPU-only and on-device use, with ONNX exports; (ii) a
+languages, small and fast enough for CPU-only and on-device use, with GGUF and ONNX exports; (ii) a
 depth-distillation recipe that keeps the 24-layer base model's guided intelligibility at a
 quarter of the layers and one pass per frame; and (iii) an open intelligibility benchmark over \nTrainedLangs{} languages comparing four systems, with all
 synthesised audio and transcripts.
@@ -198,7 +199,10 @@ listening tests. Per frame, \att{} computes 6 layers where the guided base model
 \subsection{Deployment}
 \att{} exports to ONNX and runs in sherpa-onnx~\cite{sherpaonnx} with int8 weights in a 209\,MB
 bundle that includes the front end and default voices. The exported graphs match PyTorch within $6.5\times10^{-5}$ before quantisation and the decoder at 116\,dB
-SNR. A CPU-only API server (HTTP, WebSocket streaming) powers a public demo that scales to zero.
+SNR. For desktops and servers, the model is also converted to an 8-bit GGUF (q8\_0, 144\,MB) and
+runs in audio.cpp~\cite{audiocpp}, a C++ engine on ggml, without PyTorch: this is the default engine
+of the Python package and of a CPU-only API server (HTTP, WebSocket streaming) that powers a public
+demo and scales to zero. The PyTorch model remains available for unquantised and GPU inference.
 
 \section{Evaluation}
 \begin{table*}[t]

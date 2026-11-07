@@ -28,7 +28,7 @@ workers × cores ([server/](../server/README.md#scaling)).
 Run it on your machine:
 
 ```bash
-pip install africa-tts sherpa-onnx soundfile
+pip install "africa-tts[torch]" sherpa-onnx   # from a clone of this repository
 python benchmarks/speed.py --threads 4
 ```
 

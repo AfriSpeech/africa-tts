@@ -1,4 +1,4 @@
-\begin{thebibliography}{22}
+\begin{thebibliography}{23}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -130,6 +130,11 @@ Simon Rouard, Manu Orsini, Axel Roebel, Neil Zeghidour, and Alexandre
   D{\'e}fossez.
 \newblock Continuous audio language models.
 \newblock \emph{arXiv preprint arXiv:2509.06926}, 2025.
+
+\bibitem[{ShugoAI}(2026)]{audiocpp}
+{ShugoAI}.
+\newblock audio.cpp.
+\newblock \url{https://github.com/0xShug0/audio.cpp}, 2026.
 
 \bibitem[{Sunbird AI}(2025)]{sunbirdorpheus}
 {Sunbird AI}.
