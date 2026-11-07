@@ -18,9 +18,11 @@ from pathlib import Path
 
 import jiwer
 
-ORDER = ["real", "turbo", "guided", "unguided", "mms", "omnivoice"]
-TITLE = {"real": "Real speech", "turbo": "Africa TTS Turbo", "guided": "Africa TTS guided",
-         "unguided": "Africa TTS unguided", "mms": "MMS-TTS", "omnivoice": "OmniVoice"}
+ORDER = ["real", "turbo", "guided", "unguided", "mms", "omnivoice", "orpheus"]
+TITLE = {"real": "Real speech", "turbo": "Africa TTS Turbo (110M)",
+         "guided": "Africa TTS, guided (336M)", "unguided": "Africa TTS, unguided (336M)",
+         "mms": "MMS-TTS (36M per language)", "omnivoice": "OmniVoice (813M)",
+         "orpheus": "Sunbird Orpheus (3.3B)"}
 
 
 def norm(t: str, strip_marks: bool = False) -> str:
@@ -44,8 +46,13 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("bench", type=Path)
     ap.add_argument("--names", type=Path, default=Path(__file__).resolve().parents[1] / "africa_tts" / "languages.json")
+    ap.add_argument("--min-n", type=int, default=1,
+                    help="leave languages with fewer sentences out of the averages (still listed)")
     a = ap.parse_args()
     names = {c: v["name"] for c, v in json.loads(a.names.read_text()).items()}
+    exp = a.names.parent / "languages_experimental.json"
+    if exp.exists():
+        names = {c: v["name"] for c, v in json.loads(exp.read_text()).items()} | names
     rows = [json.loads(line) for line in open(a.bench / "testset.jsonl")]
     ref = {(r["lang"], r["id"]): r["text"] for r in rows}
     source = {r["lang"]: r["source"] for r in rows}
@@ -73,12 +80,13 @@ def main() -> None:
 
     # macro averages over shared languages, for each system pair with Turbo / each other
     def avg(sys_list, key="cer"):
-        shared = [c for c in langs if all(s in res[c] for s in sys_list)]
+        shared = [c for c in langs if all(s in res[c] for s in sys_list)
+                  and max(res[c][s]["n"] for s in res[c]) >= a.min_n]
         return shared, {s: sum(res[c][s][key] for c in shared) / len(shared) for s in sys_list} if shared else {}
 
     comps = []
     synth = [s for s in systems if s != "real"]
-    for other in ("mms", "omnivoice"):
+    for other in ("mms", "omnivoice", "orpheus"):
         if other in systems:
             group = [s for s in ("turbo", "guided", "unguided") if s in systems] + [other]
             shared, m = avg(group)
@@ -93,21 +101,31 @@ def main() -> None:
 
     # markdown
     pct = lambda x: "—" if x is None else f"{100 * x:.1f}"  # noqa: E731
+
+    def row_cells(vals: dict, cols: list[str], blank: str = "—") -> list[str]:
+        """Format CERs, bolding the lowest synthetic system (real speech is a reference, not a
+        contender). Ties at the shown precision are all bolded."""
+        shown = {s: pct(v) for s, v in vals.items() if v is not None}
+        cands = [float(shown[s]) for s in shown if s != "real"]
+        best = min(cands) if len(cands) > 1 else None
+        return [(f"**{shown[s]}**" if s != "real" and best is not None and float(shown[s]) == best
+                 else shown[s]) if s in shown else blank for s in cols]
     lines = ["| Language | Code | Text source | " + " | ".join(TITLE[s] for s in systems) + " |",
              "|---|---|---|" + "---:|" * len(systems)]
     for c in langs:
-        cells = [pct(res[c][s]["cer"]) if s in res[c] else "—" for s in systems]
+        cells = row_cells({s: res[c][s]["cer"] for s in res[c]}, systems)
         note = " †" if flags[c] else ""
         lines.append(f"| {names.get(c, c)}{note} | `{c}` | {source[c]} | " + " | ".join(cells) + " |")
     lines.append("")
-    lines.append("Averages (mean of per-language CER, %, over the languages the systems share):")
+    lines.append("Averages (mean of per-language CER, %, over the languages the systems share; best synthetic system in bold):")
     lines.append("")
     lines.append("| Comparison | Languages | " + " | ".join(TITLE[s] for s in systems) + " |")
     lines.append("|---|---:|" + "---:|" * len(systems))
     for comp in out["averages"]:
-        label = {"mms": "vs MMS-TTS", "omnivoice": "vs OmniVoice", "all": "all systems",
+        label = {"mms": "vs MMS-TTS", "omnivoice": "vs OmniVoice", "orpheus": "vs Sunbird Orpheus",
+                 "all": "all systems",
                  "real": "vs real speech"}[comp["vs"]]
-        cells = [pct(comp["cer"].get(s)) if s in comp["cer"] else "" for s in systems]
+        cells = row_cells(comp["cer"], systems, "")
         lines.append(f"| {label} | {len(comp['languages'])} | " + " | ".join(cells) + " |")
     lines.append("")
     lines.append("Same, with diacritics removed before scoring:")
@@ -115,9 +133,10 @@ def main() -> None:
     lines.append("| Comparison | Languages | " + " | ".join(TITLE[s] for s in systems) + " |")
     lines.append("|---|---:|" + "---:|" * len(systems))
     for comp in out["averages"]:
-        label = {"mms": "vs MMS-TTS", "omnivoice": "vs OmniVoice", "all": "all systems",
+        label = {"mms": "vs MMS-TTS", "omnivoice": "vs OmniVoice", "orpheus": "vs Sunbird Orpheus",
+                 "all": "all systems",
                  "real": "vs real speech"}[comp["vs"]]
-        cells = [pct(comp["cer_nodiac"].get(s)) if s in comp["cer_nodiac"] else "" for s in systems]
+        cells = row_cells(comp["cer_nodiac"], systems, "")
         lines.append(f"| {label} | {len(comp['languages'])} | " + " | ".join(cells) + " |")
     (a.bench / "results.md").write_text("\n".join(lines) + "\n")
     print("\n".join(lines))

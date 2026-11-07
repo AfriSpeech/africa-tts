@@ -13,8 +13,10 @@ DEMO = "https://huggingface.co/spaces/AfriSpeech/africa-tts-demo"
 GH = "https://github.com/AfriSpeech/africa-tts"
 NICE = {"english_eng": "English", "swahili_swa": "Swahili", "twi_twi": "Twi", "yoruba_yor": "Yoruba",
         "xhosa_xho": "Xhosa"}
-SYS = {"real": "Real speech", "turbo": "Turbo", "guided": "24L guided", "unguided": "24L unguided",
-       "mms": "MMS-TTS", "omnivoice": "OmniVoice"}
+SYS = {"real": "Real speech", "turbo": "Africa TTS Turbo (110M)",
+         "guided": "Africa TTS, guided (336M)", "unguided": "Africa TTS, unguided (336M)",
+         "mms": "MMS-TTS (36M per language)", "omnivoice": "OmniVoice (813M)",
+         "orpheus": "Sunbird Orpheus (3.3B)"}
 
 # Hub language tags: every training language's current ISO 639-3 code, plus its ISO 639-1 code
 # and macrolanguage where they exist (the Hub's language filter mostly uses 639-1, e.g. "sw").
@@ -46,36 +48,45 @@ def pct(x) -> str:
     return "—" if x is None or (isinstance(x, float) and math.isnan(x)) else f"{100 * x:.1f}"
 
 
+def cells_bold(vals: dict, cols: list[str], blank: str = "—") -> list[str]:
+    """CERs as %, the lowest synthetic system in bold (real speech is a reference)."""
+    shown = {s: pct(v) for s, v in vals.items() if v is not None and not
+             (isinstance(v, float) and math.isnan(v))}
+    cands = [float(shown[s]) for s in shown if s != "real"]
+    best = min(cands) if len(cands) > 1 else None
+    return [(f"**{shown[s]}**" if s != "real" and best is not None and float(shown[s]) == best
+             else shown[s]) if s in shown else blank for s in cols]
+
+
 def bench_section(res: dict, turbo: bool) -> str:
     systems = res["systems"]
     me = "turbo" if turbo else "guided"
     order = [me] + [s for s in ("turbo", "guided", "unguided") if s != me and s in systems]
-    order += [s for s in ("mms", "omnivoice") if s in systems]
-    rows = []
-    for comp in res["averages"]:
-        if comp["vs"] not in ("mms", "omnivoice", "real"):
-            continue
-        label = {"mms": "Languages MMS-TTS supports", "omnivoice": "Languages OmniVoice supports",
-                 "real": "Languages with real recordings"}[comp["vs"]]
-        cols = (["real"] if comp["vs"] == "real" else []) + order
-        cells = " · ".join(f"{SYS[s]} **{pct(comp['cer'][s])}**" for s in cols if s in comp["cer"])
-        rows.append(f"| {label} ({len(comp['languages'])}) | {cells} |")
+    order += [s for s in ("mms", "omnivoice", "orpheus") if s in systems]
     cols = [s for s in ["real", *order] if s in systems]
+    rows = ["| Languages | " + " | ".join(SYS[s] for s in cols) + " |", "|---|" + "---:|" * len(cols)]
+    for comp in res["averages"]:
+        if comp["vs"] not in ("mms", "omnivoice", "orpheus", "real"):
+            continue
+        label = {"mms": "MMS-TTS supports", "omnivoice": "OmniVoice supports",
+                 "orpheus": "Sunbird Orpheus supports",
+                 "real": "have real recordings"}[comp["vs"]]
+        rows.append(f"| {len(comp['languages'])} that {label} | "
+                    + " | ".join(cells_bold(comp["cer"], cols, "")) + " |")
     per = ["| Language | " + " | ".join(SYS[s] for s in cols) + " |", "|---|" + "---:|" * len(cols)]
     for c, v in res["languages"].items():
-        cells = [pct(v[s]["cer"]) if s in v else "—" for s in cols]
+        cells = cells_bold({s: v[s]["cer"] for s in cols if s in v}, cols)
         per.append(f"| {v['name']} `{c}` | " + " | ".join(cells) + " |")
     return f"""## Benchmark
 
 Intelligibility as **character error rate (CER, %, lower is better)**: each system reads the same
-held-out sentences (Omnilingual ASR corpus, FLEURS, FLORES+; none in our training data), and
+held-out sentences (Omnilingual ASR corpus, FLEURS, WAXAL, FLORES+; none in our training data), and
 [Omnilingual ASR](https://huggingface.co/facebook/omniASR-LLM-7B) transcribes the audio. *Real
-speech* is the ASR on human recordings of the same sentences: the floor set by the ASR itself.
-Averages are over the languages each comparison shares. Africa TTS uses each language's default
-voice; OmniVoice clones the same clip; MMS-TTS uses its own voice.
+speech* is the ASR on human recordings of the same sentences, a reference for the ASR's own error.
+Averages are over the languages each comparison shares; the best synthetic system is in bold.
+Africa TTS uses each language's default voice; OmniVoice clones the same clip; MMS-TTS and Sunbird Orpheus use their own voices. Languages
+with fewer than 10 test sentences are left out of the averages.
 
-| Comparison | Mean CER (%) |
-|---|---|
 {chr(10).join(rows)}
 
 <details><summary>Per language ({len(res["languages"])} languages)</summary>

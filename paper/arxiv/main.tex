@@ -1,0 +1,392 @@
+\documentclass[10pt,twocolumn]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{times}
+\usepackage[safe]{tipa}
+\usepackage[letterpaper,margin=0.75in,columnsep=0.25in]{geometry}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+\def\UrlBreaks{\do\/\do-}
+\usepackage{xcolor}
+\usepackage{graphicx}
+
+\setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
+\setlength{\floatsep}{6pt plus 2pt minus 2pt}
+\setlength{\abovecaptionskip}{4pt}
+
+\newcommand{\att}{Africa TTS}
+\newcommand{\turbo}{Africa TTS Turbo}
+\newcommand{\nTrainedLangs}{47}
+\newcommand{\nSentences}{2154}
+\newcommand{\turboBeatsMms}{21 of 27}
+\newcommand{\turboBeatsOmni}{5 of 29}
+\newcommand{\turboBeatsOrph}{8 of 11}
+\newcommand{\guidedBeatsMms}{24 of 27}
+\newcommand{\guidedBeatsOmni}{6 of 29}
+\newcommand{\guidedBeatsOrph}{10 of 11}
+\newcommand{\unguidedBeatsMms}{14 of 27}
+\newcommand{\unguidedBeatsOmni}{4 of 29}
+\newcommand{\unguidedBeatsOrph}{7 of 11}
+\newcommand{\avgMmsturbo}{9.0}
+\newcommand{\avgMmsguided}{8.7}
+\newcommand{\avgMmsunguided}{10.6}
+\newcommand{\avgMmsMms}{10.3}
+\newcommand{\avgNMms}{27}
+\newcommand{\avgOmniturbo}{8.8}
+\newcommand{\avgOmniguided}{8.8}
+\newcommand{\avgOmniunguided}{10.4}
+\newcommand{\avgOmniOmni}{8.4}
+\newcommand{\avgNOmni}{29}
+\newcommand{\avgOrphturbo}{5.9}
+\newcommand{\avgOrphguided}{5.6}
+\newcommand{\avgOrphunguided}{7.3}
+\newcommand{\avgOrphOrph}{10.3}
+\newcommand{\avgNOrph}{11}
+\newcommand{\avgallturbo}{6.0}
+\newcommand{\avgallguided}{5.7}
+\newcommand{\avgallunguided}{7.2}
+\newcommand{\avgallMms}{7.8}
+\newcommand{\avgallOmni}{4.3}
+\newcommand{\avgallOrph}{9.8}
+\newcommand{\avgNall}{6}
+\newcommand{\avgrealreal}{7.5}
+\newcommand{\avgrealturbo}{7.7}
+\newcommand{\avgrealguided}{7.7}
+\newcommand{\avgrealunguided}{8.9}
+\newcommand{\avgNreal}{24}
+\newcommand{\xrtturbosherpaint}{2.52}
+\newcommand{\xrtturbopython}{2.38}
+\newcommand{\ttfaturbopython}{0.17}
+\newcommand{\xrtfullunguidedsherpaint}{0.82}
+\newcommand{\xrtfullunguidedpython}{0.90}
+\newcommand{\ttfafullunguidedpython}{0.52}
+\newcommand{\xrtfullguidedpython}{0.47}
+\newcommand{\ttfafullguidedpython}{0.72}
+
+\title{\att{}: Fast, CPU-Friendly Speech Synthesis\\for 92 African Languages from Phonemes}
+
+\author{%
+Mich-Seth Owusu\\[2pt]
+\normalsize AfriSpeech\\
+\normalsize\texttt{michseth@ghananlp.org}
+}
+
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We present \att{}, a text-to-speech system for 92 African languages and English that runs
+faster than real time on an ordinary CPU. All languages share one input space: text is converted
+to IPA by rule-based grapheme-to-phoneme tables, so a single model learns sounds rather than
+orthographies. A 24-layer continuous-latent audio language model, built on Pocket TTS, is
+trained on the IPA, and a 6-layer student, \turbo{} (110M parameters), is distilled from it
+with classifier-free guidance folded into its weights. \turbo{} generates speech
+\xrtturbopython{}$\times$ faster than real time on four CPU cores and starts streaming within
+\ttfaturbopython{}\,s. On held-out sentences in \nTrainedLangs{} languages, transcribed by
+Omnilingual ASR, \turbo{} reaches a mean character error rate (CER) of \avgMmsturbo{}\% against
+\avgMmsMms{}\% for MMS-TTS (better in \turboBeatsMms{} languages) and \avgOrphturbo{}\% against
+\avgOrphOrph{}\% for the 3.3B-parameter Sunbird Orpheus, and comes within
+\(0.4\) points of the 813M-parameter OmniVoice (\avgOmniturbo{}\% vs.\ \avgOmniOmni{}\%) at
+about a seventh of its size. Models,
+code, voices and the benchmark are released.
+\end{abstract}
+
+\section{Introduction}
+
+Speech synthesis for African languages is held back less by modelling than by scale and
+deployment. Most of the continent's more than two thousand languages have little or no
+transcribed speech, and the people who would use a voice interface in those languages often
+rely on phones and low-cost laptops without a GPU. Massively multilingual systems have widened
+coverage: MMS-TTS~\cite{pratap2023mms} trains one small VITS model~\cite{kim2021vits} per
+language for more than a thousand languages, and OmniVoice~\cite{zhu2026omnivoice} clones voices
+zero-shot in more than six hundred. But per-language models do not share what languages have in
+common, and large zero-shot models need accelerators to run fast.
+
+We present \textbf{\att{}}, a single text-to-speech model for 92 African languages and English,
+built on Kyutai's Pocket TTS~\cite{pockettts,rouard2025calm}, a continuous-latent audio language
+model designed to run faster than real time on a CPU. Two choices shape the system:
+\begin{enumerate}
+  \item \textbf{One phonetic input space.} Every language is converted to IPA by rule-based
+  grapheme-to-phoneme tables~\cite{africag2p} (espeak-ng~\cite{espeakng} for English), so the
+  model learns sounds rather than 92 orthographies, and languages with little data share
+  acoustic knowledge with their neighbours.
+  \item \textbf{Speech for the CPU.} A 6-layer student, \textbf{\turbo{}} (110M parameters
+  including the codec), is distilled from the 24-layer teacher with classifier-free
+  guidance~\cite{ho2022cfg} folded into its weights. It generates speech
+  \xrtturbopython{}$\times$ faster than real time on four CPU cores and starts streaming after
+  \ttfaturbopython{}\,s, and ships as int8 ONNX bundles for servers and phones.
+\end{enumerate}
+
+We evaluate intelligibility with Omnilingual ASR~\cite{omniasr2025} on held-out sentences in
+\nTrainedLangs{} languages, against MMS-TTS, OmniVoice and Sunbird Orpheus, with human recordings of the same sentences as a reference.
+Our contributions are: (i) a single phoneme-input TTS model covering 92 African languages,
+trained on open data; (ii) a 110M-parameter distilled model that is fast enough for
+CPU-only and on-device use, with ONNX exports; and (iii) an open intelligibility benchmark over \nTrainedLangs{} languages comparing four systems, with all
+synthesised audio and transcripts.
+
+All models, voices, code, the benchmark and its outputs are released.\footnote{Code:
+\url{https://github.com/AfriSpeech/africa-tts}; models:
+\url{https://huggingface.co/AfriSpeech/africa-tts-turbo} and
+\url{https://huggingface.co/AfriSpeech/africa-tts}; live demo:
+\url{https://huggingface.co/spaces/AfriSpeech/africa-tts-demo}.}
+
+\section{Related Work}
+
+\paragraph{Multilingual TTS for African languages.} BibleTTS~\cite{meyer2022bibletts} released
+studio-quality single-speaker data and VITS baselines for ten sub-Saharan languages. MMS-TTS
+\cite{pratap2023mms} scaled per-language VITS models to over 1{,}100 languages from New Testament
+recordings, using uroman~\cite{hermjakob2018uroman} romanisation for non-Latin scripts. OmniVoice
+\cite{zhu2026omnivoice} is a single 0.6B-class discrete non-autoregressive model trained on
+581k hours of open data in over 600 languages, with zero-shot voice cloning. WAXAL
+\cite{diack2026waxal} recently added ASR and TTS corpora for over twenty African languages, and
+Sunbird Orpheus~\cite{sunbirdorpheus} fine-tunes a 3B-parameter speech language model on these
+and other data for a dozen languages of East, West and Southern Africa.
+
+\paragraph{Efficient speech language models.} Pocket TTS~\cite{pockettts} follows the
+continuous audio language model of \citet{rouard2025calm}: a causal Transformer predicts, frame
+by frame at 12.5\,Hz, a continuous latent of the Mimi codec~\cite{defossez2024moshi}, sampled
+by a small consistency-trained MLP head, with voice cloning from a short audio prompt. We keep
+the architecture, replace the text input with IPA, and distil depth~\cite{hinton2015distilling}.
+
+\paragraph{Evaluation with ASR.} Automatic intelligibility is commonly measured as the word or
+character error rate of an ASR system on synthesised speech. Omnilingual ASR~\cite{omniasr2025}
+covers over 1{,}600 languages, which for the first time allows a single ASR to score TTS in
+most of the languages studied here.
+
+\section{\att{}}
+
+\subsection{Data}
+We train on 897 hours of real speech: JW recordings (383\,h), a
+crowd-sourced female speech corpus in 17 languages (192\,h), Ghanaian-accented English
+(156\,h) and a 200-hour slice of HiFiTTS-2~\cite{langman2025hifitts2} (166\,h). Any clip whose
+transcript contains a numeral is dropped (the model reads spelled-out numbers only), as are
+clips outside 1--30\,s. Word timings for voice-prompt cut points come from
+ctc-forced-aligner~\cite{ctcforcedaligner} for every language (99.95\% of clips aligned). African languages
+range from 0.04 to 27 hours each (33 have under two hours); English has 323 hours.
+
+\subsection{Phonetic front end}
+Text is converted to IPA word by word: African languages by the C tables of africa-g2p
+\cite{africag2p}, English by espeak-ng 1.51 with normalisation. The same C library runs on
+device and is byte-identical to the training conversion on every validation sentence. Common
+input errors are normalised, e.g.\ Greek and Cyrillic lookalikes of the African letters
+\textepsilon{} and \textopeno{}. A SentencePiece unigram tokenizer~\cite{kudo2018sentencepiece}
+with 4{,}000 pieces is trained on the IPA, sampling languages in proportion to the square root
+of their hours (2.41 tokens per word).
+
+\subsection{Teacher}
+The 24-layer teacher (336M parameters, of which 20M are the Mimi codec) is
+warm-started from Kyutai's English Pocket TTS with a fresh text embedding table for the IPA
+vocabulary, and fine-tuned on one H200 GPU with batch 64, learning rate $2\times10^{-4}$ and
+20\% text and voice dropout (enabling classifier-free guidance). Training early-stopped at
+113k steps; the release uses step 100k, chosen by listening. At inference the teacher runs
+either \emph{guided} (cfg 2.0: two backbone passes per frame) or \emph{unguided} (one pass).
+
+\subsection{\turbo{}: depth distillation}
+The 6-layer student is initialised from teacher layers 0, 1, 2, 21, 22 and 23, with the text
+table, flow head and end-of-speech head copied, and trained to match the teacher's guided
+output, so guidance costs nothing at inference. It trains for 200k steps (cosine schedule,
+peak $4\times10^{-4}$); among checkpoints at 150k, 175k and 200k, 200k was preferred in
+listening tests. Per frame, Turbo computes 6 layers where the guided teacher computes 48.
+
+\subsection{Deployment}
+Both models export to ONNX and run in sherpa-onnx~\cite{sherpaonnx} with int8 weights: 209\,MB
+for Turbo and 437\,MB for the teacher, including the front end and default voices. The int8
+models match PyTorch within $6.5\times10^{-5}$ before quantisation and the decoder at 116\,dB
+SNR. A CPU-only API server (HTTP, WebSocket streaming) powers a public demo that scales to zero.
+
+\section{Evaluation}
+\begin{table*}[t]
+\centering
+\small
+\begin{tabular}{lrrrrrrr}
+\toprule
+ &  & \multicolumn{3}{c}{\textbf{Africa TTS} (ours)} &  &  &  \\
+\cmidrule(lr){3-5}
+ & \textbf{Real} & \textbf{Turbo} & \textbf{Guided} & \textbf{Unguided} & \textbf{MMS-TTS} & \textbf{OmniVoice} & \textbf{Orpheus} \\
+ & \textit{speech} & \textit{110M} & \textit{336M} & \textit{336M} & \textit{36M/lang.} & \textit{813M} & \textit{3.3B} \\
+\midrule
+\multicolumn{8}{l}{\textit{CER (\%)}} \\
+Languages MMS-TTS supports (27) &  & 9.0 & \textbf{8.7} & 10.6 & 10.3 &  &  \\
+Languages OmniVoice supports (29) &  & 8.8 & 8.8 & 10.4 &  & \textbf{8.4} &  \\
+Languages Sunbird Orpheus supports (11) &  & 5.9 & \textbf{5.6} & 7.3 &  &  & 10.3 \\
+All systems (6) &  & 6.0 & 5.7 & 7.2 & 7.8 & \textbf{4.3} & 9.8 \\
+Languages with real recordings (24) & 7.5 & \textbf{7.7} & \textbf{7.7} & 8.9 &  &  &  \\
+\midrule
+\multicolumn{8}{l}{\textit{CER without diacritics (\%)}} \\
+Languages MMS-TTS supports (27) &  & 7.6 & \textbf{7.3} & 9.2 & 9.4 &  &  \\
+Languages OmniVoice supports (29) &  & 7.5 & 7.5 & 9.1 &  & \textbf{7.0} &  \\
+Languages Sunbird Orpheus supports (11) &  & 4.6 & \textbf{4.4} & 6.1 &  &  & 8.8 \\
+All systems (6) &  & 4.4 & 4.1 & 5.7 & 6.5 & \textbf{3.0} & 7.7 \\
+Languages with real recordings (24) & 6.6 & 6.5 & \textbf{6.3} & 7.6 &  &  &  \\
+\bottomrule
+\end{tabular}
+\caption{Intelligibility on languages Africa TTS was trained on: mean per-language character error rate of Omnilingual ASR transcripts (lower is better), averaged over the languages each comparison shares (count in brackets; languages with fewer than 10 test sentences are excluded). Best synthetic system in bold; real speech is the ASR's error on human recordings of the same sentences. Sizes are parameter counts including each system's audio codec or vocoder.}
+\label{tab:averages}
+\end{table*}
+
+\subsection{Speed}
+Table~\ref{tab:speed} reports speed on a dedicated 4-vCPU cloud machine over eight sentences in
+eight languages. Turbo is the only configuration comfortably faster than real time, and it
+starts streaming within \ttfaturbopython{}\,s.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{llrr}
+\toprule
+\textbf{Model} & \textbf{Runtime} & \textbf{$\times$RT} $\uparrow$ & \textbf{TTFA} $\downarrow$ \\
+\midrule
+Africa TTS Turbo & sherpa-onnx int8 & \textbf{2.52} & -- \\
+Africa TTS Turbo & PyTorch & 2.38 & 0.17 s \\
+Africa TTS unguided & sherpa-onnx int8 & 0.82 & -- \\
+Africa TTS unguided & PyTorch & 0.90 & 0.52 s \\
+Africa TTS guided & PyTorch & 0.47 & 0.72 s \\
+\bottomrule
+\end{tabular}
+\caption{CPU speed on a dedicated 4-vCPU cloud machine: seconds of audio generated per second of compute ($\times$RT, above 1 is faster than real time) and median time to first audio when streaming (TTFA). PyTorch runs on one thread, sherpa-onnx on four.}
+\label{tab:speed}
+\end{table}
+
+\subsection{Intelligibility: setup}
+\paragraph{Test sentences.} For each trained language we take up to 50 sentences from, in order
+of preference, the Omnilingual ASR corpus~\cite{omniasr2025} (test split, else dev, else
+train; five languages with tiny splits are topped up from the next split), FLEURS~\cite{conneau2023fleurs} test, WAXAL~\cite{diack2026waxal} test, and FLORES+
+\cite{floresplus,nllb2022} devtest (text only). The first three come with human recordings.
+Sentences with digits, under 20 or over 220 characters are removed, and Greek or Cyrillic
+lookalike letters in FLORES+ are replaced by the intended African letters. None of these
+sentences is in our training data.
+
+\paragraph{Systems.} \att{} in its three modes (Turbo, guided, unguided) uses each language's
+default voice and temperature 0.3. MMS-TTS~\cite{pratap2023mms} is run for every language
+with a released model, with uroman for non-Latin scripts. OmniVoice~\cite{zhu2026omnivoice}
+is run for every language in its list, cloning the same default voice clip as \att{}; as
+OmniVoice also conditions on the prompt's transcript, each prompt is transcribed with the
+evaluation ASR where no full human transcript exists. Sunbird Orpheus~\cite{sunbirdorpheus}, a
+3.3B-parameter Llama-based model that generates SNAC codec tokens, is run for the languages in
+its training mix with one fixed speaker per language and its recommended sampling settings
+(temperature 0.6, top-$p$ 0.95, repetition penalty 1.1). Parameter counts are measured on the
+released checkpoints and include each system's codec or vocoder.
+
+\paragraph{Metric.} Each output is transcribed by Omnilingual ASR (\texttt{omniASR\_LLM\_7B\_v2},
+conditioned on the language where it has a code), and we report the character error rate (CER)
+after Unicode NFC normalisation, lower-casing and removal of punctuation. A second CER also
+strips diacritics, as several G2P tables and ASR outputs treat tone marks inconsistently. The
+same ASR on the human recordings gives a reference: synthetic speech can score below it, since
+read synthetic speech is cleaner than spontaneous or noisy recordings. Means are taken over the
+languages each comparison shares.
+
+\subsection{Results}
+Table~\ref{tab:averages} summarises intelligibility. Against MMS-TTS, the strongest widely
+used per-language baseline, every guided configuration is more intelligible: \turbo{} averages
+\avgMmsturbo{}\% CER against \avgMmsMms{}\% and is better in \turboBeatsMms{} languages, and the
+guided teacher in \guidedBeatsMms{}. Sunbird Orpheus, a 3.3B-parameter model, is the least
+intelligible system on the \avgNOrph{} languages it covers (\avgOrphOrph{}\% against
+\avgOrphturbo{}\% for \turbo{}, which is better in \turboBeatsOrph{} of them). OmniVoice is the
+most intelligible system overall: on its \avgNOmni{} shared languages it averages
+\avgOmniOmni{}\% against \avgOmniturbo{}\% for both \turbo{} and the guided teacher, and it is
+better in most individual languages, by small margins. \turbo{} closes most of that gap at
+about a seventh of OmniVoice's parameters while running faster than real time on a CPU
+(Table~\ref{tab:speed}). Distillation costs nothing in intelligibility: \turbo{} matches the
+guided 24-layer teacher, while the unguided teacher is clearly worse (\avgMmsunguided{}\% on
+the MMS-TTS languages). On the \avgNreal{} languages with human recordings, \turbo{} and the
+guided teacher (\avgrealturbo{}\%) are within 0.2 points of the ASR's error on real speech
+(\avgrealreal{}\%). Removing diacritics lowers all CERs but leaves the ranking unchanged.
+
+\section{Limitations}
+The ASR-based metric measures intelligibility only, not naturalness or speaker similarity, and
+inherits the ASR's own errors; for languages whose test text comes from the Omnilingual ASR
+corpus's training split, the ASR may have seen those sentences, which favours all systems
+equally. FLEURS sentences are FLORES sentences read aloud. Three languages (Chitumbuka, Swati,
+Kimbundu) have no ASR language code and are transcribed unconditioned. Most of our African
+training speech is read religious text, so conversational and technical registers are less
+natural, and languages with under about two hours of data are weak. Some G2P tables do not
+mark tone. Voice cloning can be
+misused to impersonate people; the models are released for non-commercial use under
+CC-BY-NC-4.0.
+
+\section{Conclusion}
+\att{} shows that one phoneme-input model can serve 92 African languages and that, distilled
+to 110M parameters, it runs faster than real time on a CPU without losing intelligibility. It
+is clearly more intelligible than per-language MMS-TTS models and a much
+larger Sunbird Orpheus, and close to OmniVoice at a fraction of its size. Future work includes
+human listening tests with native speakers, more conversational training speech, and tone
+marking in more G2P tables.
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\onecolumn
+\appendix
+\section{Per-language results}
+\begin{table}[h!]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llcrrrrrrrr}
+\toprule
+ &  &  &  &  & \multicolumn{3}{c}{\textbf{Africa TTS} (ours)} &  &  &  \\
+\cmidrule(lr){6-8}
+\textbf{Language} & \textbf{Code} & \textbf{Src} & \textbf{$n$} & \textbf{Real} & \textbf{Turbo} & \textbf{Guided} & \textbf{Unguided} & \textbf{MMS-TTS} & \textbf{OmniVoice} & \textbf{Orpheus} \\
+ &  &  &  & \textit{speech} & \textit{110M} & \textit{336M} & \textit{336M} & \textit{36M/lang.} & \textit{813M} & \textit{3.3B} \\
+\midrule
+Amharic & \texttt{amh} & FL & 50 & 8.0 & 5.7 & 5.6 & 8.3 & 10.9 & \textbf{4.8} & -- \\
+Changana (Mozambique) & \texttt{tso} & FR & 50 & -- & 11.5 & 10.7 & 11.7 & \textbf{5.0} & -- & -- \\
+Chitumbuka$^\dagger$ & \texttt{tum} & FR & 50 & -- & 11.5 & \textbf{11.4} & 14.4 & -- & -- & -- \\
+Chokwe & \texttt{cjk} & FR & 50 & -- & 14.9 & 14.6 & 18.8 & -- & \textbf{12.9} & -- \\
+Cibemba & \texttt{bem} & FR & 50 & -- & \textbf{5.3} & 5.7 & 11.0 & 7.3 & -- & -- \\
+Cinyanja & \texttt{nya} & FL & 50 & 8.0 & 5.0 & 3.8 & 4.7 & 7.1 & \textbf{2.6} & -- \\
+Dagaare & \texttt{dga} & WX & 50 & 22.1 & 10.4 & 10.5 & \textbf{10.2} & 10.6 & -- & -- \\
+English & \texttt{eng} & FL & 50 & 2.3 & 2.4 & \textbf{2.0} & 3.8 & 3.5 & \textbf{2.0} & 2.3 \\
+Ewe & \texttt{ewe} & FR & 50 & -- & 6.4 & \textbf{5.8} & 6.6 & 6.2 & -- & 6.3 \\
+Fante & \texttt{fat} & OC & 50 & 13.9 & \textbf{7.3} & 7.7 & 9.8 & -- & 8.6 & -- \\
+Fon & \texttt{fon} & FR & 50 & -- & 22.5 & 24.5 & 24.0 & \textbf{20.9} & -- & -- \\
+Frafra & \texttt{gur} & OC & 50 & 5.5 & 9.8 & 10.8 & 11.8 & -- & \textbf{9.1} & -- \\
+Hausa & \texttt{hau} & FL & 50 & 4.7 & 4.2 & 3.8 & 4.7 & 6.2 & \textbf{3.6} & 8.6 \\
+Herero & \texttt{her} & OC & 14 & 3.8 & 4.8 & \textbf{1.2} & 3.2 & -- & 1.5 & -- \\
+Igbo & \texttt{ibo} & FL & 50 & 8.2 & 6.9 & 7.2 & 8.1 & -- & \textbf{6.6} & 17.5 \\
+Isoko & \texttt{iso} & OC & 5 & 13.8 & 29.4 & 24.5 & 26.6 & -- & \textbf{14.9} & -- \\
+Jula & \texttt{dyu} & FR & 50 & -- & \textbf{23.8} & 25.1 & 28.5 & 29.7 & 47.9 & -- \\
+Kabiye & \texttt{kbp} & FR & 50 & -- & 11.1 & \textbf{6.9} & 8.8 & 11.7 & -- & -- \\
+Kabuverdianu & \texttt{kea} & FL & 50 & 2.6 & 11.9 & 12.6 & \textbf{8.3} & -- & 8.6 & -- \\
+Kabyle & \texttt{kab} & FR & 50 & -- & 14.0 & 12.6 & 15.4 & 14.5 & \textbf{6.8} & -- \\
+Kamba & \texttt{kam} & FL & 50 & 10.3 & 14.6 & 13.7 & 17.4 & -- & \textbf{13.5} & -- \\
+Kikuyu & \texttt{kik} & FR & 50 & -- & \textbf{7.0} & 7.1 & 7.8 & 8.3 & -- & 21.3 \\
+Kimbundu$^\dagger$ & \texttt{kmb} & FR & 50 & -- & \textbf{12.5} & 13.9 & 15.4 & -- & -- & -- \\
+Kinyarwanda & \texttt{kin} & FR & 50 & -- & 3.2 & 4.2 & 6.2 & 6.3 & \textbf{1.8} & 10.4 \\
+Kirundi & \texttt{run} & FR & 50 & -- & 3.0 & \textbf{2.8} & 3.4 & 10.2 & -- & -- \\
+Kpelle & \texttt{xpe} & OC & 1 & 21.1 & 34.1 & 26.8 & 30.9 & -- & \textbf{26.0} & -- \\
+Lingala & \texttt{lin} & FL & 50 & 3.1 & 3.8 & 3.8 & 9.4 & -- & \textbf{3.4} & 3.8 \\
+Luganda & \texttt{lug} & FL & 50 & 7.3 & 8.2 & 7.0 & 11.7 & 8.8 & \textbf{5.2} & 6.6 \\
+Macua & \texttt{vmw} & FR & 50 & -- & 6.7 & \textbf{5.9} & 10.0 & 6.0 & -- & -- \\
+Malagasy & \texttt{mlg} & OC & 50 & 3.6 & 8.8 & 8.4 & 14.6 & 9.6 & \textbf{5.2} & -- \\
+Mauritian Creole & \texttt{mfe} & FR & 50 & -- & 7.1 & \textbf{5.2} & 5.9 & 5.9 & -- & -- \\
+Meru & \texttt{mer} & OC & 21 & 9.2 & \textbf{14.1} & 15.5 & 16.7 & -- & 25.6 & -- \\
+Mooré & \texttt{mos} & FR & 50 & -- & 15.4 & 16.1 & 20.1 & \textbf{14.1} & -- & -- \\
+Ndonga & \texttt{ndo} & OC & 13 & 14.0 & 5.9 & 4.2 & \textbf{3.7} & -- & 5.6 & -- \\
+Sango & \texttt{sag} & FR & 50 & -- & \textbf{10.0} & 10.2 & 11.8 & 10.6 & -- & -- \\
+Sena & \texttt{seh} & FR & 50 & -- & \textbf{6.2} & 6.4 & 7.4 & 7.3 & -- & -- \\
+Sepedi & \texttt{nso} & FL & 50 & 5.9 & 4.9 & 9.4 & 9.9 & -- & \textbf{4.1} & -- \\
+Shona & \texttt{sna} & FL & 50 & 2.9 & 3.0 & 2.8 & 3.2 & 6.1 & \textbf{1.9} & -- \\
+Swahili & \texttt{swh} & FL & 50 & 1.8 & 1.2 & 1.2 & 1.2 & 2.6 & \textbf{0.6} & 2.6 \\
+Swati$^\dagger$ & \texttt{ssw} & FR & 50 & -- & \textbf{9.5} & 9.9 & 14.7 & -- & -- & -- \\
+Tigrinya & \texttt{tir} & FR & 50 & -- & 11.9 & 11.5 & 13.7 & 17.6 & \textbf{7.7} & -- \\
+Twi & \texttt{twi} & FR & 50 & -- & \textbf{12.1} & 12.7 & 15.4 & 13.1 & 12.5 & -- \\
+Umbundu & \texttt{umb} & FL & 50 & 9.5 & 16.6 & 17.3 & 15.3 & -- & \textbf{14.8} & -- \\
+Wolof & \texttt{wol} & FL & 50 & 10.3 & 12.2 & 11.7 & 13.1 & -- & \textbf{7.2} & -- \\
+Xhosa & \texttt{xho} & FL & 50 & 3.4 & 4.3 & 3.9 & 5.3 & -- & \textbf{3.5} & 5.9 \\
+Yoruba & \texttt{yor} & FL & 50 & 15.9 & 17.0 & 15.9 & 15.8 & 19.3 & \textbf{12.8} & 28.2 \\
+Zulu & \texttt{zul} & FL & 50 & 3.7 & \textbf{2.2} & 3.9 & 4.4 & -- & 2.4 & -- \\
+\bottomrule
+\end{tabular}
+\caption{CER (\%) per trained language. Src: OC Omnilingual ASR corpus, FL FLEURS, WX WAXAL, FR FLORES+ (text only, no real recordings). $n$: sentences. $^\dagger$: no Omnilingual ASR language code; transcribed without one. Best synthetic system in bold.}
+\label{tab:perlang}
+\end{table}
+
+\end{document}

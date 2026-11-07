@@ -1,0 +1,17 @@
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{llrr}
+\toprule
+\textbf{Model} & \textbf{Runtime} & \textbf{$\times$RT} $\uparrow$ & \textbf{TTFA} $\downarrow$ \\
+\midrule
+Africa TTS Turbo & sherpa-onnx int8 & \textbf{2.52} & -- \\
+Africa TTS Turbo & PyTorch & 2.38 & 0.17 s \\
+Africa TTS unguided & sherpa-onnx int8 & 0.82 & -- \\
+Africa TTS unguided & PyTorch & 0.90 & 0.52 s \\
+Africa TTS guided & PyTorch & 0.47 & 0.72 s \\
+\bottomrule
+\end{tabular}
+\caption{CPU speed on a dedicated 4-vCPU cloud machine: seconds of audio generated per second of compute ($\times$RT, above 1 is faster than real time) and median time to first audio when streaming (TTFA). PyTorch runs on one thread, sherpa-onnx on four.}
+\label{tab:speed}
+\end{table}

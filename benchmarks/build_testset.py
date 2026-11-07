@@ -4,11 +4,13 @@ recordings where the source has them (the ASR baseline).
 Sources, in order of preference for each of our languages:
   1. facebook/omnilingual-asr-corpus  (real speech; test split, else dev, else train)
   2. google/fleurs                    (real read speech, test split; FLORES sentences)
-  3. openlanguagedata/flores_plus     (devtest text only: no real-audio baseline)
+  3. google/WaxalNLP                  (real speech, test split: ASR set, else TTS set)
+  4. openlanguagedata/flores_plus     (devtest text only: no real-audio baseline)
 Sentences with digits are dropped (the models never saw numerals; spelling numbers out is
 language-specific), as are corpus segments with transcription tags or longer than 25 s.
 
-Usage: python build_testset.py OUT_DIR [--n 50]
+Usage: python build_testset.py OUT_DIR [--n 50] [--langs abr,guz,...]
+(--langs: other languages, e.g. experimental ones never trained on; default: all trained ones)
 Writes OUT_DIR/testset.jsonl and OUT_DIR/real/<lang>/<id>.wav (16 kHz mono).
 """
 
@@ -28,15 +30,17 @@ PKG = Path(__file__).resolve().parents[1] / "africa_tts"
 OMNI = "facebook/omnilingual-asr-corpus"
 FLEURS = "google/fleurs"
 FLORES = "openlanguagedata/flores_plus"
+WAXAL = "google/WaxalNLP"
+WAXAL_CODE = {"twi": "aka", "swh": "swa"}  # our code -> WAXAL folder
 
 # our code -> (iso in the source datasets, script)
 ISO = {"mlg": "plt", "daf": "dnj"}
 FLEURS_CFG = {"amh": "am_et", "hau": "ha_ng", "ibo": "ig_ng", "kam": "kam_ke", "kea": "kea_cv",
               "lug": "lg_ug", "lin": "ln_cd", "nso": "nso_za", "nya": "ny_mw", "sna": "sn_zw",
               "swh": "sw_ke", "umb": "umb_ao", "wol": "wo_sn", "xho": "xh_za", "yor": "yo_ng",
-              "zul": "zu_za", "eng": "en_us"}
+              "zul": "zu_za", "eng": "en_us", "afr": "af_za"}
 FLORES_FILE = {"twi": "twi_Latn_asan1239", "tso": "tso_Latn_MZ", "seh": "seh_Latn_MZ",
-               "nya": "nya_Latn"}
+               "nya": "nya_Latn", "knc": "knc_Latn"}
 DIGIT = re.compile(r"\d")
 
 
@@ -53,9 +57,22 @@ def to16k(arr: np.ndarray, sr: int) -> np.ndarray:
     return np.interp(np.linspace(0, len(arr) - 1, n), np.arange(len(arr)), arr).astype(np.float32)
 
 
-def omni_rows(code: str, files: list[str], n: int, rng: random.Random):
+def omni_rows(code: str, files: list[str], n: int, rng: random.Random, fill: bool = False):
+    """Rows from the first split (test, dev, train) that has any; with fill, top up from the
+    following splits until n (the source is then reported as e.g. "test+dev")."""
     iso = ISO.get(code, code)
     mine = [f for f in files if f"/{iso}_" in f and f.endswith(".parquet")]
+    if fill:
+        got, used = [], []
+        for split in ("test", "dev", "train"):
+            if len(got) >= n:
+                break
+            sp, rows = omni_rows(code, [f for f in mine if f.split("/")[-1].startswith(split + "-")],
+                                 n - len(got), rng)
+            if rows:
+                got += rows
+                used.append(sp)
+        return "+".join(used) or None, got
     for split in ("test", "dev", "train"):
         sf_ = sorted(f for f in mine if f.split("/")[-1].startswith(split + "-"))
         if not sf_:
@@ -89,6 +106,27 @@ def fleurs_rows(cfg: str, n: int, rng: random.Random):
     return rows[:n]
 
 
+def waxal_rows(code: str, files: list[str], n: int, rng: random.Random):
+    """Test-split rows of WAXAL's ASR set (natural speech), else its TTS set (read speech)."""
+    w = WAXAL_CODE.get(code, code)
+    for kind, col in (("ASR", "transcription"), ("TTS", "text")):
+        test = sorted(f for f in files if f.startswith(f"data/{kind}/{w}/")
+                      and f.split("/")[-1].replace(f"{w}-", "").startswith("test"))
+        rows = []
+        for f in test:
+            df = pd.read_parquet(hf_hub_download(WAXAL, f, repo_type="dataset"))
+            for r in df.itertuples():
+                t = " ".join(str(getattr(r, col)).split())
+                if ok_text(t) and not re.search(r"[<>\[\]]", t):
+                    rows.append((f"waxal_{r.id}", t, r.audio))
+            if len(rows) >= 4 * n:
+                break
+        if rows:
+            rng.shuffle(rows)
+            return f"waxal-{kind.lower()}/test", rows[:n]
+    return None, []
+
+
 def flores_rows(fname: str, n: int, rng: random.Random):
     p = hf_hub_download(FLORES, f"devtest/{fname}.jsonl", repo_type="dataset")
     rows = [(f"flores{r['id']}", " ".join(r["text"].split())) for r in map(json.loads, open(p))]
@@ -101,16 +139,20 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("out", type=Path)
     ap.add_argument("--n", type=int, default=50)
+    ap.add_argument("--fill-splits", action="store_true",
+                    help="top up a language from the corpus's dev/train splits when test has < N")
+    ap.add_argument("--langs", default=None, help="comma-separated codes (default: languages.json)")
     a = ap.parse_args()
-    ours = json.loads((PKG / "languages.json").read_text())
+    ours = (a.langs.split(",") if a.langs else json.loads((PKG / "languages.json").read_text()))
     omni_files = list_repo_files(OMNI, repo_type="dataset")
+    waxal_files = list_repo_files(WAXAL, repo_type="dataset")
     flores_files = {f.split("/")[1][:-6] for f in list_repo_files(FLORES, repo_type="dataset")
                     if f.startswith("devtest/")}
     out = []
     for code in ours:
         rng = random.Random(f"africa-tts-bench-{code}")
         iso = ISO.get(code, code)
-        split, rows = omni_rows(code, omni_files, a.n, rng)
+        split, rows = omni_rows(code, omni_files, a.n, rng, a.fill_splits)
         if rows:
             src = f"omnilingual-asr-corpus/{split}"
             for rid, t, audio, script in rows:
@@ -127,6 +169,14 @@ def main() -> None:
                 wav.parent.mkdir(parents=True, exist_ok=True)
                 sf.write(wav, to16k(arr, sr), 16000)
                 out.append({"lang": code, "id": rid, "text": t, "source": "fleurs/test",
+                            "real": str(wav.relative_to(a.out)), "script": None})
+        elif (wx := waxal_rows(code, waxal_files, a.n, rng))[1]:
+            for rid, t, audio in wx[1]:
+                arr, sr = sf.read(io.BytesIO(audio["bytes"]))
+                wav = a.out / "real" / code / f"{rid}.wav"
+                wav.parent.mkdir(parents=True, exist_ok=True)
+                sf.write(wav, to16k(arr, sr), 16000)
+                out.append({"lang": code, "id": rid, "text": t, "source": wx[0],
                             "real": str(wav.relative_to(a.out)), "script": None})
         else:
             fname = FLORES_FILE.get(code) or next(

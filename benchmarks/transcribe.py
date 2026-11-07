@@ -4,6 +4,7 @@ Language-conditioned (LLM) model; languages it has no code for are transcribed w
 (flagged in the results). Audio longer than the ASR's 40 s limit is cut at 39.9 s and flagged.
 
 Usage: python transcribe.py BENCH_DIR [--model omniASR_LLM_7B_v2] [--systems real,turbo,...]
+Resumable: appends only clips missing from BENCH_DIR/asr/<system>.jsonl.
 Writes BENCH_DIR/asr/<system>.jsonl: {"lang", "id", "hyp", "seconds", "cut"}
 """
 
@@ -41,11 +42,11 @@ def main() -> None:
     (a.bench / "asr").mkdir(exist_ok=True)
     for system in systems:
         out = a.bench / "asr" / f"{system}.jsonl"
-        if out.exists():
-            print(f"{system}: exists, skipping")
-            continue
+        done = ({(h["lang"], h["id"]) for h in map(json.loads, open(out))} if out.exists() else set())
         items = []
         for r in rows:
+            if (r["lang"], r["id"]) in done:  # resumable: only clips not yet transcribed
+                continue
             if system == "real" and not r["real"]:
                 continue
             p = (a.bench / r["real"]) if system == "real" else (
@@ -58,12 +59,27 @@ def main() -> None:
             cut = secs > 39.9
             items.append((r, {"waveform": wav[: int(39.9 * sr)].astype(np.float32), "sample_rate": sr},
                           secs, cut))
+        if not items:
+            print(f"{system}: up to date")
+            continue
         # sort by length so batches are uniform
         items.sort(key=lambda x: x[2])
-        hyps = pipe.transcribe([x[1] for x in items],
-                               lang=[asr_lang(x[0]["lang"], x[0].get("script")) for x in items],
-                               batch_size=a.batch_size)
-        with open(out, "w") as f:
+        # the pipeline takes a language for every item or none at all: transcribe items whose
+        # language has no ASR code in a separate, unconditioned call
+        langs = [asr_lang(x[0]["lang"], x[0].get("script")) for x in items]
+        hyps = [None] * len(items)
+        known = [i for i, lg in enumerate(langs) if lg]
+        unknown = [i for i, lg in enumerate(langs) if not lg]
+        if known:
+            for i, h in zip(known, pipe.transcribe([items[i][1] for i in known],
+                                                   lang=[langs[i] for i in known],
+                                                   batch_size=a.batch_size)):
+                hyps[i] = h
+        if unknown:
+            for i, h in zip(unknown, pipe.transcribe([items[i][1] for i in unknown],
+                                                     batch_size=a.batch_size)):
+                hyps[i] = h
+        with open(out, "a") as f:
             for (r, _, secs, cut), h in zip(items, hyps):
                 f.write(json.dumps({"lang": r["lang"], "id": r["id"], "hyp": h, "seconds": round(secs, 2),
                                     "cut": cut, "asr_lang": asr_lang(r["lang"], r.get("script"))},
