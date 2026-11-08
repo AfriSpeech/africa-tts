@@ -57,7 +57,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="Africa TTS", version="0.4.0", lifespan=lifespan)
+app = FastAPI(title="Africa TTS", version="0.4.2", lifespan=lifespan)
 if os.environ.get("AFRICA_TTS_CORS_ORIGINS"):  # browser pages on other origins (e.g. a demo Space)
     app.add_middleware(
         CORSMiddleware,

@@ -1,6 +1,6 @@
 [project]
 name = "africa-tts"
-version = "0.4.1"
+version = "0.4.2"
 description = "Fast text-to-speech for 92 African languages and English: audio.cpp on CPU by default, PyTorch optional"
 readme = "README.md"
 requires-python = ">=3.10,<3.15"
