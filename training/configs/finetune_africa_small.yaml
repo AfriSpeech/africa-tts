@@ -44,7 +44,7 @@ optim:
 run_dir: runs/africa_small_finetune
 batch_size: 64
 grad_accum_steps: 1
-max_steps: 100000
+max_steps: 250000
 stats_ema_steps: 0
 ema_decay: 0.999
 log_freq: 50
