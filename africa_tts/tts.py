@@ -217,7 +217,7 @@ class AfricaTTS:
         try:
             import pocket_tts  # noqa: F401
         except ImportError:
-            raise ImportError('PyTorch pocket-tts is required: pip install "africa-tts[torch]" '
+            raise ImportError('pocket-tts is required: pip install africa-tts '
                               '(or add --extra-index-url https://download.pytorch.org/whl/cpu for CPU PyTorch)') from None
 
         folder = model_dir(name, download=download)

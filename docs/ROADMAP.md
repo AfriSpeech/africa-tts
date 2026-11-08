@@ -7,7 +7,7 @@
 | Africa TTS (6 layers, 110M) | released, v0.1 (200k distillation steps, chosen by listening against 150k and 175k) |
 | Africa TTS Base (24 layers, the distillation teacher) | released for research, v0.1 (step 100k) |
 | Python package and CLI | released |
-| audio.cpp engine (q8_0 GGUF, default in the package and server) | released; audio.cpp at a pinned commit with a small patch (`capitalize_first_letter`, [third_party/audiocpp/](../third_party/audiocpp/)) until it is upstream |
+| PyTorch engine (fp32, CPU and GPU default in package and server) | released; unquantised high-fidelity synthesis on CPU and GPU |
 | sherpa-onnx export and bundles (mobile) | released, tested end to end in sherpa-onnx 2.0.1 |
 | API server (`server/`: Docker, Modal) | released; live behind the [demo Space](https://huggingface.co/spaces/AfriSpeech/africa-tts-demo) |
 | C front end (africa-g2p + espeak-ng) | released, parity-tested on Linux, JNI tested on a desktop JVM |

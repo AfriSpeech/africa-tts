@@ -11,11 +11,10 @@ sherpa-onnx uses int8 models on four threads.
 | Runtime | × real time | Real-time factor | Time to first audio (streaming, median) |
 |---|---:|---:|---:|
 | sherpa-onnx int8 (mobile) | **2.52** | 0.40 | — |
-| PyTorch (`africa-tts[torch]`) | **2.38** | 0.42 | **0.17 s** |
+| PyTorch (CPU) | **2.38** | 0.42 | **0.17 s** |
 
-**audio.cpp** (q8_0 GGUF, the package's default engine) was measured on a 2020 laptop CPU (AMD
-Ryzen 5 4500U, 4 threads), not on the machine above: 2.3-2.8× real time warm, first streamed
-audio after 0.10 s. On the same laptop PyTorch ran at about 2× and sherpa-onnx at about 1.3×.
+PyTorch runs at 2.4× real time on a 4-vCPU cloud machine and about 2× on a laptop CPU, streaming its
+first audio after 0.17 s without quantization loss.
 
 For comparison, the 24-layer base model Africa TTS was distilled from runs at 0.47× real time
 guided (0.72 s to first audio) and 0.82-0.90× unguided.
@@ -28,7 +27,7 @@ workers × cores ([server/](../server/README.md#scaling)).
 Run it on your machine:
 
 ```bash
-pip install "africa-tts[torch]" sherpa-onnx   # from a clone of this repository
+pip install africa-tts sherpa-onnx   # from a clone of this repository
 python benchmarks/speed.py --threads 4
 ```
 

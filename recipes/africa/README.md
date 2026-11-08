@@ -125,10 +125,6 @@ python recipes/africa/release/export_release.py training/configs/finetune_africa
 python recipes/africa/release/select_voices.py train_final.jsonl release/voices     # default voices (AfriSpeech Selector)
 python recipes/africa/release/select_female_voices.py release/voices                # female voices, 17 languages
 python export/onnx/export_onnx.py --model-dir release/africa-tts --out-dir onnx/africa-tts --quantize
-# audio.cpp GGUF (the package's default engine): model.safetensors + config.yaml + the SentencePiece
-# tokenizer (recipes/africa/tokenizer/ipa_sp4000.model, saved as tokenizer.model) in one folder
-audiocpp_gguf --input release/africa-tts/model.safetensors --root release/africa-tts \
-    --output gguf/africa-tts-q8_0.gguf --type q8_0 --family pocket_tts
 python mobile/make_bundle.py --onnx-dir onnx/africa-tts --g2p-dir g2p --voices-dir release/voices \
     --espeak-dir espeak-en --out bundle/africa-tts
 python recipes/africa/release/synth_udhr.py ...   # UDHR texts per language (Space)

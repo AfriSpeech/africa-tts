@@ -1,8 +1,7 @@
 """Synthesis engine for the API server: a pool of AfricaTTS instances + default voices.
 
 Each instance synthesises one request at a time, so concurrency comes from the pool: with W
-workers x T threads, W requests run in parallel. The backend is the package's: audio.cpp (CPU,
-default) or PyTorch (CPU or GPU, `pip install "africa-tts[torch]"`).
+workers, W requests run in parallel. The engine is PyTorch on CPU (default) or GPU.
 """
 
 import asyncio

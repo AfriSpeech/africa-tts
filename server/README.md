@@ -88,15 +88,15 @@ server-side.
 ## Scaling
 
 Each model instance synthesises one request at a time, so throughput comes from parallel
-instances: size `WORKERS x THREADS` to the CPU cores, and scale out with more containers behind a
+instances: size `WORKERS` to the CPU cores, and scale out with more containers behind a
 load balancer (the server is stateless). Each instance holds its own copy of the model in memory
-(about 150 MB with audio.cpp). Every instance is warmed at startup, so the first requests do not
+(about 440 MB). Every instance is warmed at startup, so the first requests do not
 pay for graph allocation. Measure on your hardware with `python -m africa_tts.server.client bench`.
 
 ## Notes
 
-- **Streaming:** audio.cpp and PyTorch both stream frame by frame (80 ms chunks); with audio.cpp
-  the first chunk arrives about 0.1 s after the request on a laptop CPU.
+- **Streaming:** PyTorch streams frame by frame (80 ms chunks); the first chunk arrives
+  about 0.17 s after the request on a CPU.
 - **On device:** phones and embedded targets use the sherpa-onnx bundle instead
   ([mobile/](../mobile/)).
 - **English** uses espeak-ng 1.51 (Debian bookworm in the image); the image's front end was
