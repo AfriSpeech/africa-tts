@@ -11,16 +11,12 @@ voice, so all you need is text and a language code.
 > An ongoing project: native-speaker feedback is what improves it most. See
 > [CONTRIBUTING.md](https://github.com/AfriSpeech/africa-tts/blob/main/CONTRIBUTING.md).
 
-## ⚡ Runs on a CPU, no GPU needed
+## ⚡ Fast and high-fidelity speech on CPU, no GPU needed
 
-**Africa TTS runs on [audio.cpp](https://github.com/0xShug0/audio.cpp) by default: a 144 MB model,
-no PyTorch, faster than real time on an ordinary laptop, streaming its first audio about 0.1 s
-after it gets the text.** On a 2020 laptop CPU (AMD Ryzen 5 4500U, 4 threads) it speaks 2.3-2.8×
-faster than real time. It has 110M parameters, so it runs on laptops, servers and phones.
-
-The unquantised PyTorch engine is optional (`pip install "africa-tts[torch]"`): it also runs on a
-GPU, and on a 4-vCPU cloud machine it speaks 2.4× faster than real time
-([speed benchmark](https://github.com/AfriSpeech/africa-tts/blob/main/docs/BENCHMARKS.md#speed)).
+**Africa TTS runs on PyTorch (fp32 unquantised) by default: fast, full-fidelity audio without
+quantization degradation, faster than real time on an ordinary CPU.** On a 4-vCPU cloud machine it speaks 2.4×
+faster than real time ([speed benchmark](https://github.com/AfriSpeech/africa-tts/blob/main/docs/BENCHMARKS.md#speed)).
+It also runs on an NVIDIA GPU with `device="cuda"`.
 
 ## 🎯 Intelligible
 
@@ -32,16 +28,14 @@ MMS-TTS in 21 of 27 languages. The 813M OmniVoice, seven times its size, is more
 ## Install
 
 ```bash
-pip install africa-tts                 # default: audio.cpp on the CPU, no PyTorch
-pip install "africa-tts[torch]"        # optional: the unquantised PyTorch engine (CPU or GPU)
+pip install africa-tts
 ```
 
 English also needs espeak-ng (`apt install espeak-ng` / `brew install espeak-ng`). The first time,
-it asks before downloading the model (about 150 MB; 440 MB for PyTorch) from Hugging Face, then
-caches it and works offline. In scripts, approve the download with `--yes`,
-`AfricaTTS.load(download=True)`, or `africa-tts --download` beforehand. For PyTorch on a CPU-only
-Linux machine, add `--extra-index-url https://download.pytorch.org/whl/cpu` to get the small
-CPU build.
+it asks before downloading the model (about 440 MB) from Hugging Face, then caches it and works
+offline. In scripts, approve the download with `--yes`, `AfricaTTS.load(download=True)`, or
+`africa-tts --download` beforehand. On a CPU-only Linux machine, you can install the CPU build of
+PyTorch with `pip install --extra-index-url https://download.pytorch.org/whl/cpu africa-tts`.
 
 ## Use
 
@@ -54,7 +48,7 @@ africa-tts serve                       # the API server below, on port 8000
 ```python
 from africa_tts import AfricaTTS
 
-tts = AfricaTTS.load()                                                  # audio.cpp, CPU
+tts = AfricaTTS.load()                                                  # PyTorch, CPU (default)
 audio = tts.generate("Akwaaba! Yɛfrɛ me Kofi.", lang="twi")              # default Twi voice
 audio = tts.generate("Hello Ghana!", lang="eng", voice="my_voice.wav")  # clone a 3-10 s clip
 tts.save(audio, "out.wav")
@@ -62,8 +56,7 @@ tts.save(audio, "out.wav")
 for chunk in tts.stream("Akwaaba! Yɛfrɛ me Kofi.", lang="twi"):         # 80 ms chunks
     ...
 
-tts = AfricaTTS.load(backend="torch")   # PyTorch, unquantised (pip install "africa-tts[torch]")
-tts = AfricaTTS.load(device="cuda")     # PyTorch on an NVIDIA GPU
+tts_gpu = AfricaTTS.load(device="cuda")                                 # PyTorch on NVIDIA GPU
 ```
 
 - **Languages:** ISO 639-3 codes (`twi`, `hau`, `yor`, `swh`, `zul`, `amh`, `eng`, ...); see
@@ -74,7 +67,7 @@ tts = AfricaTTS.load(device="cuda")     # PyTorch on an NVIDIA GPU
 
 | | |
 |---|---|
-| **API server** | `africa-tts serve`: HTTP, WebSocket streaming, OpenAI-compatible; audio.cpp on CPU, or PyTorch (CPU/GPU) with the torch extra; Docker or Modal: [server/](https://github.com/AfriSpeech/africa-tts/tree/main/server) |
+| **API server** | `africa-tts serve`: HTTP, WebSocket streaming, OpenAI-compatible; PyTorch CPU/GPU; Docker or Modal: [server/](https://github.com/AfriSpeech/africa-tts/tree/main/server) |
 | **On device** | sherpa-onnx bundles, C front end, Android wrapper: [mobile/](https://github.com/AfriSpeech/africa-tts/tree/main/mobile) |
 | **Experimental languages** | 657 untrained languages, read through their closest trained one; help us test: [docs/EXPERIMENTAL_LANGUAGES.md](https://github.com/AfriSpeech/africa-tts/blob/main/docs/EXPERIMENTAL_LANGUAGES.md) |
 

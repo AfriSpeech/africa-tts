@@ -53,15 +53,15 @@ Averages (mean of per-language CER, %, over the languages the systems share; bes
 | Comparison | Languages | Real speech | Africa TTS (110M) | Africa TTS Base, guided (336M) | Africa TTS Base, unguided (336M) | MMS-TTS (36M per language) | OmniVoice (813M) |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | vs MMS-TTS | 27 |  | 9.0 | **8.7** | 10.6 | 10.3 |  |
-| vs OmniVoice | 29 |  | 8.8 | 8.8 | 10.4 |  | **8.4** |
+| vs OmniVoice | 31 |  | 10.3 | 9.9 | 11.6 |  | **9.2** |
 | all systems | 14 |  | 8.6 | 8.3 | 10.5 | 11.1 | **8.2** |
-| vs real speech | 24 | 7.5 | **7.7** | **7.7** | 8.9 |  |  |
+| vs real speech | 26 | 8.3 | 9.6 | **9.0** | 10.5 |  |  |
 
 Same, with diacritics removed before scoring:
 
 | Comparison | Languages | Real speech | Africa TTS (110M) | Africa TTS Base, guided (336M) | Africa TTS Base, unguided (336M) | MMS-TTS (36M per language) | OmniVoice (813M) |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | vs MMS-TTS | 27 |  | 7.6 | **7.3** | 9.2 | 9.4 |  |
-| vs OmniVoice | 29 |  | 7.5 | 7.5 | 9.1 |  | **7.0** |
+| vs OmniVoice | 31 |  | 8.8 | 8.4 | 10.0 |  | **7.8** |
 | all systems | 14 |  | 7.5 | **7.3** | 9.5 | 10.4 | **7.3** |
-| vs real speech | 24 | 6.6 | 6.5 | **6.3** | 7.6 |  |  |
+| vs real speech | 26 | 7.2 | 8.1 | **7.5** | 8.7 |  |  |

@@ -2,28 +2,21 @@
 
 A production HTTP + WebSocket API for Africa TTS, part of the `africa-tts` package
 ([africa_tts/server](../africa_tts/server)), with the IPA front end and default voices built in.
-It runs on the package's engines:
-
-| Install | Engine | Run |
-|---|---|---|
-| `pip install africa-tts` | **audio.cpp**, q8_0, CPU, no PyTorch (default) | `africa-tts serve` |
-| `pip install "africa-tts[torch]"` | PyTorch, unquantised, CPU or GPU | `africa-tts serve --backend torch [--device cuda]` |
+It runs on PyTorch CPU (fp32 unquantised quality) by default, or GPU with `device="cuda"`.
 
 ## Run
 
 ```bash
 pip install africa-tts            # + apt install espeak-ng (1.51) for English
-africa-tts serve --port 8000      # downloads the model (about 150 MB) on first start
+africa-tts serve --port 8000      # downloads the model on first start
 ```
 
 With Docker:
 
 ```bash
-docker build -f server/Dockerfile -t africa-tts-server .           # audio.cpp, built from this repo
-docker run -p 8000:8000 -e AFRICA_TTS_WORKERS=4 -e AFRICA_TTS_THREADS=2 \
+docker build -f server/Dockerfile -t africa-tts-server .
+docker run -p 8000:8000 -e AFRICA_TTS_WORKERS=2 \
     -v hf-cache:/root/.cache/huggingface africa-tts-server
-
-docker build -f server/Dockerfile.torch -t africa-tts-server-torch .  # PyTorch, CPU (GPU: see file)
 ```
 
 ### On Modal (serverless, scales to zero)
@@ -33,7 +26,7 @@ modal secret create africa-tts-api-key AFRICA_TTS_API_KEY=$(openssl rand -hex 24
 modal deploy server/modal_app.py
 ```
 
-[`modal_app.py`](modal_app.py) builds the same image (model baked in), runs 2 workers x 2 threads per container, scales to zero 5 minutes after the last request
+[`modal_app.py`](modal_app.py) builds the image (model baked in), runs 2 workers per container, scales to zero 5 minutes after the last request
 and to at most 2 containers under load. It deploys in **public mode** (below), which is what powers
 the [live demo Space](https://huggingface.co/spaces/AfriSpeech/africa-tts-demo).
 
@@ -41,7 +34,7 @@ the [live demo Space](https://huggingface.co/spaces/AfriSpeech/africa-tts-demo).
 
 | Endpoint | Request | Response |
 |---|---|---|
-| `GET /health` | | model, backend, device, workers, requests in flight |
+| `GET /health` | | model, device, workers, requests in flight |
 | `GET /v1/languages` | | 93 trained + 657 experimental languages (`status`, `voice_from`) |
 | `POST /v1/tts` | `{"text", "lang", "voice_wav_base64"?, "format": "wav"\|"pcm"}` | audio (WAV, or raw PCM s16le 24 kHz mono); headers `X-Audio-Seconds`, `X-Compute-Seconds` |
 | `POST /v1/audio/speech` | OpenAI shape: `{"input", "voice": "<language code>", "response_format"}` | audio |
@@ -63,10 +56,8 @@ numbers.
 | Variable | Default | Meaning |
 |---|---|---|
 | `AFRICA_TTS_MODEL` | `africa-tts` | model name, HF repo or local folder (downloaded on start) |
-| `AFRICA_TTS_BACKEND` | `audiocpp` | `audiocpp` (CPU) or `torch` (needs the torch extra) |
-| `AFRICA_TTS_DEVICE` | `cpu` | `cuda` for a GPU (implies `torch`) |
+| `AFRICA_TTS_DEVICE` | `cpu` | `cpu` (default) or `cuda` for an NVIDIA GPU |
 | `AFRICA_TTS_WORKERS` | 2 | model instances = requests synthesised in parallel |
-| `AFRICA_TTS_THREADS` | 2 | CPU threads per instance (audio.cpp) |
 | `AFRICA_TTS_MAX_QUEUE` | 32 | requests allowed to wait for a free worker before `503` |
 | `AFRICA_TTS_MAX_CHARS` | 2000 | maximum text length |
 | `AFRICA_TTS_API_KEY` | | if set, required as `Authorization: Bearer <key>` (HTTP and WebSocket) |

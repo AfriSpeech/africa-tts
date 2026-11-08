@@ -207,6 +207,8 @@ class LmMain(nn.Module):
         fl = self.flow_lm
         state = unflatten(self.state_names, state_flat)
         sequence = torch.where(torch.isnan(sequence), fl.bos_emb, sequence)
+        # sherpa-onnx passes [1, 0, 1024] as empty text_embeddings during AR steps; slice to fl.dim
+        text_embeddings = text_embeddings[:, :, :fl.dim]
         x = torch.cat([text_embeddings, fl.input_linear(sequence)], dim=1)
         x = fl.transformer(x, state)
         if fl.out_norm:
@@ -361,9 +363,10 @@ def main():
             a.out_dir / "lm_main.onnx",
             ["sequence", "text_embeddings"] + [f"state_{i}" for i in range(len(state))],
             ["conditioning", "eos_logit"] + [f"out_state_{i}" for i in range(len(state))],
-            {"sequence": {1: "seq_len"}, "text_embeddings": {1: "text_len"}})
+            {"sequence": {1: "seq_len"}, "text_embeddings": {1: "text_len", 2: "text_dim"}})
 
-    _export(LmFlow(fl), (torch.randn(1, fl.dim), torch.zeros(1, 1), torch.ones(1, 1), torch.randn(1, fl.ldim)),
+    cond_dim = fl.flow_net.cond_embed.in_features
+    _export(LmFlow(fl), (torch.randn(1, cond_dim), torch.zeros(1, 1), torch.ones(1, 1), torch.randn(1, fl.ldim)),
             a.out_dir / "lm_flow.onnx", ["c", "s", "t", "x"], ["flow_dir"],
             {k: {0: "batch"} for k in ["c", "s", "t", "x", "flow_dir"]})
 

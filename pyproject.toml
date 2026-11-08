@@ -1,7 +1,7 @@
 [project]
 name = "africa-tts"
-version = "0.4.2"
-description = "Fast text-to-speech for 92 African languages and English: audio.cpp on CPU by default, PyTorch optional"
+version = "0.5.0"
+description = "Fast, high-fidelity text-to-speech for 92 African languages and English: PyTorch on CPU or GPU"
 readme = "README.md"
 requires-python = ">=3.10,<3.15"
 license = { text = "MIT" }
@@ -13,11 +13,13 @@ classifiers = [
     "Topic :: Multimedia :: Sound/Audio :: Speech",
 ]
 dependencies = [
-    # Default engine: audio.cpp (C++, bundled in the platform wheel), CPU, no PyTorch.
+    # Engine: PyTorch on CPU or GPU (unquantised fp32 quality).
     # 0.3.4: the G2P tables the model was trained with (commit 76b53a8; 0.3.2 predates fixes)
     "africa-g2p[english]>=0.3.4,<0.4",
     "huggingface_hub>=0.30",
     "numpy>=1.24",
+    "pocket-tts>=4.0.1,<5",
+    "pyyaml>=6.0",
     "soundfile>=0.12",
     # API server (africa-tts serve)
     "fastapi>=0.110",
@@ -25,8 +27,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# PyTorch engine (pocket-tts): unquantised on the CPU, or on a GPU (device="cuda"). On a
-# CPU-only Linux machine add --extra-index-url https://download.pytorch.org/whl/cpu.
 torch = ["pocket-tts>=4.0.1,<5", "pyyaml>=6.0"]
 
 [project.scripts]
@@ -43,12 +43,9 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["africa_tts"]
-# audio.cpp, built into africa_tts/lib/ by third_party/audiocpp/build.py (gitignored, so it
-# must be listed); CI retags each wheel for its platform.
-artifacts = ["africa_tts/lib/*"]
 
 [tool.hatch.build.targets.sdist]
-exclude = ["africa_tts/lib", "build", "paper", "benchmarks/results", "*.pdf", "*.tar.gz"]
+exclude = ["build", "paper", "benchmarks/results", "*.pdf", "*.tar.gz"]
 
 [tool.ruff]
 line-length = 100

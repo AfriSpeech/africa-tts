@@ -1,7 +1,7 @@
-"""Africa TTS API server: audio.cpp on CPU by default, or PyTorch (CPU/GPU) with the torch extra.
+"""Africa TTS API server: PyTorch on CPU (fp32 unquantised) or GPU.
 
-    africa-tts serve                                   # audio.cpp, port 8000
-    africa-tts serve --backend torch [--device cuda]   # pip install "africa-tts[torch]"
+    africa-tts serve                                   # CPU, port 8000
+    africa-tts serve --device cuda                     # NVIDIA GPU
     uvicorn africa_tts.server.app:app --host 0.0.0.0 --port 8000   # configured by the environment
 
 Endpoints
@@ -15,10 +15,8 @@ Endpoints
 
 Configuration (environment)
     AFRICA_TTS_MODEL     model name, HF repo or local folder (default africa-tts); downloaded on start
-    AFRICA_TTS_BACKEND   audiocpp (default, CPU) or torch (needs the torch extra)
-    AFRICA_TTS_DEVICE    cpu (default) or cuda (implies torch)
+    AFRICA_TTS_DEVICE    cpu (default) or cuda
     AFRICA_TTS_WORKERS   parallel requests (model instances), default 2
-    AFRICA_TTS_THREADS   CPU threads per instance (audio.cpp), default 2
     AFRICA_TTS_MAX_CHARS max text length, default 2000
     AFRICA_TTS_MAX_QUEUE requests allowed to wait for a worker before 503, default 32
     AFRICA_TTS_API_KEY   if set, required as "Authorization: Bearer <key>"
@@ -127,13 +125,13 @@ async def _synthesize(text: str, lang: str, voice_b64: str | None, fmt: str,
     eng: Engine = STATE["engine"]
     with _Slot():
         try:
-            ipa = eng.prepare(text, lang)
+            ipa_chunks = eng.prepare(text, lang)
             voice = _voice(eng, lang, voice_b64)
         except RequestError as e:
             raise HTTPException(400, str(e)) from e
         _limit(limited, request.headers, request.client.host if request.client else None, text)
         t0 = time.monotonic()
-        audio = await eng.synthesize(ipa, voice)
+        audio = await eng.synthesize(ipa_chunks, voice)
     secs = len(audio) / eng.sample_rate
     headers = {"X-Audio-Seconds": f"{secs:.2f}", "X-Compute-Seconds": f"{time.monotonic() - t0:.2f}"}
     if fmt == "pcm":
@@ -144,10 +142,9 @@ async def _synthesize(text: str, lang: str, voice_b64: str | None, fmt: str,
 @app.get("/health")
 async def health():
     eng: Engine = STATE["engine"]
-    return {"status": "ok", "model": STATE["model"], "backend": eng.cfg.backend,
+    return {"status": "ok", "model": STATE["model"], "engine": "torch",
             "device": eng.cfg.device, "workers": eng.cfg.workers,
-            "threads_per_worker": eng.cfg.threads, "inflight": STATE["inflight"],
-            "sample_rate": eng.sample_rate}
+            "inflight": STATE["inflight"], "sample_rate": eng.sample_rate}
 
 
 @app.get("/v1/languages")
@@ -180,7 +177,7 @@ async def tts_stream(ws: WebSocket):
     try:
         msg = json.loads(await ws.receive_text())
         req = TTSRequest(**msg)
-        ipa = eng.prepare(req.text, req.lang)
+        ipa_chunks = eng.prepare(req.text, req.lang)
         voice = _voice(eng, req.lang, req.voice_wav_base64)
         _limit(limited, ws.headers, ws.client.host if ws.client else None, req.text)
     except LimitExceeded as e:
@@ -203,7 +200,7 @@ async def tts_stream(ws: WebSocket):
     try:
         await ws.send_json({"event": "start", "sample_rate": eng.sample_rate,
                             "encoding": "pcm_s16le", "channels": 1})
-        async for chunk in eng.stream(ipa, voice, cancelled):
+        async for chunk in eng.stream(ipa_chunks, voice, cancelled):
             await ws.send_bytes(to_pcm16(chunk))
             sent += len(chunk)
         await ws.send_json({"event": "done", "audio_seconds": round(sent / eng.sample_rate, 2)})

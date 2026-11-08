@@ -299,7 +299,7 @@ async function speak() {
     $("dl").href = lastUrl;
     $("dl").download = `africa-tts-${sel.value}.wav`;
     const a = r.headers.get("X-Audio-Seconds"), c = r.headers.get("X-Compute-Seconds");
-    $("rmeta").textContent = a && c ? `${(+a).toFixed(1)} s of audio, generated in ${(+c).toFixed(1)} s on CPU` : "";
+    $("rmeta").textContent = a && c ? `${(+a).toFixed(1)} s of audio, generated in ${(+c).toFixed(1)} s on CPU (PyTorch fp32)` : "";
     $("out").classList.add("on"); st.textContent = "";
     resAudio.play().catch(() => {});
   } catch (e) {

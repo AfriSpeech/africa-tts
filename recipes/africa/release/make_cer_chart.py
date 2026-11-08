@@ -12,7 +12,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-OURS = ("turbo", "Africa TTS (110M)", "#2a78d6")  # categorical slots 1-2, validated
+OURS = ("turbo", "Africa TTS (110M)", "#2a78d6")  # 110M model (default)
 OTHER = ("mms", "MMS-TTS (36M per language)", "#eb6834")
 SURFACE, INK, MUTED, GRID = "#fcfcfb", "#1f1e1c", "#6b675f", "#e7e3da"
 

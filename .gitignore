@@ -16,3 +16,4 @@ dist/
 # audio.cpp build output (built into the platform wheels by CI)
 africa_tts/lib/
 build/
+small_model_listen/

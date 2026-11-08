@@ -14,8 +14,8 @@ GH = "https://github.com/AfriSpeech/africa-tts"
 NICE = {"english_eng": "English", "swahili_swa": "Swahili", "twi_twi": "Twi", "yoruba_yor": "Yoruba",
         "xhosa_xho": "Xhosa"}
 SYS = {"real": "Real speech", "turbo": "Africa TTS (110M)",
-         "guided": "Africa TTS Base, guided (336M)", "unguided": "Africa TTS Base, unguided (336M)",
-         "mms": "MMS-TTS (36M per language)", "omnivoice": "OmniVoice (813M)"}
+       "guided": "Africa TTS Base, guided (336M)", "unguided": "Africa TTS Base, unguided (336M)",
+       "mms": "MMS-TTS (36M per language)", "omnivoice": "OmniVoice (813M)"}
 
 # Hub language tags: every training language's current ISO 639-3 code, plus its ISO 639-1 code
 # and macrolanguage where they exist (the Hub's language filter mostly uses 639-1, e.g. "sw").
@@ -94,15 +94,17 @@ Comparison with MMS-TTS and OmniVoice: [Africa TTS](https://huggingface.co/AfriS
             continue
         cells = cells_bold({s: v[s]["cer"] for s in cols if s in v}, cols)
         per.append(f"| {v['name']} `{c}` | " + " | ".join(cells) + " |")
+    wins = sum(v["turbo"]["cer"] < v["mms"]["cer"] for _, v in L.items() if "turbo" in v and "mms" in v)
+    total_mms = sum(1 for _, v in L.items() if "turbo" in v and "mms" in v)
     return f"""## Benchmark
 
 Each system reads the same held-out sentences (Omnilingual ASR corpus, FLEURS, WAXAL, FLORES+;
 none in our training data), and [Omnilingual ASR](https://huggingface.co/facebook/omniASR-LLM-7B)
 transcribes the audio: a lower **character error rate (CER)** means more intelligible speech.
-On the 27 languages both support (at least 10 test sentences each), Africa TTS has the lower
-error rate than MMS-TTS in 21:
+On the {total_mms} languages both support (at least 10 test sentences each), Africa TTS (110M) has the lower
+error rate than MMS-TTS in {wins}:
 
-![CER per language, Africa TTS vs MMS-TTS: lower is better](assets/benchmark_cer.png)
+![CER per language, Africa TTS (110M) vs MMS-TTS: lower is better](assets/benchmark_cer.png)
 
 Africa TTS uses each language's default voice; MMS-TTS uses its own voices.
 
@@ -119,7 +121,7 @@ Method, caveats, OmniVoice and all languages: [docs/BENCHMARKS.md]({GH}/blob/mai
 """
 
 
-MAIN_QUICK = '## Quick start\n\n```bash\npip install africa-tts   # English also needs espeak-ng\n```\n\n```python\nfrom africa_tts import AfricaTTS\n\ntts = AfricaTTS.load()\naudio = tts.generate("Akwaaba! Yɛfrɛ me Kofi.", lang="twi")              # default Twi voice\naudio = tts.generate("Hello Ghana!", lang="eng", voice="my_voice.wav")  # clone a 3-10 s clip\ntts.save(audio, "out.wav")\n```\n\nThe default engine is [audio.cpp](https://github.com/0xShug0/audio.cpp) on the CPU (the q8_0 GGUF in\n[gguf/](https://huggingface.co/AfriSpeech/africa-tts/tree/main/gguf), no PyTorch);\n`pip install "africa-tts[torch]"` adds the unquantised PyTorch engine, also on a GPU. The first\nrun asks before downloading the model (about 150 MB), then works offline. Output: 24 kHz mono.\nEvery language has a default voice. Spell out numbers. Plain pocket-tts works too, with IPA\ninput: [see how]({GH}/blob/main/docs/MODEL.md#using-plain-pocket-tts).\n\n'.replace('{GH}', 'https://github.com/AfriSpeech/africa-tts')
+MAIN_QUICK = '## Quick start\n\n```bash\npip install africa-tts   # English also needs espeak-ng\n```\n\n```python\nfrom africa_tts import AfricaTTS\n\ntts = AfricaTTS.load()                                                  # PyTorch CPU (default)\naudio = tts.generate("Akwaaba! Yɛfrɛ me Kofi.", lang="twi")              # default Twi voice\naudio = tts.generate("Hello Ghana!", lang="eng", voice="my_voice.wav")  # clone a 3-10 s clip\ntts.save(audio, "out.wav")\n\ntts_gpu = AfricaTTS.load(device="cuda")                                 # PyTorch on NVIDIA GPU\n```\n\nThe default engine is PyTorch on the CPU (fp32 unquantised, about 440 MB, faster than real time);\nit also runs on an NVIDIA GPU with `device="cuda"`. Output: 24 kHz mono.\nEvery language has a default voice. Spell out numbers. Plain pocket-tts works too, with IPA\ninput: [see how]({GH}/blob/main/docs/MODEL.md#using-plain-pocket-tts).\n\n'.replace('{GH}', 'https://github.com/AfriSpeech/africa-tts')
 BASE_USE = '## Use\n\nNot supported by the `africa-tts` package, which runs Africa TTS. For research, the repository\'s\n[`recipes/africa/guidance.py`]({GH}/blob/main/recipes/africa/guidance.py) runs it with guidance:\n\n```python\nimport sys; sys.path.insert(0, "recipes/africa")   # from a clone of {GH}\nfrom guidance import load_base\n\ntts = load_base(cfg=2.0)   # cfg=1.0: one pass per frame\naudio = tts.generate("Akwaaba! Yɛfrɛ me Kofi.", lang="twi")\n```\n\n'.replace('{GH}', 'https://github.com/AfriSpeech/africa-tts')
 
 
@@ -143,9 +145,9 @@ def main() -> None:
         f"{'✓' if g in udhr else ''} |" for g, n, h, _ in
         sorted(langs, key=lambda x: (x[0] != "eng", -x[2])))
     if not base:
-        what = (f"Fast text-to-speech for **{len(african)} African languages and English**, with voice "
-                "cloning, faster than real time on a CPU: runs on audio.cpp by default (**144 MB, no "
-                "PyTorch, first streamed audio after about 0.1 s**), 110M parameters.")
+        what = (f"Fast, high-fidelity text-to-speech for **{len(african)} African languages and English**, with voice "
+                "cloning, faster than real time on a CPU: runs on PyTorch (fp32 unquantised) by default "
+                "(**110M parameters, 2.4× real-time on CPU**).")
         model = [
             "6-layer [Pocket TTS](https://github.com/kyutai-labs/pocket-tts) FlowLM (110M parameters with "
             "the Mimi codec), distilled with Kyutai's `depth_distill` recipe from the guided 24-layer "
@@ -153,8 +155,7 @@ def main() -> None:
             "weights; 200k steps.",
             "Reads IPA from [africa-g2p](https://github.com/AfriSpeech/africa-g2p) (English: espeak-ng); "
             "the package does the conversion.",
-            "Formats: `model.safetensors` (PyTorch, fp32), `gguf/africa-tts-q8_0.gguf` (audio.cpp, "
-            "the default CPU engine) and an int8 [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) "
+            "Formats: `model.safetensors` (PyTorch, fp32, the default engine) and an int8 [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) "
             f"bundle for phones ([sherpa-onnx/](https://huggingface.co/{repo}/tree/main/sherpa-onnx)).",
         ]
     else:

@@ -7,9 +7,8 @@
   africa-tts --list-languages
   africa-tts serve                                   # HTTP + WebSocket API on port 8000
 
-Engines: audio.cpp on the CPU (default, no PyTorch), or PyTorch with
-pip install "africa-tts[torch]":
-  africa-tts "Akwaaba!" --lang twi --backend torch   # unquantised, CPU
+Fast speech synthesis using PyTorch on CPU or GPU:
+  africa-tts "Akwaaba!" --lang twi                   # CPU (default, fp32 unquantised)
   africa-tts "Akwaaba!" --lang twi --device cuda     # NVIDIA GPU
 """
 
@@ -21,10 +20,7 @@ import sys
 def _engine_args(ap: argparse.ArgumentParser) -> None:
     ap.add_argument("--model", "-m", default="africa-tts",
                     help="africa-tts (default), or a local folder with a downloaded copy")
-    ap.add_argument("--backend", choices=["audiocpp", "torch"], default=None,
-                    help="audiocpp (default: CPU, no PyTorch) or torch (needs the torch extra)")
-    ap.add_argument("--device", default="cpu", help="cpu (default) or cuda (GPU; implies torch)")
-    ap.add_argument("--threads", type=int, default=None, help="CPU threads (audio.cpp)")
+    ap.add_argument("--device", default="cpu", help="cpu (default) or cuda (GPU)")
 
 
 def serve(argv: list[str]) -> int:
@@ -35,10 +31,7 @@ def serve(argv: list[str]) -> int:
     ap.add_argument("--port", type=int, default=int(os.environ.get("PORT", "8000")))
     ap.add_argument("--workers", type=int, default=None, help="parallel requests (default 2)")
     a = ap.parse_args(argv)
-    env = {"AFRICA_TTS_MODEL": a.model, "AFRICA_TTS_DEVICE": a.device,
-           "AFRICA_TTS_BACKEND": a.backend or ("torch" if a.device != "cpu" else "audiocpp")}
-    if a.threads:
-        env["AFRICA_TTS_THREADS"] = str(a.threads)
+    env = {"AFRICA_TTS_MODEL": a.model, "AFRICA_TTS_DEVICE": a.device}
     if a.workers:
         env["AFRICA_TTS_WORKERS"] = str(a.workers)
     os.environ.update(env)
@@ -83,11 +76,10 @@ def main(argv: list[str] | None = None) -> int:
         for code, info in sorted(languages().items(), key=lambda kv: kv[1]["name"]):
             print(f"{code}\t{info['name']}\t{info['hours']:.1f} h")
         return 0
-    backend = a.backend or ("torch" if a.device != "cpu" else "audiocpp")
     from africa_tts.tts import AfricaTTS, DownloadDeclined, model_dir
 
     if a.download:
-        model_dir(a.model, backend, download=True)
+        model_dir(a.model, download=True)
         print("Africa TTS is downloaded and cached.", file=sys.stderr)
         return 0
     if not a.text or not a.lang:
@@ -96,8 +88,7 @@ def main(argv: list[str] | None = None) -> int:
         print(to_ipa(a.text, a.lang))
         return 0
     try:
-        tts = AfricaTTS.load(a.model, backend=backend, device=a.device, threads=a.threads,
-                             download=True if a.yes else None)
+        tts = AfricaTTS.load(a.model, device=a.device, download=True if a.yes else None)
     except (DownloadDeclined, ImportError, ValueError, RuntimeError) as e:
         print(e, file=sys.stderr)
         return 1
