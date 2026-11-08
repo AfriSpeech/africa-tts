@@ -1,0 +1,65 @@
+# Width + depth distillation into the Kyutai-18M transformer shape (8 x 512, hidden_scale 1,
+# 8 heads, 512-dim text table). Teacher: the 24-layer base model (step 100k, EMA) with guidance
+# 2.0, as for Africa TTS (a student has at most as many layers as its teacher). The student projects to
+# z_dim 1024 so the teacher flow head and EOS head are copied and stay frozen; its backbone is
+# seeded from the teacher by shrink_width. A smaller sampler head comes in a later head_distill run.
+model_config: pocket_tts/config/english_2026-04_24l.yaml
+model_overrides:
+  flow_lm.transformer.num_layers: 8
+  flow_lm.transformer.d_model: 512
+  flow_lm.transformer.hidden_scale: 1
+  flow_lm.transformer.num_heads: 8
+  flow_lm.lookup_table.dim: 512
+  flow_lm.z_dim: 1024
+  flow_lm.lookup_table.tokenizer: tokenizers
+  flow_lm.lookup_table.tokenizer_path: /mnt/volume_d2wey28/data/africa-tts/tok/ipa_sp4000.json
+  flow_lm.lookup_table.n_bins: 4000
+start_from_pretrained: false
+student_init_from: runs/africa_small_init_pca.pt   # PCA-seeded (residual_cov + shrink_checkpoint --cov)
+
+distill_cfg_coef: 2.0
+distill_teacher_config: pocket_tts/config/english_2026-04_24l.yaml
+distill_teacher_overrides:
+  flow_lm.lookup_table.tokenizer: tokenizers
+  flow_lm.lookup_table.tokenizer_path: /mnt/volume_d2wey28/data/africa-tts/tok/ipa_sp4000.json
+  flow_lm.lookup_table.n_bins: 4000
+distill_teacher_weights: runs/africa_ipa_teacher/checkpoint_00100000.pt
+
+data:
+  train_jsonl: /mnt/volume_d2wey28/data/africa-tts/train_final.jsonl
+  valid_jsonl: /mnt/volume_d2wey28/data/africa-tts/valid_final.jsonl
+  max_duration_sec: 30.0
+  max_voice_prompt_sec: 5.0
+  precompute: true
+  loader_procs: 6
+
+flow:
+  type: lsd
+  kwargs: {}
+
+text_dropout: 0.0
+voice_dropout: 0.0
+
+optim:
+  lr: 4e-4
+  schedule: cosine
+  warmup_steps: 1000
+
+run_dir: runs/africa_small_pca
+batch_size: 64
+grad_accum_steps: 1
+max_steps: 200000
+ema_decay: 0.9999
+log_freq: 50
+valid_freq: 2500
+num_valid_batches: 50
+keep_best_metric: loss
+early_stop_patience: 8
+ckpt_freq: 5000
+num_ckpt_keep: 10
+sample_cfg_coef: 1.0
+sample_freq: 10000
+sample_sentences:
+  - "mesɾɛ wo sɛ, ɛnnɛ jɛbɛkɔ fie no akjiɾi."
+  - "sawubona, uɲd͡ʒani namɬaɲd͡ʒe?"
+  - "həloʊ ɡɑːnə, haʊ ɑːɹ juː tədeɪ?"

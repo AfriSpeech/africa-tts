@@ -93,7 +93,31 @@ lossless: the learning rate is a function of the step and `max_steps`
 `max_steps` and relaunching resumes from the latest checkpoint (the learning rate moves up to the
 new schedule's value, 2.0e-4 -> 3.8e-4, below the 4e-4 peak).
 
-## 6. Release
+## 6. Small model (18M, Kyutai architecture)
+
+For ultra-compact on-device deployment (8 layers, width 512, hidden_scale 1, 8 heads; ~18M total parameters):
+
+1. **Covariance & PCA Seeding**:
+   ```bash
+   python training/scripts/residual_cov.py --config runs/africa_ipa_teacher/args.yaml \
+       --weights runs/africa_ipa_teacher/checkpoint_00100000.pt --out runs/africa_small_cov.pt
+   python training/scripts/shrink_checkpoint.py runs/africa_ipa_teacher/checkpoint_00100000.pt \
+       --cov runs/africa_small_cov.pt --out runs/africa_small_init_pca.pt --layers 8 --width 512
+   ```
+
+2. **Distillation**:
+   ```bash
+   python -m training.train training/configs/distill_africa_small_pca.yaml
+   ```
+   Distills the 24-layer guided teacher into the PCA-seeded student (200k steps, cosine schedule).
+
+3. **Supervised Fine-Tuning**:
+   ```bash
+   python -m training.train training/configs/finetune_africa_small.yaml
+   ```
+   Fine-tunes the distilled student on ground-truth speech with the flow-matching objective and EOS loss to enforce text alignment and speech boundaries.
+
+## 7. Release
 
 ```bash
 python recipes/africa/release/export_release.py training/configs/finetune_africa_ipa.yaml \
