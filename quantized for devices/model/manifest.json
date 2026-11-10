@@ -1,0 +1,521 @@
+{
+  "scheme": "dynamic-int8-matmul-fp32-conditioning",
+  "source": "AfriSpeech/africa-tts",
+  "source_revision": "d47667a3bb03d0d6db924e789648abd7d55d828b",
+  "source_sha256": "b4cdf2cb62674145fe83ba661041d8180faa543ff9ae1906ae3bb59c9a03171c",
+  "source_weight_bytes": 438033312,
+  "source_tensor_elements": 109502146,
+  "source_dtypes": {
+    "F32": 109502146
+  },
+  "flow_lm_layers": 6,
+  "flow_lm_dimension": 1024,
+  "sample_rate": 24000,
+  "model_bytes": 164520962,
+  "bundle_bytes": 182044092,
+  "model_reduction_percent": 62.44,
+  "quantized_matmuls": {
+    "lm_main": 26,
+    "lm_flow": 26,
+    "decoder": 8
+  },
+  "voices": [
+    "ada",
+    "aha",
+    "ajg",
+    "amh",
+    "bas",
+    "bci",
+    "bem",
+    "bin",
+    "bsq",
+    "bum",
+    "cce",
+    "cjk",
+    "daf",
+    "dga",
+    "din",
+    "dua",
+    "dyu",
+    "eng",
+    "ewe",
+    "ewo",
+    "fat",
+    "fon",
+    "gaa",
+    "gur",
+    "guw",
+    "gxx",
+    "hau",
+    "her",
+    "ibo",
+    "iso",
+    "kab",
+    "kam",
+    "kbp",
+    "kea",
+    "kik",
+    "kin",
+    "kmb",
+    "kri",
+    "kss",
+    "leh",
+    "lin",
+    "lom",
+    "lub",
+    "lue",
+    "lug",
+    "lun",
+    "mer",
+    "mfe",
+    "mgh",
+    "mlg",
+    "mos",
+    "naq",
+    "nba",
+    "ndo",
+    "ngb",
+    "ngl",
+    "nnb",
+    "nse",
+    "nso",
+    "nya",
+    "nzi",
+    "pov",
+    "rng",
+    "run",
+    "sag",
+    "seh",
+    "sfw",
+    "shr",
+    "sna",
+    "sop",
+    "ssw",
+    "swh",
+    "tir",
+    "tiv",
+    "tll",
+    "tog",
+    "toh",
+    "toi",
+    "tsc",
+    "tso",
+    "tui",
+    "tum",
+    "twi",
+    "umb",
+    "urh",
+    "ven",
+    "vmw",
+    "wol",
+    "xho",
+    "xpe",
+    "yao",
+    "yor",
+    "zul"
+  ],
+  "files": {
+    "decoder.int8.onnx": {
+      "bytes": 22587708,
+      "sha256": "f2083d75f2027179ee335ce3e27d4e7b5e0d21d8166ed22e4e845b3143669d50"
+    },
+    "encoder.onnx": {
+      "bytes": 39286496,
+      "sha256": "db2adda4e4901aa08db92ef07b68cd43b8d4123be79370c27c84ce1bf4c0e034"
+    },
+    "lm_flow.int8.onnx": {
+      "bytes": 9962517,
+      "sha256": "19fa27ae28c3a322cf62f290f03013ee03222652a322d2d26553c77a3682037f"
+    },
+    "lm_main.int8.onnx": {
+      "bytes": 76106303,
+      "sha256": "9db189f05ccd7f2bfed78efc46e5c7dcb24c0664d9d9b14e0ad8ef269641831e"
+    },
+    "text_conditioner.onnx": {
+      "bytes": 16388350,
+      "sha256": "0f6573411aa3763f6a12b432e1775b7105375ef51a21bf844a6ebdc1f80b1af8"
+    },
+    "token_scores.json": {
+      "bytes": 121887,
+      "sha256": "c48821eaeb524dc8a36101d04d066e61726ac0afaa2b2a53526a1f268fab9d2e"
+    },
+    "vocab.json": {
+      "bytes": 67701,
+      "sha256": "837b3d78f160549ccaa4d193afe13c6d1ebbdc15386e033ac60c09fd269bb005"
+    },
+    "voices/ada.wav": {
+      "bytes": 108524,
+      "sha256": "b56ff5acfb547d072eca0452e3cf305b68218a6303196bac4cc0e8268d367572"
+    },
+    "voices/aha.wav": {
+      "bytes": 157484,
+      "sha256": "9b3185df118e7a9f7eb6e4dc8a058bda290a134b0333b974d4ad00c503711662"
+    },
+    "voices/ajg.wav": {
+      "bytes": 169004,
+      "sha256": "dde01bb388f5b28fa67e6eccb9a07cd7265da70267bb2fe3e5e4ff1d5fed1fad"
+    },
+    "voices/amh.wav": {
+      "bytes": 177164,
+      "sha256": "4890477e195b92862543877e9b2d054f39a8f658d557242e3d325a5565c64878"
+    },
+    "voices/bas.wav": {
+      "bytes": 87404,
+      "sha256": "cfac0df805a75b85f9d7c674a7eac5ea3c6e04eb0956488598873a0172e63629"
+    },
+    "voices/bci.wav": {
+      "bytes": 134444,
+      "sha256": "e077610b3351e20cf4dc58f5aa61dcc14d03327c3d7e1a2d5b33fcea1dc4c81b"
+    },
+    "voices/bem.wav": {
+      "bytes": 131564,
+      "sha256": "d52106e8ac18d2dc178b29e896bb139c421552ce50e40dbc7c78899a07f65502"
+    },
+    "voices/bin.wav": {
+      "bytes": 225644,
+      "sha256": "63af7fb14f30eaa3f5685d3f9435bca31697437b1c1af0a6491a5504164499b2"
+    },
+    "voices/bsq.wav": {
+      "bytes": 265004,
+      "sha256": "cfd5af4e5c14cf9ddd9c672785a89ed32bc6b65a6b05b0af7a158815141826fd"
+    },
+    "voices/bum.wav": {
+      "bytes": 129644,
+      "sha256": "c86bca41490013737708dbca68e288b9cc8a4e0c262a1262c2b6fe30106602ae"
+    },
+    "voices/cce.wav": {
+      "bytes": 192044,
+      "sha256": "ccca4ddb9fb65a440ef45b2576a524b73c661167452b4765dc7e99590b2f2af4"
+    },
+    "voices/cjk.wav": {
+      "bytes": 254444,
+      "sha256": "fdc3cf8270caddf4d33f74aa5d770ca9fb89e1e700811fd4d1884f0729e1c7b8"
+    },
+    "voices/daf.wav": {
+      "bytes": 287084,
+      "sha256": "72d3ba870cd03d9b9e3aca2bbf4550ed2f7cf2c98affc4d21e71c58c06cee78e"
+    },
+    "voices/dga.wav": {
+      "bytes": 286124,
+      "sha256": "45e82e73ff6f6043276f4c2f1bdb81f1520c014a0571dea5df4f61f015c7d9b1"
+    },
+    "voices/din.wav": {
+      "bytes": 190124,
+      "sha256": "515e623afe1deda2070c007802b97d86a19dd78f761937866c8d8785a5dba740"
+    },
+    "voices/dua.wav": {
+      "bytes": 211244,
+      "sha256": "5133bad67688e456e44d2a7effd4aead526754280c0832461aaa0821ede2e855"
+    },
+    "voices/dyu.wav": {
+      "bytes": 131564,
+      "sha256": "b985c0e5ba3b5fba2457d05d63d88a4227f9e8059495c78d3d7f1076ca3e03b0"
+    },
+    "voices/eng.wav": {
+      "bytes": 279884,
+      "sha256": "3a91c06bf645b2590bfd94c7596159f0ea24a169f4cbb3935b54743e9ce72849"
+    },
+    "voices/ewe.wav": {
+      "bytes": 214124,
+      "sha256": "6e340d949e09f7c9bd1d96183e24008a107f0e5b469a024aeede9678c802b79d"
+    },
+    "voices/ewo.wav": {
+      "bytes": 264044,
+      "sha256": "3627b3342e61624624408cfd642721980a4e8f3761a74b1237eaa9584a566a08"
+    },
+    "voices/fat.wav": {
+      "bytes": 166124,
+      "sha256": "a99dddc87d877dac39c8898ca24c8d78bef521ceccd0794115d2f4fa19fd889a"
+    },
+    "voices/fon.wav": {
+      "bytes": 277484,
+      "sha256": "552ddfcfbafe391b948e2f32e4d7750a2b4791cad887636929dad5ea21751241"
+    },
+    "voices/gaa.wav": {
+      "bytes": 202604,
+      "sha256": "1005ddf749ab2fffe9336eeacfeb984aee0c235dd12abcca11fddac64dabfc1d"
+    },
+    "voices/gur.wav": {
+      "bytes": 129644,
+      "sha256": "64ad897afb714935871ab16467da106738db655e5b817825ec8fa206c45b56a7"
+    },
+    "voices/guw.wav": {
+      "bytes": 171884,
+      "sha256": "5dea1d4e5081958480438a53bd7994ea4d3ed3935b08b77bd795f13daa6c0d39"
+    },
+    "voices/gxx.wav": {
+      "bytes": 157484,
+      "sha256": "64d2242e372d871307aeeb72066641b537e599d14d6225c61fa4b442ca6f5860"
+    },
+    "voices/hau.wav": {
+      "bytes": 167564,
+      "sha256": "de2ca89a8553d03c8c459846c13cd40aec8648b831fac497a7cf479d731ed9f0"
+    },
+    "voices/her.wav": {
+      "bytes": 238124,
+      "sha256": "39f8cd51ae2930d52ba0a5a818d62a18e58ab15b759552ff4ed70967cc486cb2"
+    },
+    "voices/ibo.wav": {
+      "bytes": 179084,
+      "sha256": "4cb8f0be7c3f51e252a02e45f89f121a657a318118896a68a12c53f53ec2c37e"
+    },
+    "voices/iso.wav": {
+      "bytes": 180524,
+      "sha256": "f3f65e314d4f39eddf57639597fd296c2e43dbe186be17c944fad9f08659b790"
+    },
+    "voices/kab.wav": {
+      "bytes": 168044,
+      "sha256": "997111309d5c50b12c7d72e7b022243cc9d46b1cf06aed1b5f43372f4fa2c7b1"
+    },
+    "voices/kam.wav": {
+      "bytes": 59564,
+      "sha256": "387e25625f4bb82310ae0e27b1ebd3b06414d00dd2868e7af66ff56af69d2e5a"
+    },
+    "voices/kbp.wav": {
+      "bytes": 176684,
+      "sha256": "dd4f5901887b15157e38e09bf6d9d4a9349f6f11e4ee3d917de7522f49000544"
+    },
+    "voices/kea.wav": {
+      "bytes": 278444,
+      "sha256": "7853fbb6412799e6285cebf935b7397e0793ade1a1f115225227074feccd1bc3"
+    },
+    "voices/kik.wav": {
+      "bytes": 184364,
+      "sha256": "0fe22603a361e2040328fd0091f80b7dfe6a4d7f4601cc801d375aa23a151f18"
+    },
+    "voices/kin.wav": {
+      "bytes": 219884,
+      "sha256": "57f7d2524057c209452c51ecda38bad93655501e68fe4c3bb9b9907bb3d7b1b2"
+    },
+    "voices/kmb.wav": {
+      "bytes": 133484,
+      "sha256": "5769c47a7d85f0930c333d735b09d64cf8eaa5845dea8bd9837e2d7eb9e28394"
+    },
+    "voices/kri.wav": {
+      "bytes": 269804,
+      "sha256": "95fc3d33b16cf3d28125db5fb4a891ffeb677e0851c6a1691cf0d06497fd0d2d"
+    },
+    "voices/kss.wav": {
+      "bytes": 234284,
+      "sha256": "0cc9371f719c06ce764fe7d67461888bff587915a71a97c01d63bcbb09abaeae"
+    },
+    "voices/leh.wav": {
+      "bytes": 87404,
+      "sha256": "9df6cf609c76cd9882ce12de773c5ef96268af99f69a2c9965a4a30e87818bc2"
+    },
+    "voices/lin.wav": {
+      "bytes": 124844,
+      "sha256": "19f9953cc0179c797c06e9cb425df19acb4a82351df555bb286571197ab4a04f"
+    },
+    "voices/lom.wav": {
+      "bytes": 250604,
+      "sha256": "bd88fd6d39fd6e690d36b2bd5d7a1fb5448b7319af36730333b660eb3b367706"
+    },
+    "voices/lub.wav": {
+      "bytes": 127724,
+      "sha256": "11bc2a1ddac0f1d91d1e7433e9bd637e69aee8cf1b38290356ca36201582f503"
+    },
+    "voices/lue.wav": {
+      "bytes": 285164,
+      "sha256": "f7529768ece3d82b689f125ba3f094e029b6cccebc82ce9c213df1f086595706"
+    },
+    "voices/lug.wav": {
+      "bytes": 185324,
+      "sha256": "f454c7d692afc9d68e596dca80e63847666168bd463d128ce66268d946d00690"
+    },
+    "voices/lun.wav": {
+      "bytes": 224684,
+      "sha256": "bffcc0d07df5a632985c70b2a074cf7b6de2600efe20f70651b75aa6fffd5aa6"
+    },
+    "voices/mer.wav": {
+      "bytes": 274124,
+      "sha256": "6bbb1a436dda36b9497fc7ca919d984811f7154d4874086f0a13156fc191e081"
+    },
+    "voices/mfe.wav": {
+      "bytes": 149804,
+      "sha256": "d46ed3a601b64b4029b44cbbe2516800de6bf1e88a0aa8c559d0cbcc4b7d6c55"
+    },
+    "voices/mgh.wav": {
+      "bytes": 123884,
+      "sha256": "734741cd586d39c8032df3500c1d5ea1a0914bc0bd3fe7a1b10aa204a30cb5e5"
+    },
+    "voices/mlg.wav": {
+      "bytes": 279404,
+      "sha256": "31c4c5f1c1117999a2dd30b5db618e3e9b8444608621dbf3bf564b56302a4a57"
+    },
+    "voices/mos.wav": {
+      "bytes": 244842,
+      "sha256": "bf60dd1689a3ee683f7be186cba73867754ccb2c1b0e53c3a5458a5a170094e9"
+    },
+    "voices/naq.wav": {
+      "bytes": 157484,
+      "sha256": "638b9dc4aff6b8aa56f5d3cca8518bd613a59e42f05c4c49c65f1efd4cb2ff52"
+    },
+    "voices/nba.wav": {
+      "bytes": 204524,
+      "sha256": "7cdeb251442a8b418f380bc0d62d95d11ffc954accc266474e298de2ccaeb7eb"
+    },
+    "voices/ndo.wav": {
+      "bytes": 148844,
+      "sha256": "8edb8009131b52366287b1ae15c9abf7c1ccebfa41a9633aa05b5a1c62176e78"
+    },
+    "voices/ngb.wav": {
+      "bytes": 162284,
+      "sha256": "4ea440c204ffd2937210fd109ff6840072b522662b4ccfb4ae65546efffa75ed"
+    },
+    "voices/ngl.wav": {
+      "bytes": 181484,
+      "sha256": "48fb9476d090c58b2f2656c1972a92be416087024b74d90667a8f58af8731b9c"
+    },
+    "voices/nnb.wav": {
+      "bytes": 204524,
+      "sha256": "68a5f652a5fff2e2e269fa0a0e6677870bdbba0f311d4476426cdde2616c7db5"
+    },
+    "voices/nse.wav": {
+      "bytes": 161324,
+      "sha256": "2b498fd6e1faa8f868513419bb52ed9a49d6387201aa00563dff339daff767f0"
+    },
+    "voices/nso.wav": {
+      "bytes": 168524,
+      "sha256": "1b3886c9bef550cd26e656190ab03dc8a4c7e65889eee64fd121cfbbfb645ab4"
+    },
+    "voices/nya.wav": {
+      "bytes": 206924,
+      "sha256": "ebda7c9d900c8472dc32fdf7ab1f33ae94bbe3845eb49dfde8f935fffe43ad6d"
+    },
+    "voices/nzi.wav": {
+      "bytes": 170924,
+      "sha256": "b5b34e2a4cda23c6f02631b981b4c318007f99ea2a3c751d09bc6181dd5289c4"
+    },
+    "voices/pov.wav": {
+      "bytes": 226604,
+      "sha256": "580bed1488125124434333962ac8d04f470ef0aa6e4865ad47bcc7943763f007"
+    },
+    "voices/rng.wav": {
+      "bytes": 225644,
+      "sha256": "5515a285db2b179afa1b73c415542daed3472598edb0b39914bcb9d4b55cb0a0"
+    },
+    "voices/run.wav": {
+      "bytes": 219404,
+      "sha256": "b9d2c2388a333a919aa731c8c6d96a4c5878128852d524a86ff266138582ffdf"
+    },
+    "voices/sag.wav": {
+      "bytes": 232364,
+      "sha256": "d9282fa2fdbf3928d4460ee76f21d533fddeed75cb7d261ed4cb18e8b5b70f82"
+    },
+    "voices/seh.wav": {
+      "bytes": 99884,
+      "sha256": "1ed2fd6298a8e3abe0bece8b21477250783069c0b7440b50f95b4eb91fb457f7"
+    },
+    "voices/sfw.wav": {
+      "bytes": 164204,
+      "sha256": "8fd63b8b82e28cd76d361d7da59e0de37de150168783edcf041485d714e3db22"
+    },
+    "voices/shr.wav": {
+      "bytes": 144044,
+      "sha256": "96f664fef6e4bf0833a9304f6ec172b62f703ebe08ef5108ba118e26e765213c"
+    },
+    "voices/sna.wav": {
+      "bytes": 187724,
+      "sha256": "c1b86574fe2878bfc01f0c93c4fcc91dd6578ab31e54f88ee36342e3e9b8afe8"
+    },
+    "voices/sop.wav": {
+      "bytes": 211244,
+      "sha256": "f23a417343f6f0918c6a044a032013bcc479715053f15b0139d426bc81b1c191"
+    },
+    "voices/ssw.wav": {
+      "bytes": 161804,
+      "sha256": "2af659904452bbc23bb828c42ca1aebf45207f891f483df848ac8ddff24bef94"
+    },
+    "voices/swh.wav": {
+      "bytes": 226124,
+      "sha256": "b4cddaf18408dd7f30a1907e8f3fe7f03d70d51d8d1a839026cf4872e6326b57"
+    },
+    "voices/tir.wav": {
+      "bytes": 213644,
+      "sha256": "97bcde00dbcc47f6ee3e4aa33b4a44efa58e5affaca65e7a870642fd4aea4b2b"
+    },
+    "voices/tiv.wav": {
+      "bytes": 133484,
+      "sha256": "d043a5d56c1159bc4a0659491988ac2f89e7e7c72c58418bedf7cc814d5e0649"
+    },
+    "voices/tll.wav": {
+      "bytes": 169004,
+      "sha256": "06daea870294f1a4da3929f7ed0f3207a85d68df66ac36b14805719aaed5fa13"
+    },
+    "voices/tog.wav": {
+      "bytes": 133484,
+      "sha256": "487d93f46d1595f60bf39b605012e5227e978c410840df3511b9a859edf3965c"
+    },
+    "voices/toh.wav": {
+      "bytes": 184364,
+      "sha256": "2926f92ea068f69d8317d17cb45e76cab2695ce5f6277813fff4712174e9b6da"
+    },
+    "voices/toi.wav": {
+      "bytes": 241964,
+      "sha256": "aa29f8b4e68f693a5da589a6f261ae1ffda46c072d5f90708f0599694f1489d9"
+    },
+    "voices/tsc.wav": {
+      "bytes": 57644,
+      "sha256": "c690cee3ee7615b930b7c12113f4f8e83ba08fb5183ad516d45fed14ef129988"
+    },
+    "voices/tso.wav": {
+      "bytes": 267404,
+      "sha256": "9606e461176199b3dc57b5c388cf3074c3c4af7548abe5067b56fc6b04bf5f7a"
+    },
+    "voices/tui.wav": {
+      "bytes": 172844,
+      "sha256": "dfdf6d9501697b9321cf7ec7b60016b1bcd867fd98d74c91a5d7c62ca8d08ec0"
+    },
+    "voices/tum.wav": {
+      "bytes": 100844,
+      "sha256": "439d680d5cfbcb0bb6022fcf6f8d056b0d5328a606e4a4101a803e9ccefae293"
+    },
+    "voices/twi.wav": {
+      "bytes": 198764,
+      "sha256": "7dbe0ae4372708812beb65b1cf187f92bd560ae968633103f59ec9149ebe781d"
+    },
+    "voices/umb.wav": {
+      "bytes": 278924,
+      "sha256": "fa255f8663b14d9102b23113f654b2017b9bca2dd84f2b1e2460537d2ef1a38b"
+    },
+    "voices/urh.wav": {
+      "bytes": 169964,
+      "sha256": "cc3295d2bd9cdacff51e47a75028969da76e92cce3b8e8b13afb606abd23eebe"
+    },
+    "voices/ven.wav": {
+      "bytes": 188204,
+      "sha256": "c443f552f961d7e05036e15d0dd77af2d5c734e4551429df16caa2708d9db0a0"
+    },
+    "voices/vmw.wav": {
+      "bytes": 113324,
+      "sha256": "babc4c7291e7d48adf6c446cef54fb337249e575ec4ce84dcb5267cac4abcee8"
+    },
+    "voices/wol.wav": {
+      "bytes": 140204,
+      "sha256": "b20601d70d20ca54a2d85cecfc388f4c9c6a57f6683426f9ece7ac459a592f27"
+    },
+    "voices/xho.wav": {
+      "bytes": 172844,
+      "sha256": "9395b021fa81a84e896bc0c90619a55d8b381ce5d53f6a1112a81347f9672ccb"
+    },
+    "voices/xpe.wav": {
+      "bytes": 188204,
+      "sha256": "35df981445c7ac2b5cd9c64ece873282595fd8e6f96a924137ec2df15ea25c9b"
+    },
+    "voices/yao.wav": {
+      "bytes": 255404,
+      "sha256": "7f3c9cbc4148f7ecede12fb3661c1993e3483df95b788551458a998215d387e7"
+    },
+    "voices/yor.wav": {
+      "bytes": 204044,
+      "sha256": "fd51795202bfe3f68e0eb13f97a154b0b44e52154daa796aafdb56f29f9d340f"
+    },
+    "voices/zul.wav": {
+      "bytes": 223244,
+      "sha256": "7b546bfa415993122e51694d7ba2254ef564f6220a73643314f49ba7496bfede"
+    }
+  },
+  "license": "CC-BY-NC-4.0",
+  "precision_note": "INT8 MatMul weights in LM and decoder; FP32 voice encoder and text conditioner."
+}
