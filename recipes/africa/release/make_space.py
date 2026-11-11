@@ -146,9 +146,9 @@ def main() -> None:
         name = LABELS[k][2]
         if (name, LABELS[k][1]) not in repos:
             repos.append((name, LABELS[k][1]))
-    model_links = ("<a href='https://huggingface.co/spaces/AfriSpeech/africa-tts-demo' "
+    model_links = ("<a href='https://huggingface.co/spaces/AfriSpeech/africa-tts-demo' target='_blank' rel='noopener noreferrer' "
                    "style='background:var(--accent);color:var(--bg)'>🎙️ Try it live: type your own text →</a>"
-                   + "".join(f"<a href='https://huggingface.co/{r}'>{html.escape(n)} →</a>" for n, r in repos))
+                   + "".join(f"<a href='https://huggingface.co/{r}' target='_blank' rel='noopener noreferrer'>{html.escape(n)} →</a>" for n, r in repos))
     modes = "".join(f"<li><b>{html.escape(LABELS[k][0])}</b>: {html.escape(MODES[k])}</li>"
                     for k in meta["labels"] if k in MODES and len(meta["labels"]) > 1)
     modes_html = (f"<ul class='modes'>{modes}</ul><p class='note'>Different trade-offs, not a "
