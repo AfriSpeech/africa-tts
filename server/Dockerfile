@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends espeak-ng \
 WORKDIR /src
 COPY . .
 # Cache bust for package rebuild
-ARG CACHE_DATE=2026-11-08-v2
+ARG CACHE_DATE=2026-11-08-v3
 RUN pip install --no-cache-dir --extra-index-url "$TORCH_INDEX" ".[torch]" && rm -rf /src
 
 ENV AFRICA_TTS_DEVICE=cpu \
