@@ -22,10 +22,17 @@ LOOKALIKES = {"ͻ": "ɔ", "Ͻ": "Ɔ", "ԑ": "ɛ", "Ԑ": "Ɛ", "ε": "ɛ", "Ε": 
 _LOOKALIKES = str.maketrans(LOOKALIKES)
 
 
-def to_ipa(text: str, lang: str) -> str:
-    """Convert `text` in language `lang` (ISO 639-3 code, e.g. "twi", "eng") to model IPA."""
+def to_ipa(text: str, lang: str, codeswitch: bool = True) -> str:
+    """Convert `text` in language `lang` (ISO 639-3 code, e.g. "twi", "eng") to model IPA.
+
+    `codeswitch`: if True (default), embedded English loanwords and named entities are
+    phonemized using English IPA (espeak-ng) while surrounding words use native African G2P.
+    """
     if lang != "eng":
-        return g2p(text.translate(_LOOKALIKES), lang, output="ipa")
+        try:
+            return g2p(text.translate(_LOOKALIKES), lang, output="ipa", codeswitch=codeswitch)
+        except TypeError:
+            return g2p(text.translate(_LOOKALIKES), lang, output="ipa")
     words = []
     for w in text.split():
         lead, core, trail = _PUNCT.match(w).groups()

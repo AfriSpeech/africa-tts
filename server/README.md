@@ -36,9 +36,9 @@ the [live demo Space](https://huggingface.co/spaces/AfriSpeech/africa-tts-demo).
 |---|---|---|
 | `GET /health` | | model, device, workers, requests in flight |
 | `GET /v1/languages` | | 93 trained + 657 experimental languages (`status`, `voice_from`) |
-| `POST /v1/tts` | `{"text", "lang", "voice_wav_base64"?, "format": "wav"\|"pcm"}` | audio (WAV, or raw PCM s16le 24 kHz mono); headers `X-Audio-Seconds`, `X-Compute-Seconds` |
-| `POST /v1/audio/speech` | OpenAI shape: `{"input", "voice": "<language code>", "response_format"}` | audio |
-| `WS /v1/tts/stream` | first message `{"text", "lang", "voice_wav_base64"?}` | `{"event":"start",...}`, binary PCM s16le chunks as they are generated, `{"event":"done"}` |
+| `POST /v1/tts` | `{"text", "lang", "codeswitch"?, "voice_wav_base64"?, "format": "wav"\|"pcm"}` | audio (WAV, or raw PCM s16le 24 kHz mono); headers `X-Audio-Seconds`, `X-Compute-Seconds` |
+| `POST /v1/audio/speech` | OpenAI shape: `{"input", "voice": "<language code>", "codeswitch"?, "response_format"}` | audio |
+| `WS /v1/tts/stream` | first message `{"text", "lang", "codeswitch"?, "voice_wav_base64"?}` | `{"event":"start",...}`, binary PCM s16le chunks as they are generated, `{"event":"done"}` |
 
 ```bash
 curl -X POST localhost:8000/v1/tts -H "Content-Type: application/json" \
@@ -49,7 +49,8 @@ python -m africa_tts.server.client http://localhost:8000 bench --concurrency 4 -
 
 `lang` is an ISO 639-3 code; each language's default voice is used unless `voice_wav_base64`
 carries a 3-10 s WAV to clone. Text is plain spelling (the server converts it to IPA); spell out
-numbers.
+numbers. Code-switching is enabled by default (`"codeswitch": true`): embedded English loanwords
+and named entities are automatically pronounced with English phonetics.
 
 ## Configuration
 

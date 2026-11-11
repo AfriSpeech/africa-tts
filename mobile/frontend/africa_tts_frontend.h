@@ -18,6 +18,8 @@
 #ifndef AFRICA_TTS_FRONTEND_H
 #define AFRICA_TTS_FRONTEND_H
 
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -34,6 +36,10 @@ void att_destroy(att_frontend *f);
  * "eng") to IPA. Returns a malloc'd UTF-8 string (release with att_free), or NULL on error
  * (unknown language, missing table, invalid UTF-8); see att_last_error. */
 char *att_to_ipa(att_frontend *f, const char *lang, const char *text);
+
+/* Set an English code-switch dictionary (TSV formatted as "word\tipa\n...").
+ * Words and phrases in the dictionary will be converted to English IPA. */
+int att_set_codeswitch(att_frontend *f, const char *tsv_data, size_t len);
 
 const char *att_last_error(const att_frontend *f);
 void att_free(void *p);
