@@ -77,6 +77,7 @@ tts_gpu = AfricaTTS.load(device="cuda")                                 # PyTorc
 |---|---|
 | **API server** | `africa-tts serve`: HTTP, WebSocket streaming, OpenAI-compatible; PyTorch CPU/GPU; Docker or Modal: [server/](https://github.com/AfriSpeech/africa-tts/tree/main/server) |
 | **On device** | sherpa-onnx bundles, C front end, Android wrapper: [mobile/](https://github.com/AfriSpeech/africa-tts/tree/main/mobile) |
+| **C++ / GGUF (audio.cpp)** | Standalone C++ inference without Python/PyTorch (uses quantized models with some audio quality degradation compared to unquantized PyTorch): [docs/AUDIO_CPP.md](docs/AUDIO_CPP.md) |
 | **Experimental languages** | 657 untrained languages, read through their closest trained one; help us test: [docs/EXPERIMENTAL_LANGUAGES.md](https://github.com/AfriSpeech/africa-tts/blob/main/docs/EXPERIMENTAL_LANGUAGES.md) |
 
 ## More
