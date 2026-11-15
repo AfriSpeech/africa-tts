@@ -1,0 +1,65 @@
+# Ghana 18M model: 8-layer, 512-dim student distilled from 24-layer teacher with CFG 2.0.
+# Covers all 10 Ghanaian languages (Twi, Ga, Ewe, Frafra, Dagaare, Fante, Nzema, Ahanta, Sehwi, Dangme)
+# balanced with Ghanaian English and HiFi-TTS (exact 64.04% local : 35.96% English ratio).
+model_config: pocket_tts/config/english_2026-04_24l.yaml
+model_overrides:
+  flow_lm.transformer.num_layers: 8
+  flow_lm.transformer.d_model: 512
+  flow_lm.transformer.hidden_scale: 1
+  flow_lm.transformer.num_heads: 8
+  flow_lm.lookup_table.dim: 512
+  flow_lm.z_dim: 1024
+  flow_lm.lookup_table.tokenizer: tokenizers
+  flow_lm.lookup_table.tokenizer_path: /mnt/volume_d2wey28/data/africa-tts/tok/ipa_sp4000.json
+  flow_lm.lookup_table.n_bins: 4000
+start_from_pretrained: false
+student_init_from: /mnt/volume_d2wey28/projects/pocket-tts-twi/runs/africa_small_init_pca.pt
+
+distill_cfg_coef: 2.0
+distill_teacher_config: pocket_tts/config/english_2026-04_24l.yaml
+distill_teacher_overrides:
+  flow_lm.lookup_table.tokenizer: tokenizers
+  flow_lm.lookup_table.tokenizer_path: /mnt/volume_d2wey28/data/africa-tts/tok/ipa_sp4000.json
+  flow_lm.lookup_table.n_bins: 4000
+distill_teacher_weights: /mnt/volume_d2wey28/projects/pocket-tts-twi/runs/africa_ipa_teacher/checkpoint_00100000.pt
+
+data:
+  train_jsonl: /mnt/volume_d2wey28/data/africa-tts/train_ghana.jsonl
+  valid_jsonl: /mnt/volume_d2wey28/data/africa-tts/valid_ghana.jsonl
+  max_duration_sec: 30.0
+  max_voice_prompt_sec: 5.0
+  precompute: true
+  loader_procs: 6
+
+flow:
+  type: lsd
+  kwargs: {}
+
+text_dropout: 0.0
+voice_dropout: 0.0
+
+optim:
+  lr: 4e-4
+  schedule: cosine
+  warmup_steps: 1000
+
+run_dir: /mnt/volume_d2wey28/runs/distill_ghana_18m
+batch_size: 64
+grad_accum_steps: 1
+max_steps: 100000
+ema_decay: 0.9999
+log_freq: 50
+valid_freq: 2500
+num_valid_batches: 50
+keep_best_metric: loss
+early_stop_patience: 10
+ckpt_freq: 5000
+num_ckpt_keep: 10
+sample_cfg_coef: 1.0
+sample_freq: 5000
+sample_sentences:
+  - "mepɛ sɛ mekɔ haɪ skuːl wɔ ɹiːd͡ʒənəl hɑːspɪɾəl no nt͡ɕɛn."
+  - "nnipa nyinaa yɛ pɛ na wɔde adwene ne nyansa na abɔ obiara."
+  - "adesahi tsuo yɛ tɔmɔ he gbee nɔ, kɛ gbɛi kɛ hewalɛ kome."
+  - "amɛsiwo katã dzi la, wonye ablɔɖemeviwo kple ame siwo sɔ le bubu kple gomekpɔkpɔ gome."
+  - "hello ghana, welcome to our university in accra."

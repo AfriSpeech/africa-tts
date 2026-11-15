@@ -38,6 +38,8 @@ typedef struct {
 struct att_frontend {
   char *g2p_dir;
   int english;
+  char *codeswitch_data;
+  size_t codeswitch_len;
   lang_slot langs[ATT_MAX_LANGS];
   int n_langs;
   char error[512];
@@ -75,6 +77,23 @@ static char *buf_take(buf *b) {
   if (!b->s && buf_reserve(b, 0)) return NULL;
   b->s[b->n] = 0;
   return b->s;
+}
+
+/* Replace every occurrence of `from` by `to` (to may be ""). */
+static char *replace_all(char *s, const char *from, const char *to) {
+  size_t lf = strlen(from);
+  if (!strstr(s, from)) return s;
+  buf out = {0};
+  for (char *p = s; *p;) {
+    if (strncmp(p, from, lf) == 0) {
+      buf_adds(&out, to);
+      p += lf;
+    } else {
+      buf_add(&out, p++, 1);
+    }
+  }
+  free(s);
+  return buf_take(&out);
 }
 
 static void set_error(att_frontend *f, const char *fmt, ...) {
@@ -158,35 +177,23 @@ static afrig2p *get_table(att_frontend *f, const char *lang) {
     return NULL;
   }
   snprintf(f->langs[f->n_langs].code, sizeof f->langs[0].code, "%s", lang);
+  if (f->codeswitch_data) {
+    afrig2p_set_english_words(g, f->codeswitch_data, f->codeswitch_len);
+  }
   f->langs[f->n_langs++].g = g;
   return g;
 }
 
-/* Word by word (whitespace-separated, as training converted aligned words), words joined
- * with one space. */
+/* African language conversion via afrig2p, with code-switching lexicon applied if present. */
 static char *african_to_ipa(att_frontend *f, const char *lang, const char *text) {
   afrig2p *g = get_table(f, lang);
   if (!g) return NULL;
-  buf out = {0};
-  const char *p = text;
-  while (*p) {
-    while (*p && isspace((unsigned char)*p)) p++;
-    if (!*p) break;
-    const char *start = p;
-    while (*p && !isspace((unsigned char)*p)) p++;
-    char *word = strndup(start, (size_t)(p - start));
-    char *ipa = afrig2p_to_ipa(g, word, NULL);
-    free(word);
-    if (!ipa) {
-      set_error(f, "invalid UTF-8 input");
-      free(out.s);
-      return NULL;
-    }
-    if (out.n) buf_adds(&out, " ");
-    buf_adds(&out, ipa);
-    afrig2p_free(ipa);
+  char *ipa = afrig2p_to_ipa(g, text, "");
+  if (!ipa) {
+    set_error(f, "invalid UTF-8 input");
+    return NULL;
   }
-  return buf_take(&out);
+  return ipa;
 }
 
 /* ---------------------------------------------------------------- English */
@@ -226,23 +233,6 @@ static char *remove_marks(const char *s) {
   *z = 0;
   memmove(r, a, (size_t)(z - a) + 1);
   return r;
-}
-
-/* Replace every occurrence of `from` by `to` (to may be ""). */
-static char *replace_all(char *s, const char *from, const char *to) {
-  size_t lf = strlen(from);
-  if (!strstr(s, from)) return s;
-  buf out = {0};
-  for (char *p = s; *p;) {
-    if (strncmp(p, from, lf) == 0) {
-      buf_adds(&out, to);
-      p += lf;
-    } else {
-      buf_add(&out, p++, 1);
-    }
-  }
-  free(s);
-  return buf_take(&out);
 }
 
 /* Steps 2-5 for one punctuation-free word core. */
@@ -345,10 +335,56 @@ static char *english_to_ipa(att_frontend *f, const char *text) {
 
 /* ---------------------------------------------------------------- public API */
 
+int att_set_codeswitch(att_frontend *f, const char *tsv_data, size_t len) {
+  if (!f) return -1;
+  free(f->codeswitch_data);
+  f->codeswitch_data = NULL;
+  f->codeswitch_len = 0;
+  if (tsv_data && len > 0) {
+    f->codeswitch_data = malloc(len + 1);
+    if (!f->codeswitch_data) return -1;
+    memcpy(f->codeswitch_data, tsv_data, len);
+    f->codeswitch_data[len] = 0;
+    f->codeswitch_len = len;
+  }
+  for (int i = 0; i < f->n_langs; i++) {
+    afrig2p_set_english_words(f->langs[i].g, f->codeswitch_data, f->codeswitch_len);
+  }
+  return 0;
+}
+
 att_frontend *att_create(const char *g2p_dir, const char *espeak_data_dir, char **error) {
   att_frontend *f = calloc(1, sizeof *f);
   if (!f) return NULL;
   f->g2p_dir = strdup(g2p_dir ? g2p_dir : ".");
+
+  /* Try to load default codeswitch.tsv from g2p_dir if present */
+  buf cs_path = {0};
+  buf_adds(&cs_path, f->g2p_dir);
+  buf_adds(&cs_path, "/codeswitch.tsv");
+  FILE *fp = fopen(cs_path.s, "rb");
+  if (!fp) {
+    cs_path.n = 0;
+    buf_adds(&cs_path, f->g2p_dir);
+    buf_adds(&cs_path, "/codeswitch_en.tsv");
+    fp = fopen(cs_path.s, "rb");
+  }
+  if (fp) {
+    fseek(fp, 0, SEEK_END);
+    long sz = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+    if (sz > 0) {
+      char *data = malloc(sz + 1);
+      if (data && fread(data, 1, sz, fp) == (size_t)sz) {
+        data[sz] = 0;
+        att_set_codeswitch(f, data, (size_t)sz);
+      }
+      free(data);
+    }
+    fclose(fp);
+  }
+  free(cs_path.s);
+
   if (espeak_data_dir) {
 #ifdef ATT_NO_ESPEAK
     if (error) *error = strdup("built without espeak-ng (ATT_NO_ESPEAK)");
@@ -373,6 +409,7 @@ void att_destroy(att_frontend *f) {
 #ifndef ATT_NO_ESPEAK
   if (f->english) espeak_Terminate();
 #endif
+  free(f->codeswitch_data);
   free(f->g2p_dir);
   free(f);
 }

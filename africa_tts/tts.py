@@ -244,12 +244,13 @@ class AfricaTTS:
                           stacklevel=3)
 
     def generate(self, text: str, lang: str, voice: str | Path | None = None,
-                 ipa: bool = False) -> np.ndarray:
+                 ipa: bool = False, codeswitch: bool = True) -> np.ndarray:
         """Synthesise `text` (spelling, or IPA with ipa=True) in language `lang`.
         Supports multi-paragraph articles and long text with natural speech flow and intonation.
 
         `voice`: path (or hf:// URL) of a WAV to clone, 3-10 s of clean speech; default: the
         language's bundled voice. Returns float32 samples at 24 kHz.
+        `codeswitch`: if True (default), embedded English words/entities are spoken in English.
         """
         self._warn_experimental(lang)
         voice_path = str(voice or self.default_voice(lang))
@@ -260,7 +261,7 @@ class AfricaTTS:
         pause = np.zeros(int(0.25 * self.sample_rate), dtype=np.float32)
         audio_list = []
         for i, p in enumerate(paras):
-            p_ipa = p if ipa else to_ipa(p, lang)
+            p_ipa = p if ipa else to_ipa(p, lang, codeswitch=codeswitch)
             p_audio = self.engine.generate(p_ipa, voice_path)
             if len(p_audio) > 0:
                 audio_list.append(p_audio)
@@ -271,7 +272,7 @@ class AfricaTTS:
         return np.concatenate(audio_list)
 
     def stream(self, text: str, lang: str, voice: str | Path | None = None,
-               ipa: bool = False) -> Iterator[np.ndarray]:
+               ipa: bool = False, codeswitch: bool = True) -> Iterator[np.ndarray]:
         """Like generate(), but yields float32 audio chunks as each sentence/paragraph is made."""
         self._warn_experimental(lang)
         voice_path = str(voice or self.default_voice(lang))
@@ -279,7 +280,7 @@ class AfricaTTS:
         pause = np.zeros(int(0.25 * self.sample_rate), dtype=np.float32)
 
         for i, p in enumerate(paras):
-            p_ipa = p if ipa else to_ipa(p, lang)
+            p_ipa = p if ipa else to_ipa(p, lang, codeswitch=codeswitch)
             yield from self.engine.stream(p_ipa, voice_path)
             if i < len(paras) - 1:
                 yield pause

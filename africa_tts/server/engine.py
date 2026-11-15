@@ -90,7 +90,7 @@ class Engine:
             sf.write(str(path), a[: sr * 10], sr)  # the model uses at most 10 s
         return str(path)
 
-    def prepare(self, text: str, lang: str) -> list[str]:
+    def prepare(self, text: str, lang: str, codeswitch: bool = True) -> list[str]:
         if lang not in self.languages:
             raise RequestError(f"unknown language {lang!r}; GET /v1/languages")
         text = text.strip()
@@ -98,7 +98,7 @@ class Engine:
             raise RequestError("empty text")
         if len(text) > self.cfg.max_chars:
             raise RequestError(f"text longer than {self.cfg.max_chars} characters")
-        return [to_ipa(p, lang) for p in chunk_paragraphs(text)]
+        return [to_ipa(p, lang, codeswitch=codeswitch) for p in chunk_paragraphs(text)]
 
     # ------------------------------------------------------------------ synthesis
 

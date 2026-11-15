@@ -101,6 +101,7 @@ class TTSRequest(BaseModel):
     lang: str = Field(description="ISO 639-3 code, e.g. twi, hau, yor, swh, eng")
     voice_wav_base64: str | None = Field(None, description="optional WAV (3-10 s) to clone")
     format: str = Field("wav", pattern="^(wav|pcm)$")
+    codeswitch: bool = Field(True, description="convert embedded English words via espeak-ng")
 
 
 class SpeechRequest(BaseModel):  # OpenAI /v1/audio/speech shape
@@ -109,6 +110,7 @@ class SpeechRequest(BaseModel):  # OpenAI /v1/audio/speech shape
     model: str | None = None
     response_format: str = Field("wav", pattern="^(wav|pcm)$")
     speed: float | None = None  # accepted for compatibility, ignored
+    codeswitch: bool = Field(True, description="convert embedded English words via espeak-ng")
 
 
 def _voice(eng: Engine, lang: str, b64: str | None):
@@ -121,11 +123,11 @@ def _voice(eng: Engine, lang: str, b64: str | None):
 
 
 async def _synthesize(text: str, lang: str, voice_b64: str | None, fmt: str,
-                      limited: bool, request: Request) -> Response:
+                      limited: bool, request: Request, codeswitch: bool = True) -> Response:
     eng: Engine = STATE["engine"]
     with _Slot():
         try:
-            ipa_chunks = eng.prepare(text, lang)
+            ipa_chunks = eng.prepare(text, lang, codeswitch=codeswitch)
             voice = _voice(eng, lang, voice_b64)
         except RequestError as e:
             raise HTTPException(400, str(e)) from e
@@ -155,14 +157,16 @@ async def list_languages():
 @app.post("/v1/tts")
 async def tts(req: TTSRequest, request: Request, authorization: str | None = Header(None)):
     limited = _auth(authorization)
-    return await _synthesize(req.text, req.lang, req.voice_wav_base64, req.format, limited, request)
+    return await _synthesize(req.text, req.lang, req.voice_wav_base64, req.format, limited, request,
+                             codeswitch=req.codeswitch)
 
 
 @app.post("/v1/audio/speech")
 async def openai_speech(req: SpeechRequest, request: Request,
                         authorization: str | None = Header(None)):
     limited = _auth(authorization)
-    return await _synthesize(req.input, req.voice, None, req.response_format, limited, request)
+    return await _synthesize(req.input, req.voice, None, req.response_format, limited, request,
+                             codeswitch=req.codeswitch)
 
 
 @app.websocket("/v1/tts/stream")
@@ -177,7 +181,7 @@ async def tts_stream(ws: WebSocket):
     try:
         msg = json.loads(await ws.receive_text())
         req = TTSRequest(**msg)
-        ipa_chunks = eng.prepare(req.text, req.lang)
+        ipa_chunks = eng.prepare(req.text, req.lang, codeswitch=req.codeswitch)
         voice = _voice(eng, req.lang, req.voice_wav_base64)
         _limit(limited, ws.headers, ws.client.host if ws.client else None, req.text)
     except LimitExceeded as e:

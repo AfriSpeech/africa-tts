@@ -11,7 +11,7 @@ project(africa_tts_frontend C)
 
 set(CMAKE_C_STANDARD 11)
 option(ATT_WITH_ESPEAK "English via espeak-ng (GPL-3.0-or-later)" ON)
-set(AFRICA_G2P_COMMIT 76b53a8fa2a688812e369837d179d4710c111a7a CACHE STRING "africa-g2p commit")
+set(AFRICA_G2P_COMMIT 85bc86b21e10474b9d4154374d2ee9531fcb09e4 CACHE STRING "africa-g2p commit")
 
 include(FetchContent)
 FetchContent_Declare(africa_g2p

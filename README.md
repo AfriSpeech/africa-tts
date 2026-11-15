@@ -53,6 +53,9 @@ audio = tts.generate("Akwaaba! Yɛfrɛ me Kofi.", lang="twi")              # def
 audio = tts.generate("Hello Ghana!", lang="eng", voice="my_voice.wav")  # clone a 3-10 s clip
 tts.save(audio, "out.wav")
 
+# Code-switching: English loanwords & entities are spoken in English (enabled by default)
+audio_cs = tts.generate("Mepɛ sɛ mekɔ high school wɔ regional hospital no nkyɛn.", lang="twi")
+
 for chunk in tts.stream("Akwaaba! Yɛfrɛ me Kofi.", lang="twi"):         # 80 ms chunks
     ...
 
@@ -61,6 +64,11 @@ tts_gpu = AfricaTTS.load(device="cuda")                                 # PyTorc
 
 - **Languages:** ISO 639-3 codes (`twi`, `hau`, `yor`, `swh`, `zul`, `amh`, `eng`, ...); see
   `africa-tts --list-languages`.
+- **Code-switching:** In multilingual speech, African languages frequently borrow English nouns,
+  technical terms, and named entities. Africa TTS automatically detects English words and phrases
+  (curated and language-ID-verified from `AfriSpeech/africa-nouns` and `AfriSpeech/african-named-entities`)
+  and pronounces them with English phonetics (`espeak-ng`) while preserving the surrounding words
+  in native African phonology. Disable with `codeswitch=False`.
 - **Numbers:** spell them out ("twenty", not "20").
 
 ## Run it elsewhere
@@ -69,6 +77,7 @@ tts_gpu = AfricaTTS.load(device="cuda")                                 # PyTorc
 |---|---|
 | **API server** | `africa-tts serve`: HTTP, WebSocket streaming, OpenAI-compatible; PyTorch CPU/GPU; Docker or Modal: [server/](https://github.com/AfriSpeech/africa-tts/tree/main/server) |
 | **On device** | sherpa-onnx bundles, C front end, Android wrapper: [mobile/](https://github.com/AfriSpeech/africa-tts/tree/main/mobile) |
+| **C++ / GGUF (audio.cpp)** | Standalone C++ inference without Python/PyTorch (uses quantized models with some audio quality degradation compared to unquantized PyTorch): [docs/AUDIO_CPP.md](docs/AUDIO_CPP.md) |
 | **Experimental languages** | 657 untrained languages, read through their closest trained one; help us test: [docs/EXPERIMENTAL_LANGUAGES.md](https://github.com/AfriSpeech/africa-tts/blob/main/docs/EXPERIMENTAL_LANGUAGES.md) |
 
 ## More
