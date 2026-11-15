@@ -1,0 +1,34 @@
+# Africa TTS on a VPS: the API server behind Caddy, which adds HTTPS automatically.
+#   cp .env.example .env   # set TTS_DOMAIN and AFRICA_TTS_API_KEY
+#   docker compose up -d --build
+services:
+  tts:
+    build: .
+    restart: unless-stopped
+    environment:
+      AFRICA_TTS_API_KEY: ${AFRICA_TTS_API_KEY:?Set AFRICA_TTS_API_KEY in .env}
+      AFRICA_TTS_WORKERS: ${AFRICA_TTS_WORKERS:-3}
+      AFRICA_TTS_MAX_CHARS: ${AFRICA_TTS_MAX_CHARS:-1000}
+    # Not published: only Caddy reaches it, over Docker's network.
+    expose:
+      - "8000"
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - tts
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      TTS_DOMAIN: ${TTS_DOMAIN:?Set TTS_DOMAIN in .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:
