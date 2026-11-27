@@ -1,0 +1,9 @@
+{$TTS_DOMAIN} {
+	encode gzip
+	reverse_proxy tts:8000 {
+		# Long texts take a while to synthesise.
+		transport http {
+			read_timeout 180s
+		}
+	}
+}
