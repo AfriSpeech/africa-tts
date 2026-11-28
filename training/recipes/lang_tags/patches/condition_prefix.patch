@@ -1,0 +1,63 @@
+--- a/training/dataloader/types.py
++++ b/training/dataloader/types.py
+@@ -23,6 +23,7 @@
+     words: list[dict[str, Any]] | None = None  # [{"word", "start", "end"}] from align_data
+     start: float = 0.0  # offset of the utterance inside the audio file (long recordings)
+     latents_file: str | None = None
++    condition_prefix: str | None = None
+ 
+ 
+ @dataclass
+--- a/training/dataloader/loader.py
++++ b/training/dataloader/loader.py
+@@ -118,12 +118,14 @@
+             prompt = prompt[: max(len(prompt) - drop, min(len(prompt), self.sample_rate))]
+         return prompt, len(prompt)
+ 
+-    def _tokens(self, text: str) -> torch.Tensor:
++    def _tokens(self, text: str, condition_prefix: str | None = None) -> torch.Tensor:
+         """Tokenize the target text, dropping a final period with probability
+         final_punct_dropout so unpunctuated prompts are in distribution. Only the
+         period goes: "?" and "!" change how the sentence is said."""
+         if self.final_punct_dropout > 0 and self.rng.random() < self.final_punct_dropout:
+             text = re.sub(r"\.\s*$", "", text) or text
++        if condition_prefix:
++            text = f"{condition_prefix} {text}"
+         return torch.tensor(self.tokenize(text), dtype=torch.long)
+ 
+     @staticmethod
+@@ -186,7 +188,7 @@
+         chosen = self._choose_cut(entry)
+         if chosen is not None:
+             cut, text = chosen
+-            tokens = self._tokens(text)
++            tokens = self._tokens(text, entry.condition_prefix)
+             # Trim to the last word (plus a short tail) rather than the end
+             # of the file: 12% of utterances carry >1s of trailing silence,
+             # and training on it teaches the model to emit silence instead of
+@@ -212,7 +214,7 @@
+         end = min(entry.duration, last + self.TRAIL_SEC) if last is not None else entry.duration
+         duration = min(end, self.max_duration_sec)
+         wav = audio._load_window(entry.path, entry.start, duration, self.sample_rate)
+-        tokens = self._tokens(entry.transcript)
++        tokens = self._tokens(entry.transcript, entry.condition_prefix)
+         # No alignment: voice prompt from a random window of the same file.
+         fallback_sec = self.max_voice_prompt_sec if self.max_voice_prompt_sec > 0 else 3.0
+         prompt_start = self.rng.uniform(0, max(0.0, entry.duration - fallback_sec))
+@@ -271,7 +273,7 @@
+         assert entry.latents_file is not None, f"{entry.path}: not a latents entry"
+         lat = self._load_latents(entry.latents_file)
+         cut_frames, text = self._latent_cut(entry, lat.shape[0])
+-        tokens = self._tokens(text)
++        tokens = self._tokens(text, entry.condition_prefix)
+         target_frames = self._latent_target_frames(entry, cut_frames, lat.shape[0])
+         stitch_frames = min(self.stitch_frames, target_frames)
+         stitch = audio._load_window(
+@@ -321,6 +323,7 @@
+             d.get("words"),
+             float(d.get("start", 0.0)),
+             d.get("latents_file"),
++            d.get("condition_prefix"),
+         )
+ 
+     def _sample_or_none(self, entry: Entry) -> tuple[Any, ...] | None:
