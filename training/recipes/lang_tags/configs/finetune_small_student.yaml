@@ -1,0 +1,56 @@
+model_config: pocket_tts/config/english_2026-04_24l.yaml
+model_overrides:
+  weights_path: runs/lang_tags_distill_narrow/best_model.safetensors
+  flow_lm.transformer.num_layers: 8
+  flow_lm.transformer.d_model: 512
+  flow_lm.transformer.num_heads: 8
+  flow_lm.transformer.hidden_scale: 1
+  flow_lm.lookup_table.dim: 512
+  flow_lm.z_dim: 1024
+  flow_lm.lookup_table.tokenizer: tokenizers
+  flow_lm.lookup_table.tokenizer_path: training/recipes/lang_tags/tokenizer/lang_tags_4000.json
+  flow_lm.lookup_table.n_bins: 4000
+start_from_pretrained: true
+reset_text_embedding: false
+distill_cfg_coef: 0.0
+
+data:
+  train_jsonl: data/lang_tags/train.jsonl
+  valid_jsonl: data/lang_tags/valid.jsonl
+  max_duration_sec: 30.0
+  max_voice_prompt_sec: 5.0
+  precompute: true
+  loader_procs: 6
+
+flow:
+  type: lsd
+  kwargs: {}
+
+flow_batch_multiplier: 4
+eos_loss_weight: 0.1
+text_dropout: 0.1
+voice_dropout: 0.1
+
+optim:
+  lr: 1e-4
+  schedule: cosine
+  warmup_steps: 1000
+
+run_dir: runs/lang_tags_narrow_finetune
+batch_size: 64
+grad_accum_steps: 1
+max_steps: 250000
+stats_ema_steps: 0
+ema_decay: 0.999
+log_freq: 50
+valid_freq: 1000
+num_valid_batches: 50
+keep_best_metric: loss
+early_stop_patience: 15
+ckpt_freq: 5000
+num_ckpt_keep: 10
+sample_cfg_coef: 1.0
+sample_freq: 5000
+sample_sentences:
+  - "<lang:eng> Hello there, how are you today?"
+  - "<lang:tw> ɛna yɛn nhyiam no bɛkɔ so wɔ anɔpa."
